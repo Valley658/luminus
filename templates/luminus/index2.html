@@ -1,0 +1,233 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<link rel="icon" href="/favicon.ico?v=2" sizes="any">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>루미너스</title>
+<link rel="stylesheet" href="/assets/shorts.css">
+<link rel="stylesheet" href="/assets/videos.css">
+<style>
+@font-face {
+  font-family: 'NostalgicPoliceVibe';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2601-6@1.0/Griun_PolSensibility-Rg.woff2') format('woff2');
+  font-weight: normal;
+  font-display: swap;
+}
+* { box-sizing: border-box; }
+html, body { margin: 0; min-height: 100%; background: #000; color: #fff; }
+body { min-height: 100vh; display: flex; font-family: sans-serif; }
+.sidebar {
+  width: 250px;
+  flex-shrink: 0;
+  min-height: 100vh;
+  min-height: 100svh;
+  padding: 32px 24px;
+  background: #0c0c0c;
+  border-right: 1px solid #232323;
+  transition: width .25s ease, padding .25s ease;
+  overflow: hidden;
+}
+.sidebar-header { display: flex; align-items: center; justify-content: flex-start; gap: 10px; }
+.sidebar-toggle { display: grid; place-content: center; gap: 4px; width: 32px; height: 32px; padding: 6px; flex-shrink: 0; border: 0; border-radius: 50%; background: transparent; color: #eee; cursor: pointer; }
+.sidebar-toggle span { display: block; width: 16px; height: 1.5px; background: currentColor; }
+.sidebar-toggle:hover { background: #242424; }
+.sidebar-toggle:focus-visible { outline: 2px solid #b4a0ff; outline-offset: 2px; }
+.sidebar.is-collapsed { width: 64px; padding-left: 16px; padding-right: 16px; }
+.sidebar.is-collapsed .profiles, .sidebar.is-collapsed .brand, .sidebar.is-collapsed .sidebar-divider { display: none; }
+.sidebar.is-collapsed .sidebar-header { justify-content: center; }
+@media (prefers-reduced-motion: reduce) { .sidebar { transition: none; } }
+.brand { margin: 0; font-family: 'NostalgicPoliceVibe', sans-serif; font-size: 32px; font-weight: normal; white-space: nowrap; }
+.brand a { color: inherit; text-decoration: none; }
+.brand a:focus-visible { outline: 2px solid #b4a0ff; outline-offset: 4px; }
+.sidebar-divider { margin: 24px -24px 0; border: 0; border-top: 1px solid #2a2a2a; }
+.profiles { list-style: none; margin: 16px 0 0; padding: 0; display: grid; gap: 18px; }
+.profile { width: 100%; border: 0; border-radius: 10px; background: transparent; color: inherit; text-align: left; font: inherit; cursor: pointer; display: flex; align-items: center; gap: 16px; min-height: 60px; padding: 8px 0; white-space: nowrap; }
+.profile:hover { background: #202020; }
+.profile[aria-pressed="true"] { background: #2c2c2c; }
+.profile:focus-visible { outline: 2px solid #b4a0ff; outline-offset: 3px; }
+.channel-panel { margin: 8px 32px 24px; }
+.channel-panel:empty { display: none; }
+.channel-tabs { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; }
+.channel-tab { border: 0; border-radius: 7px; padding: 9px 14px; background: #252525; color: #eee; font: inherit; font-size: 14px; font-weight: 600; cursor: pointer; }
+.channel-tab:hover { background: #383838; }
+.channel-tab[aria-pressed="true"] { background: #fff; color: #111; }
+.channel-tab[data-tab="live"] { color: #aaa; }
+.channel-tab[data-tab="live"][aria-pressed="true"] { color: #111; }
+.channel-tab:focus-visible { outline: 2px solid #b4a0ff; outline-offset: 3px; }
+.profile-avatar { object-fit: cover; position: relative; width: 44px; height: 44px; flex-shrink: 0; border-radius: 50%; background: #252525; overflow: hidden; }
+.profile-name { font-size: 15px; color: #ddd; }
+main { flex: 1; min-width: 0; }
+.topbar { min-height: 104px; padding: 24px 32px; display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: 24px; }
+.search-form { grid-column: 2; display: flex; width: min(600px, 42vw); height: 40px; transform: translateX(-149px); border: 1px solid #343434; border-radius: 24px; overflow: hidden; background: #101010; }
+.sidebar.is-collapsed + main .search-form { transform: translateX(-56px); }
+.search-form:focus-within { border-color: #8e7bba; }
+.search-form input { width: 100%; min-width: 0; padding: 0 20px; border: 0; outline: 0; color: #fff; background: transparent; font: inherit; }
+.search-form input::placeholder { color: #999; }
+.search-form button { display: grid; place-items: center; width: 64px; flex-shrink: 0; border: 0; border-left: 1px solid #343434; background: #222; color: #eee; cursor: pointer; }
+.search-form button:hover { background: #303030; }
+.search-form button:focus-visible { outline: 2px solid #b4a0ff; outline-offset: -4px; }
+.account { justify-self: end; display: flex; align-items: center; gap: 12px; white-space: nowrap; }
+.account img { width: 38px; height: 38px; border-radius: 50%; object-fit: cover; }
+.account span { font-size: 15px; }
+.account-avatar { width: 38px; height: 38px; border-radius: 50%; background: radial-gradient(circle at 50% 35%, #777 0 18%, transparent 19%), radial-gradient(ellipse at 50% 100%, #777 0 38%, #252525 39%); }
+.search-status { margin: 0 32px; color: #aaa; font-size: 14px; }
+.profile-empty { padding: 16px 0; color: #999; font-size: 14px; }
+@media (max-width: 1000px) {
+  .topbar { grid-template-columns: minmax(0, 1fr) auto; gap: 16px; padding: 24px 16px; }
+  .search-form, .sidebar.is-collapsed + main .search-form { grid-column: 1; width: 100%; transform: none; }
+}
+@media (max-width: 650px) {
+  .topbar { grid-template-columns: minmax(0, 1fr); }
+  .account { grid-row: 1; }
+  .search-form { grid-row: 2; }
+  .search-form input { padding: 0 12px; }
+  .search-form button { width: 40px; }
+}
+.fan-notice { width: min(440px, calc(100% - 40px)); padding: 32px; border: 1px solid #333; border-radius: 16px; background: #141414; color: #fff; }
+.fan-notice::backdrop { background: rgb(0 0 0 / 60%); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); }
+.fan-notice h2 { margin: 0 0 16px; font-size: 22px; }
+.fan-notice p { margin: 0 0 24px; color: #ccc; font-size: 16px; line-height: 1.8; word-break: keep-all; }
+.fan-notice strong { color: #fff; }
+.fan-notice form { margin: 0; }
+.fan-notice button { width: 100%; padding: 12px; border: 0; border-radius: 8px; background: #fff; color: #111; font: inherit; font-weight: 700; cursor: pointer; }
+.fan-notice button:focus-visible { outline: 2px solid #b4a0ff; outline-offset: 4px; }
+@media (max-width: 600px) {
+  .sidebar { width: 230px; padding: 24px 16px; }
+  .brand { font-size: 26px; }
+}
+</style>
+<link rel="stylesheet" href="/assets/layout.css">
+<link rel="stylesheet" href="/assets/accounts.css">
+<link rel="stylesheet" href="/assets/pages.css">
+</head>
+<body>
+  <aside class="sidebar" id="sidebar" aria-label="사이드바">
+    <div class="sidebar-header">
+      <button class="sidebar-toggle" type="button" aria-label="사이드바 닫기" aria-controls="sidebar" aria-expanded="true">
+        <span></span><span></span><span></span>
+      </button>
+      <h1 class="brand"><a href="http://127.0.0.1/index2.html"><img class="brand-logo" src="/assets/brand-logo.png" alt="">루미너스</a></h1>
+    </div>
+    <hr class="sidebar-divider">
+    <ul class="profiles" aria-label="기수별 채널 목록">
+</ul>
+    <nav class="sidebar-links" aria-label="사이트 메뉴"><h2>사이트 메뉴</h2><a class="sidebar-library" href="/history"><i aria-hidden="true">◷</i><span>시청 기록</span></a><a class="sidebar-library" href="/bookmarks"><i aria-hidden="true">🔖</i><span>북마크</span></a><a class="sidebar-library" href="/playlists"><i aria-hidden="true">☷</i><span>재생목록</span></a><a class="sidebar-library" href="/gallery"><i aria-hidden="true">▧</i><span>팬 갤러리</span></a>
+    <a class="sidebar-schedule" href="/schedule"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M7 3v4m10-4v4M3 10h18m-12 4h2m3 0h2m-7 3h2"/></svg><span>스케줄</span></a>
+    <a class="sidebar-library" href="/highlights"><i aria-hidden="true">✂</i><span>하이라이트</span></a>
+    <a class="sidebar-discord" href="https://discord.gg/9Ccf94UJrF" target="_blank" rel="noopener noreferrer"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M19.7 5.1a18 18 0 0 0-4.5-1.4l-.6 1.2a16 16 0 0 0-5.2 0l-.6-1.2a18 18 0 0 0-4.5 1.4C1.5 9.3.7 13.4 1.1 17.5a18 18 0 0 0 5.5 2.8l1.1-1.8-1.7-.8.4-.3a13 13 0 0 0 11.2 0l.4.3-1.7.8 1.1 1.8a18 18 0 0 0 5.5-2.8c.5-4.8-.8-8.8-3.2-12.4ZM8.5 14.9c-1 0-1.8-.9-1.8-2s.8-2 1.8-2 1.8.9 1.8 2-.8 2-1.8 2Zm7 0c-1 0-1.8-.9-1.8-2s.8-2 1.8-2 1.8.9 1.8 2-.8 2-1.8 2Z"/></svg><span>디스코드</span></a>
+    <a class="sidebar-kakao" href="https://open.kakao.com/o/gKFapRIi" target="_blank" rel="noopener noreferrer"><svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 3C6.5 3 2 6.5 2 10.8c0 2.7 1.8 5.1 4.6 6.5L5.4 21l4.4-2.5c.7.1 1.4.2 2.2.2 5.5 0 10-3.5 10-7.9S17.5 3 12 3Z"/></svg><span>카카오톡</span></a>
+    </nav>
+  </aside>
+  <main>
+    <header class="topbar">
+      <div class="search-wrap" id="header-search">
+      <form class="search-form" action="/index2.html" method="get" role="search">
+        <input type="search" name="q" placeholder="검색" aria-label="동영상 검색" autocomplete="off">
+      </form>
+      <div class="search-suggestions" hidden></div>
+      </div>
+      <button type="button" class="search-toggle" aria-label="검색창 열기" aria-expanded="false" aria-controls="header-search"><svg width="23" height="23" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 5 5"/></svg></button>
+      <div class="account">
+        <button type="button" class="account-button is-guest" aria-label="로그인 및 회원가입" aria-haspopup="true" aria-expanded="false"><img alt="" hidden><span>로그인</span></button>
+        <div class="account-tooltip" role="tooltip">로그인</div>
+        <div class="account-menu" hidden>
+          <div class="account-identity"><div class="menu-avatar"></div><div><strong class="account-name"></strong><small class="account-handle"></small></div></div>
+          <button type="button" class="view-profile">마이페이지</button>
+          <button type="button" class="account-settings">설정</button>
+          <a class="admin-link" href="https://admin.pastellive.co.kr/" hidden>관리자 화면</a>
+          <button type="button" class="menu-logout">로그아웃</button>
+        </div>
+      </div>
+    </header>
+    <!-- HOME_ANNOUNCEMENT -->
+    <div id="library-panel" hidden></div>
+    <!-- PAGE_CONTENT -->
+    <p class="search-status" role="status" aria-live="polite"></p>
+    <section class="channel-panel" aria-label="선택한 채널" aria-live="polite"><!-- CHANNEL_CONTENT --></section>
+    <section class="live-unavailable" role="status" hidden><p>현재 라이브 기능은 지원되지 않습니다. 개발자가 아직 구현하지 않았습니다.</p></section>
+    <section class="shorts-section" aria-labelledby="shorts-title">
+      <div class="shorts-heading">
+        <h2 id="shorts-title"><span aria-hidden="true">ϟ</span>추천 Shorts</h2>
+      </div>
+      <p class="shorts-message" role="status" hidden></p>
+      <div class="shorts-carousel">
+        <div class="shorts-track"></div>
+        <!-- SHORTS_BOOTSTRAP -->
+        <div class="shorts-arrows" hidden><button type="button" data-scroll="-1" aria-label="이전 Shorts">‹</button><button type="button" data-scroll="1" aria-label="다음 Shorts">›</button></div>
+      </div>
+      <button type="button" class="shorts-more" hidden>더 보기</button>
+      <div class="shorts-sentinel" aria-hidden="true"></div>
+    </section>
+    <section class="videos-section" aria-labelledby="videos-title">
+      <h2 id="videos-title" hidden>검색 결과</h2>
+      <div class="video-grid"></div>
+      <p class="video-status" role="status"></p>
+      <button class="video-more" type="button" hidden>더 보기</button>
+    </section>
+  </main>
+  <dialog class="fan-notice" aria-labelledby="notice-title" aria-describedby="notice-description">
+    <h2 id="notice-title">루미너스 이용 안내</h2>
+    <p class="same-developer"><strong>개발자는 똑같습니다.</strong></p>
+    <p>아직 구현되지 않은 기능이 있을 수 있습니다.</p>
+    <p class="release-reason">개발자가 모든 기능을 한 번에 구현하기는 힘들어서, 하나씩 만들어 가고 있습니다. 조금만 기다려 주세요.</p>
+    <p id="notice-description">루미너스는 <strong>스텔라이브 공식 사이트가 아닌, 팬이 운영하는 비공식 팬 사이트</strong>입니다.</p>
+    <form method="dialog"><button autofocus>확인했습니다</button></form>
+  </dialog>
+  <dialog class="short-viewer" aria-label="Shorts 재생">
+    <div class="short-viewer-top"><a class="short-watch-link" href="https://www.youtube.com/" target="_blank" rel="noopener noreferrer">YouTube에서 보기</a><button class="short-close" type="button" aria-label="재생 닫기">×</button></div>
+    <div class="short-player"></div>
+    <p class="short-player-note" role="status"></p>
+  </dialog>
+  <dialog class="member-dialog auth-dialog" aria-labelledby="auth-title">
+    <button type="button" class="dialog-close" aria-label="닫기">×</button>
+    <h2 id="auth-title">로그인</h2>
+    <form class="auth-form">
+      <label hidden>이름<input name="name" maxlength="30" autocomplete="nickname" aria-describedby="reserved-name-note"><small id="reserved-name-note" class="reserved-name-note">리도는 관리자 전용 닉네임으로, 회원가입 및 이름 변경에 사용할 수 없습니다.</small></label>
+      <label>아이디<input name="handle" minlength="3" maxlength="24" pattern="[a-zA-Z0-9_]{3,24}" required autocomplete="username" placeholder="아이디"></label>
+      <label>비밀번호<input type="password" name="password" minlength="10" maxlength="128" required autocomplete="current-password" placeholder="비밀번호"></label>
+      <p class="auth-error" role="alert"></p><button type="submit" class="auth-submit">로그인</button>
+    </form>
+    <button type="button" class="discord-button" disabled>디스코드로 로그인</button><p class="discord-hint">디스코드 로그인은 준비 중입니다.</p>
+    <p class="auth-switch"><span>계정이 없나요?</span> <button type="button">회원가입</button></p>
+  </dialog>
+  <dialog class="member-dialog password-dialog" aria-labelledby="password-title">
+    <h2 id="password-title">비밀번호 설정</h2><p>디스코드 연동이 완료되었습니다. 아이디와 비밀번호를 설정해 주세요.</p>
+    <form class="password-form">
+      <label>아이디<input name="handle" minlength="3" maxlength="24" pattern="[a-zA-Z0-9_]{3,24}" autocomplete="username" required></label>
+      <label>비밀번호<input name="password" type="password" minlength="10" maxlength="128" autocomplete="new-password" placeholder="10자 이상" required></label>
+      <label>비밀번호 확인<input name="confirm" type="password" minlength="10" maxlength="128" autocomplete="new-password" required></label>
+      <p class="password-error" role="alert"></p><button type="submit" class="auth-submit">저장</button>
+    </form>
+  </dialog>
+  <dialog class="member-dialog profile-dialog" aria-labelledby="member-title">
+    <div class="avatar-editor"><div class="member-profile-avatar"></div><button type="button" class="avatar-camera" aria-label="프로필 사진 변경" title="프로필 사진 변경"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 7h4l2-3h4l2 3h4a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1Z"/><circle cx="12" cy="13" r="4"/></svg></button><input type="file" accept="image/jpeg,image/png,image/webp,image/gif" class="avatar-file" hidden></div><h2 id="member-title" class="member-profile-name"></h2><p class="member-profile-handle"></p>
+    <form class="profile-name-form">
+      <label>이름<input name="name" maxlength="30" required autocomplete="nickname"></label>
+      <small class="reserved-name-note">리도는 관리자 전용 닉네임으로, 회원가입 및 이름 변경에 사용할 수 없습니다.</small>
+      <p class="profile-name-status" role="status"></p><button class="auth-submit" type="submit">이름 변경</button>
+    </form>
+    <p class="avatar-status" role="status"></p>
+    <button type="button" class="discord-button" disabled>디스코드 연동하기</button><p class="discord-hint">디스코드 연동은 준비 중입니다.</p>
+    <button type="button" class="profile-logout">로그아웃</button><button type="button" class="profile-close">닫기</button>
+  </dialog>
+  <dialog class="member-dialog settings-dialog" aria-labelledby="settings-title">
+    <h2 id="settings-title">설정</h2>
+    <div class="avatar-editor settings-avatar-editor"><div class="settings-avatar member-profile-avatar"></div><button type="button" class="avatar-camera" aria-label="프로필 사진 변경" title="프로필 사진 변경"><svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M4 7h4l2-3h4l2 3h4a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V8a1 1 0 0 1 1-1Z"/><circle cx="12" cy="13" r="4"/></svg></button><input type="file" accept="image/jpeg,image/png,image/webp,image/gif" class="avatar-file" hidden></div>
+    <form class="profile-name-form"><label>닉네임<input name="name" maxlength="30" required autocomplete="nickname"></label><small class="reserved-name-note">관리자 이름은 사용할 수 없습니다. 관리자는 이름을 변경할 수 없습니다.</small><p class="profile-name-status" role="status"></p><button class="auth-submit" type="submit">닉네임 변경</button></form>
+    <p class="avatar-status" role="status"></p><small>GIF는 애니메이션을 유지합니다. 최대 5MB.</small>
+    <h3>디스코드 연동</h3>
+    <p class="discord-link-status" role="status"></p>
+    <button type="button" class="discord-button" disabled>디스코드 연동하기</button>
+    <p class="discord-hint">이 서버의 Discord 설정이 아직 적용되지 않았습니다.</p>
+    <button type="button" class="settings-close profile-close">닫기</button>
+  </dialog>
+  <script src="/media/sweetalert2.all.min.js?v=11.26.25" defer></script>
+  <script src="/assets/accounts.js" defer></script>
+  <script src="/assets/layout.js" defer></script>
+  <script src="/assets/shorts.js" defer></script>
+  <script src="/assets/videos.js" defer></script>
+  <script src="/assets/previews.js" defer></script>
+<script src="/assets/library.js" defer></script><script src="/assets/navigation.js" defer></script>
+</body>
+</html>

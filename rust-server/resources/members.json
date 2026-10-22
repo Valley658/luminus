@@ -1,0 +1,279 @@
+{
+  "GENERATION_REP_IMAGE_OVERRIDES": {},
+  "MEMBER_ACCENT_COLORS": {
+    "나나": "#ff8ca1",
+    "리제": "#8b2635",
+    "리코": "#8fe1b0",
+    "린": "#4d7dcd",
+    "마시로": "#d9a441",
+    "시부키": "#d7c6e8",
+    "유니": "#ad97f3",
+    "칸나": "#857fd8",
+    "타비": "#8fc6f8",
+    "후야": "#8d7ca5",
+    "히나": "#d0a382"
+  },
+  "MEMBER_FULL_NAMES": {
+    "강지": "강지",
+    "김블루": "김블루",
+    "나나": "하나코 나나",
+    "리제": "아카네 리제",
+    "리코": "유즈하 리코",
+    "린": "아오쿠모 린",
+    "마시로": "네네코 마시로",
+    "스텔라이브": "스텔라이브",
+    "시부키": "텐코 시부키",
+    "유니": "아야츠노 유니",
+    "칸나": "아이리 칸나",
+    "타비": "아라하시 타비",
+    "후야": "사키하네 후야",
+    "히나": "시라유키 히나"
+  },
+  "MEMBER_IMAGES": {
+    "강지": "https://pbs.twimg.com/media/ESBmIZDVAAAXQs_.jpg",
+    "김블루": "https://pbs.twimg.com/media/ESBmIZDVAAAXQs_.jpg",
+    "나나": "/static/images/members/nana.webp",
+    "리제": "/static/images/members/lize.webp",
+    "리코": "/static/images/members/riko.webp",
+    "린": "/static/images/members/rin.webp",
+    "마시로": "/static/images/members/mashiro.webp",
+    "스텔라이브": "/static/logo/stellalive_icon.webp",
+    "시부키": "/static/images/members/shibuki.webp",
+    "유니": "/static/images/members/yuni.webp",
+    "칸나": "/static/images/members/kanna.webp",
+    "타비": "/static/images/members/tabi.webp",
+    "후야": "/static/images/members/huya.webp",
+    "히나": "/static/images/members/hina.webp"
+  },
+  "MEMBER_MUSIC": {
+    "나나": {
+      "img": "/static/music/%EB%82%98%EB%82%98/%ED%95%98%EB%82%98%EC%BD%94%20%EB%82%98%EB%82%98.jpg?v=1791536915128751600",
+      "song": "/static/music/%EB%82%98%EB%82%98/%ED%95%98%EB%82%98%EC%BD%94%20%EB%82%98%EB%82%98%28Hanako%20Nana%29%20%27Hush%20Trap%27.mp3",
+      "title": "하나코 나나(Hanako Nana) 'Hush Trap'"
+    },
+    "리제": {
+      "img": "/static/music/%EB%A6%AC%EC%A0%9C/%EC%95%84%EC%B9%B4%EB%84%A4%20%EB%A6%AC%EC%A0%9C.jpg?v=1791536914423306900",
+      "song": "/static/music/%EB%A6%AC%EC%A0%9C/%EC%95%84%EC%B9%B4%EB%84%A4%20%EB%A6%AC%EC%A0%9C%28Akane%20Lize%29%20%E2%80%98Festa%21%E2%80%99.mp3",
+      "title": "아카네 리제(Akane Lize) ‘Festa!’"
+    },
+    "리코": {
+      "img": "/static/music/%EB%A6%AC%EC%BD%94/%EC%9C%A0%EC%A6%88%ED%95%98%20%EB%A6%AC%EC%BD%94.jpg?v=1791536914745423700",
+      "song": "/static/music/%EB%A6%AC%EC%BD%94/%EC%9C%A0%EC%A6%88%ED%95%98%20%EB%A6%AC%EC%BD%94%28Yuzuha%20Riko%29%20%27%EC%95%85%EB%8B%B9%EC%A3%BC%EC%9D%98%EB%B3%B4%27.mp3",
+      "title": "유즈하 리코(Yuzuha Riko) '악당주의보'"
+    },
+    "린": {
+      "img": "/static/music/%EB%A6%B0/%EC%95%84%EC%98%A4%EC%BF%A0%EB%AA%A8%20%EB%A6%B0.jpg?v=1791536914299879300",
+      "song": "/static/music/%EB%A6%B0/%EC%95%84%EC%98%A4%EC%BF%A0%EB%AA%A8%20%EB%A6%B0%20Aokumo%20Rin%20Maid%20My%20Way.mp3",
+      "title": "아오쿠모 린 Aokumo Rin Maid My Way"
+    },
+    "마시로": {
+      "img": "/static/music/%EB%A7%88%EC%8B%9C%EB%A1%9C/%EB%84%A4%EB%84%A4%EC%BD%94%20%EB%A7%88%EC%8B%9C%EB%A1%9C.jpg?v=1791536914712308900",
+      "song": "/static/music/%EB%A7%88%EC%8B%9C%EB%A1%9C/%EB%84%A4%EB%84%A4%EC%BD%94%20%EB%A7%88%EC%8B%9C%EB%A1%9C%28Neneko%20Mashiro%29%20%E2%80%98%EB%B4%84%EA%BF%88%E2%80%99.mp3",
+      "title": "네네코 마시로(Neneko Mashiro) ‘봄꿈’"
+    },
+    "스텔라이브": {
+      "img": "",
+      "song": "/static/music/%EC%8A%A4%ED%85%94%EB%9D%BC%EC%9D%B4%EB%B8%8C/%EC%8A%A4%ED%85%94%EB%9D%BC%EC%9D%B4%EB%B8%8C%20%28StelLive%29%20I%20%27STAR%20TRAIL%20%28%EC%8A%A4%ED%83%80%ED%8A%B8%EB%A0%88%EC%9D%BC%29%27.m4a",
+      "title": "스텔라이브 (StelLive) I 'STAR TRAIL (스타트레일)'"
+    },
+    "시부키": {
+      "img": "/static/music/%EC%8B%9C%EB%B6%80%ED%82%A4/%ED%85%90%EC%BD%94%20%EC%8B%9C%EB%B6%80%ED%82%A4.jpg?v=1791536914909994200",
+      "song": "/static/music/%EC%8B%9C%EB%B6%80%ED%82%A4/%ED%85%90%EC%BD%94%20%EC%8B%9C%EB%B6%80%ED%82%A4%28Tenko%20Shibuki%29%20%EB%B2%A0%EB%A6%AC%EB%B2%A0%EB%A6%AC%EC%8A%A4%ED%8A%B8%EB%A1%9C%EB%B2%A0%EB%A6%AC%20%27Berry%20Verry%20Strawberry%27.mp3",
+      "title": "텐코 시부키(Tenko Shibuki) 베리베리스트로베리 'Berry Verry Strawberry'"
+    },
+    "유니": {
+      "img": "/static/music/%EC%9C%A0%EB%8B%88/%EC%95%84%EC%95%BC%EC%B8%A0%EB%85%B8%EC%9C%A0%EB%8B%88.jpg?v=1791536915828176900",
+      "song": "/static/music/%EC%9C%A0%EB%8B%88/%EC%95%84%EC%95%BC%EC%B8%A0%EB%85%B8%20%EC%9C%A0%EB%8B%88%20%28%20Ayatsuno%20Yuni%20%29%20%E2%80%98%EB%82%B4%EA%BA%BC%20%ED%95%98%EB%8A%94%20%EB%B2%95%E2%80%99%20Music%20Video.mp3",
+      "title": "아야츠노 유니 ( Ayatsuno Yuni ) ‘내꺼 하는 법’ Music Video"
+    },
+    "칸나": {
+      "img": "/static/music/%EC%B9%B8%EB%82%98/%EC%95%84%EC%9D%B4%EB%A6%AC%20%EC%B9%B8%EB%82%98.jpg?v=1791536915643537000",
+      "song": "/static/music/%EC%B9%B8%EB%82%98/%E8%97%8D%E7%92%83%E3%81%8B%E3%82%93%E3%81%AA%28Airi%20Kanna%29%20%E2%80%98%E6%9C%80%E7%B5%82%E8%8A%B1%E2%80%99.mp3",
+      "title": "藍璃かんな(Airi Kanna) ‘最終花’"
+    },
+    "타비": {
+      "img": "/static/music/%ED%83%80%EB%B9%84/%EC%95%84%EB%9D%BC%ED%95%98%EC%8B%9C%20%ED%83%80%EB%B9%84.jpg?v=1791536915347510000",
+      "song": "/static/music/%ED%83%80%EB%B9%84/%EC%95%84%EB%9D%BC%ED%95%98%EC%8B%9C%20%ED%83%80%EB%B9%84%20%28Arahashi%20Tabi%29%20%27%EC%97%AC%EB%A1%9C%27.mp3",
+      "title": "아라하시 타비 (Arahashi Tabi) '여로'"
+    },
+    "후야": {
+      "img": "/static/music/%ED%9B%84%EC%95%BC/%EC%82%AC%ED%82%A4%ED%95%98%EB%84%A4%20%ED%9B%84%EC%95%BC.jpg?v=1791536914871861100",
+      "song": "",
+      "title": ""
+    },
+    "히나": {
+      "img": "/static/music/%ED%9E%88%EB%82%98/%EC%8B%9C%EB%9D%BC%EC%9C%A0%ED%82%A4%20%ED%9E%88%EB%82%98.jpg?v=1791536915322423000",
+      "song": "/static/music/%ED%9E%88%EB%82%98/%EC%8B%9C%EB%9D%BC%EC%9C%A0%ED%82%A4%20%ED%9E%88%EB%82%98%28Shirayuki%20Hina%29%20%E2%80%98%ED%95%98%EB%82%98%28%E5%A4%8F%E6%8B%8F%29%E2%80%99.mp3",
+      "title": "시라유키 히나(Shirayuki Hina) ‘하나(夏拏)’"
+    }
+  },
+  "sidebar_generations": [
+    {
+      "img": "/static/images/members/kanna.webp",
+      "key": "1기생",
+      "members": [
+        {
+          "chzzkId": "",
+          "img": "/static/images/members/kanna.webp",
+          "name": "칸나"
+        },
+        {
+          "chzzkId": "45e71a76e949e16a34764deb962f9d9f",
+          "img": "/static/images/members/yuni.webp",
+          "name": "유니"
+        },
+        {
+          "chzzkId": "36ddb9bb4f17593b60f1b63cec86611d",
+          "img": "/static/images/members/huya.webp",
+          "name": "후야"
+        }
+      ],
+      "unit_label": "미스틱 · 에버리스"
+    },
+    {
+      "img": "/static/images/members/hina.webp",
+      "key": "2기생",
+      "members": [
+        {
+          "chzzkId": "b044e3a3b9259246bc92e863e7d3f3b8",
+          "img": "/static/images/members/hina.webp",
+          "name": "히나"
+        },
+        {
+          "chzzkId": "4515b179f86b67b4981e16190817c580",
+          "img": "/static/images/members/mashiro.webp",
+          "name": "마시로"
+        },
+        {
+          "chzzkId": "4325b1d5bbc321fad3042306646e2e50",
+          "img": "/static/images/members/lize.webp",
+          "name": "리제"
+        },
+        {
+          "chzzkId": "a6c4ddb09cdb160478996007bff35296",
+          "img": "/static/images/members/tabi.webp",
+          "name": "타비"
+        }
+      ],
+      "unit_label": "유니버스"
+    },
+    {
+      "img": "/static/images/members/shibuki.webp",
+      "key": "3기생",
+      "members": [
+        {
+          "chzzkId": "64d76089fba26b180d9c9e48a32600d9",
+          "img": "/static/images/members/shibuki.webp",
+          "name": "시부키"
+        },
+        {
+          "chzzkId": "516937b5f85cbf2249ce31b0ad046b0f",
+          "img": "/static/images/members/rin.webp",
+          "name": "린"
+        },
+        {
+          "chzzkId": "4d812b586ff63f8a2946e64fa860bbf5",
+          "img": "/static/images/members/nana.webp",
+          "name": "나나"
+        },
+        {
+          "chzzkId": "8fd39bb8de623317de90654718638b10",
+          "img": "/static/images/members/riko.webp",
+          "name": "리코"
+        }
+      ],
+      "unit_label": "클리셰"
+    }
+  ],
+  "sidebar_members": [
+    {
+      "chzzkId": "",
+      "img": "/static/logo/stellalive_icon.webp",
+      "name": "스텔라이브"
+    },
+    {
+      "chzzkId": "",
+      "img": "/static/images/members/kanna.webp",
+      "name": "칸나"
+    },
+    {
+      "chzzkId": "45e71a76e949e16a34764deb962f9d9f",
+      "img": "/static/images/members/yuni.webp",
+      "name": "유니"
+    },
+    {
+      "chzzkId": "36ddb9bb4f17593b60f1b63cec86611d",
+      "img": "/static/images/members/huya.webp",
+      "name": "후야"
+    },
+    {
+      "chzzkId": "b044e3a3b9259246bc92e863e7d3f3b8",
+      "img": "/static/images/members/hina.webp",
+      "name": "히나"
+    },
+    {
+      "chzzkId": "4325b1d5bbc321fad3042306646e2e50",
+      "img": "/static/images/members/lize.webp",
+      "name": "리제"
+    },
+    {
+      "chzzkId": "4515b179f86b67b4981e16190817c580",
+      "img": "/static/images/members/mashiro.webp",
+      "name": "마시로"
+    },
+    {
+      "chzzkId": "a6c4ddb09cdb160478996007bff35296",
+      "img": "/static/images/members/tabi.webp",
+      "name": "타비"
+    },
+    {
+      "chzzkId": "516937b5f85cbf2249ce31b0ad046b0f",
+      "img": "/static/images/members/rin.webp",
+      "name": "린"
+    },
+    {
+      "chzzkId": "64d76089fba26b180d9c9e48a32600d9",
+      "img": "/static/images/members/shibuki.webp",
+      "name": "시부키"
+    },
+    {
+      "chzzkId": "4d812b586ff63f8a2946e64fa860bbf5",
+      "img": "/static/images/members/nana.webp",
+      "name": "나나"
+    },
+    {
+      "chzzkId": "8fd39bb8de623317de90654718638b10",
+      "img": "/static/images/members/riko.webp",
+      "name": "리코"
+    },
+    {
+      "chzzkId": "b5ed5db484d04faf4d150aedd362f34b",
+      "img": "https://pbs.twimg.com/media/ESBmIZDVAAAXQs_.jpg",
+      "name": "강지"
+    },
+    {
+      "chzzkId": "0de8f1807076169b7eb9218137e99c51",
+      "img": "https://pbs.twimg.com/media/ESBmIZDVAAAXQs_.jpg",
+      "name": "김블루"
+    }
+  ],
+  "sidebar_ungrouped_bottom": [
+    {
+      "chzzkId": "b5ed5db484d04faf4d150aedd362f34b",
+      "img": "https://pbs.twimg.com/media/ESBmIZDVAAAXQs_.jpg",
+      "name": "강지"
+    },
+    {
+      "chzzkId": "0de8f1807076169b7eb9218137e99c51",
+      "img": "https://pbs.twimg.com/media/ESBmIZDVAAAXQs_.jpg",
+      "name": "김블루"
+    }
+  ],
+  "sidebar_ungrouped_top": [
+    {
+      "chzzkId": "",
+      "img": "/static/logo/stellalive_icon.webp",
+      "name": "스텔라이브"
+    }
+  ]
+}

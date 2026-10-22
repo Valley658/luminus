@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="{{ url_for('static', filename='logo/logo.webp') }}" type="image/webp">
+    <title>크레딧 - 루미너스</title>
+    <meta name="description" content="루미너스에서 쓰는 그림과 글꼴의 출처예요.">
+    <link rel="canonical" href="https://pastellive.co.kr{{ request.path }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>@font-face{font-family:Pretendard;src:url('/static/font/Paperlogy-4Regular.woff2') format('woff2');font-weight:400;font-display:swap}@font-face{font-family:Pretendard;src:url('/static/font/Paperlogy-7Bold.woff2') format('woff2');font-weight:700;font-display:swap}</style>
+    <link rel="stylesheet" href="{{ versioned_static('css/policy.css') }}">
+    <style>
+        .cr-hero { position: relative; max-width: 1080px; margin: 0 auto; padding: 56px 20px 26px; text-align: center; overflow: hidden; }
+        .cr-hero::before { content: ""; position: absolute; inset: -40% -10% auto; height: 420px; background: radial-gradient(closest-side, rgba(167,139,250,.28), transparent 70%), radial-gradient(closest-side at 70% 40%, rgba(56,189,248,.22), transparent 70%), radial-gradient(closest-side at 30% 60%, rgba(244,114,182,.18), transparent 70%); filter: blur(10px); z-index: -1; }
+        .cr-kicker { display: inline-flex; align-items: center; gap: 8px; padding: 6px 14px; border-radius: 999px; font-size: 13px; font-weight: 800; color: var(--pc-accent); background: color-mix(in srgb, var(--pc-accent) 12%, transparent); border: 1px solid color-mix(in srgb, var(--pc-accent) 35%, transparent); }
+        .cr-hero h1 { margin: 16px 0 10px; font-size: clamp(32px, 5.2vw, 52px); font-weight: 900; letter-spacing: -1.5px; line-height: 1.15; }
+        .cr-hero h1 span { background: linear-gradient(120deg, #f472b6, #a78bfa 45%, #38bdf8); -webkit-background-clip: text; background-clip: text; color: transparent; }
+        .cr-lead { max-width: 620px; margin: 0 auto; color: var(--pc-sub); font-size: 15.5px; line-height: 1.7; word-break: keep-all; }
+        .cr-stats { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-top: 22px; }
+        .cr-stat { min-width: 120px; padding: 12px 16px; border-radius: 16px; background: var(--pc-surface-2); border: 1px solid var(--pc-line); }
+        .cr-stat b { display: block; font-size: 22px; font-weight: 900; }
+        .cr-stat span { font-size: 12.5px; color: var(--pc-faint); }
+
+        .cr-wrap { max-width: 1080px; margin: 0 auto; padding: 8px 20px 56px; }
+        .cr-sec { margin-top: 34px; }
+        .cr-sec-head { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 12px; margin-bottom: 14px; }
+        .cr-sec-head h2 { margin: 0; font-size: 22px; font-weight: 900; letter-spacing: -.4px; display: flex; align-items: center; gap: 10px; }
+        .cr-sec-head h2 i { width: 34px; height: 34px; border-radius: 11px; display: inline-flex; align-items: center; justify-content: center; font-size: 15px; color: #fff; background: linear-gradient(135deg, #f472b6, #a78bfa, #38bdf8); }
+        .cr-sec-desc { margin: 6px 0 0; color: var(--pc-sub); font-size: 14px; line-height: 1.7; word-break: keep-all; }
+        .cr-sec-desc a { color: var(--pc-accent); font-weight: 700; }
+        .cr-tools { display: flex; gap: 8px; }
+        .cr-btn { display: inline-flex; align-items: center; gap: 7px; padding: 9px 15px; border-radius: 999px; cursor: pointer; font: inherit; font-size: 13.5px; font-weight: 800; border: 1px solid var(--pc-line); color: var(--pc-text); background: var(--pc-surface-2); transition: border-color .15s, color .15s, transform .1s; }
+        .cr-btn:hover { border-color: var(--pc-accent); color: var(--pc-accent); }
+        .cr-btn:active { transform: scale(.97); }
+        .cr-btn.primary { color: #fff; border-color: transparent; background: linear-gradient(135deg, #a78bfa, #38bdf8); }
+        .cr-btn.primary:hover { color: #fff; filter: brightness(1.08); }
+
+        .cr-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 16px; }
+        .cr-card { position: relative; display: flex; flex-direction: column; border-radius: 20px; overflow: hidden; background: var(--pc-surface-2); border: 1px solid var(--pc-line); transition: transform .2s ease, box-shadow .2s ease, border-color .2s; }
+        .cr-card:hover { transform: translateY(-4px); border-color: color-mix(in srgb, var(--pc-accent) 45%, var(--pc-line)); box-shadow: 0 16px 36px rgba(0,0,0,.28); }
+        .cr-stage { position: relative; height: 168px; display: grid; place-items: center; padding: 14px; background: radial-gradient(circle at 50% 60%, rgba(167,139,250,.22), transparent 60%), linear-gradient(160deg, #141826, #0d1018); }
+        .cr-stage > img { width: 104px; height: 104px; object-fit: contain; filter: drop-shadow(0 10px 18px rgba(0,0,0,.5)); transition: transform .35s cubic-bezier(.2,.9,.3,1.3); }
+        .cr-card:hover .cr-stage > img { transform: translateY(-6px) rotate(-4deg) scale(1.06); }
+        .cr-demo { width: 100%; display: grid; place-items: center; animation: crIn .25s ease; }
+        .cr-demo[hidden] { display: none; }
+        .cr-card.demo-on .cr-stage > img { display: none; }
+        .cr-info { display: flex; flex-direction: column; gap: 10px; padding: 14px 16px 16px; flex: 1; }
+        .cr-what { margin: 0; font-size: 14.5px; font-weight: 800; line-height: 1.45; color: var(--pc-text); word-break: keep-all; }
+        .cr-meta { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; font-size: 12px; }
+        .cr-pill { padding: 3px 9px; border-radius: 999px; font-weight: 800; color: #c4b5fd; background: rgba(167,139,250,.14); border: 1px solid rgba(167,139,250,.3); text-decoration: none; }
+        .cr-src { color: var(--pc-faint); text-decoration: none; }
+        .cr-src:hover { color: var(--pc-accent); }
+        .cr-toggle { margin-top: auto; align-self: stretch; justify-content: center; padding: 8px 12px; font-size: 13px; }
+
+        .cr-tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+        .cr-tile { display: flex; gap: 16px; align-items: center; padding: 18px; border-radius: 20px; background: var(--pc-surface-2); border: 1px solid var(--pc-line); text-decoration: none; color: inherit; transition: border-color .2s, transform .2s; }
+        .cr-tile:hover { border-color: var(--pc-accent); transform: translateY(-2px); }
+        .cr-sample { flex: none; width: 84px; height: 84px; border-radius: 18px; display: grid; place-items: center; background: linear-gradient(160deg, #141826, #0d1018); color: #e8eaf2; }
+        .cr-sample.font { font-size: 30px; font-weight: 800; letter-spacing: -1px; }
+        .cr-sample.icons { grid-template-columns: repeat(2, 1fr); gap: 6px; padding: 14px; font-size: 18px; }
+        .cr-tile h3 { margin: 0 0 4px; font-size: 16px; font-weight: 900; }
+        .cr-tile p { margin: 0; font-size: 13px; color: var(--pc-sub); line-height: 1.6; }
+
+        .cr-note { display: flex; gap: 14px; align-items: flex-start; padding: 18px; border-radius: 20px; border: 1px dashed color-mix(in srgb, #f472b6 45%, var(--pc-line)); background: color-mix(in srgb, #f472b6 6%, transparent); }
+        .cr-note i { font-size: 22px; color: #f472b6; margin-top: 2px; }
+        .cr-note p { margin: 0; font-size: 14px; line-height: 1.7; color: var(--pc-sub); word-break: keep-all; }
+        .cr-note b { color: var(--pc-text); }
+
+
+        .cr-sec { scroll-margin-top: 70px; }
+        .cr-name { display: flex; align-items: baseline; gap: 8px; flex-wrap: wrap; }
+        .cr-name b { font-size: 16px; font-weight: 900; }
+        .cr-name span { font-size: 12px; color: var(--pc-faint); }
+        .cr-what { font-size: 13.5px; font-weight: 600; color: var(--pc-sub); }
+        /* 미리보기 재현 요소 (사이트 실제 모양과 비슷하게) */
+        .d-attend { display: inline-flex; align-items: center; gap: 10px; background: linear-gradient(135deg, #0ea5e9, #38bdf8); color: #fff;
+            border: none; padding: 12px 20px; border-radius: 30px; font-weight: 900; font-size: 14px; box-shadow: 0 8px 25px rgba(14,165,233,.45); }
+        .d-attend img { width: 30px; margin: -6px 0; }
+        .d-cal { display: grid; grid-template-columns: repeat(5, 36px); gap: 4px; }
+        .d-cal div { aspect-ratio: 1; border-radius: 8px; background: #1f2430; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: #cbd5e1; gap: 1px; }
+        .d-cal div.on { background: linear-gradient(135deg, #0ea5e9, #38bdf8); color: #fff; }
+        .d-cal img { width: 14px; }
+        .d-badge { background: #fff; border-radius: 8px; width: 104px; padding: 10px; text-align: center; }
+        .d-badge .box { border-radius: 8px 8px 30px 30px; padding: 10px 8px 22px; position: relative; }
+        .d-badge img { width: 40px; height: 40px; object-fit: contain; }
+        .d-badge .num { position: absolute; bottom: 5px; left: 0; right: 0; color: #fff; font-weight: 900; font-size: 13px; }
+        .d-badge p { margin: 6px 0 0; color: #000; font-size: 11px; font-weight: 700; line-height: 1.3; }
+        .d-empty { text-align: center; color: #9aa3b5; font-size: 13px; }
+        .d-empty img { display: block; width: 64px; margin: 0 auto 8px; }
+        .d-pop { position: relative; height: 90px; width: 100%; display: grid; place-items: center; }
+        .d-pop img { width: 86px; animation: dPop .5s cubic-bezier(.175,.885,.32,1.275); }
+        .d-page { text-align: center; font-size: 12.5px; color: #9aa3b5; }
+        .d-page img { width: 76px; display: block; margin: 0 auto 6px; }
+        .d-page a { display: inline-block; margin-top: 6px; font-weight: 700; color: #7dd3fc; }
+        @keyframes dPop { from { transform: scale(.3) rotate(-15deg); opacity: 0; } to { transform: none; opacity: 1; } }
+        @keyframes crIn { from { opacity: 0; transform: scale(.96); } to { opacity: 1; transform: none; } }
+        @media (prefers-reduced-motion: reduce) { .d-pop img, .cr-demo { animation: none; } .cr-card, .cr-stage > img { transition: none; } }
+        @media (max-width: 600px) { .cr-hero { padding-top: 40px; } .cr-sec-head { align-items: flex-start; } .cr-stats { gap: 8px; } .cr-stat { min-width: 0; flex: 1; padding: 10px 8px; } }
+    </style>
+<script src="{{ versioned_static('js/thumbnails.js') }}"></script>
+</head>
+<body>
+    <header class="pc-top">
+        <div class="pc-top-inner">
+            <a class="pc-brand" href="/"><img src="{{ url_for('static', filename='logo/logo.webp') }}" alt=""><span>루미너스</span></a>
+            <nav class="pc-tabs" aria-label="안내 문서"><a href="/terms" class="">이용약관</a><a href="/privacy" class="">개인정보처리방침</a><a href="/credits" class="on" aria-current="page">크레딧</a></nav>
+        </div>
+    </header>
+
+    <section class="cr-hero">
+        <span class="cr-kicker"><i class="fas fa-heart"></i> 크레딧</span>
+        <h1>루미너스를 <span>함께 만든 것들</span></h1>
+        <p class="cr-lead">루미너스에서 쓰는 그림과 글꼴의 출처예요. 그림마다 <b>사이트에서 보기</b>를 누르면 실제로 쓰이는 모습을 볼 수 있어요.</p>
+        <div class="cr-stats">
+            <div class="cr-stat"><b>{{ credits|length }}</b><span>그림</span></div>
+            <div class="cr-stat"><b>2</b><span>글꼴 · 아이콘</span></div>
+            <div class="cr-stat"><b>0원</b><span>광고 · 수익</span></div>
+        </div>
+    </section>
+
+    <div class="cr-wrap">
+        <section class="cr-sec" id="images">
+            <div class="cr-sec-head">
+                <div>
+                    <h2><i class="fas fa-image"></i> 그림</h2>
+                    <p class="cr-sec-desc">Microsoft 의 Fluent Emoji 3D 그림이에요(MIT 라이선스).</p>
+                </div>
+                <div class="cr-tools">
+                    <button type="button" class="cr-btn primary" id="crAll"><i class="fas fa-wand-magic-sparkles"></i> 모두 보기</button>
+                    <button type="button" class="cr-btn" id="crHide"><i class="fas fa-rotate-left"></i> 되돌리기</button>
+                </div>
+            </div>
+            <div class="cr-grid">
+            {% for c in credits %}
+                <article class="cr-card" data-file="{{ c.file }}">
+                    <div class="cr-stage">
+                        <img src="/static/images/pngimg/{{ c.file }}" alt="{{ c.name }}" loading="lazy">
+                        <div class="cr-demo" hidden></div>
+                    </div>
+                    <div class="cr-info">
+                        <div class="cr-name"><b>{{ c.name or c.used_for }}</b>{% if c.name_en %}<span>{{ c.name_en }}</span>{% endif %}</div>
+                        <p class="cr-what">{{ c.used_for }}</p>
+                        <div class="cr-meta">
+                            <a class="cr-pill" href="{{ c.license_url }}" target="_blank" rel="noopener">{{ c.license }}</a>
+                            <a class="cr-src" href="{{ c.source }}" target="_blank" rel="noopener">원본 보기 <i class="fas fa-arrow-up-right-from-square"></i></a>
+                        </div>
+                        <button type="button" class="cr-btn cr-toggle"><i class="fas fa-eye"></i> 사이트에서 보기</button>
+                    </div>
+                </article>
+            {% endfor %}
+            </div>
+        </section>
+
+        <section class="cr-sec" id="fonts">
+            <div class="cr-sec-head"><h2><i class="fas fa-font"></i> 글꼴과 아이콘</h2></div>
+            <div class="cr-tiles">
+                <div class="cr-tile"><div class="cr-sample font">가Aa</div><div><h3>Paperlogy</h3><p>프로젝트에 포함된 로컬 글꼴</p></div></div>
+                <a class="cr-tile" href="https://fontawesome.com/" target="_blank" rel="noopener">
+                    <div class="cr-sample icons"><i class="fas fa-heart"></i><i class="fas fa-star"></i><i class="fas fa-music"></i><i class="fas fa-image"></i></div>
+                    <div><h3>Font Awesome Free</h3><p>아이콘 CC BY 4.0 · 글꼴 SIL OFL 1.1<br>버튼과 메뉴 아이콘</p></div>
+                </a>
+            </div>
+        </section>
+
+        <section class="cr-sec" id="fanart">
+            <div class="cr-sec-head"><h2><i class="fas fa-palette"></i> 팬 창작물</h2></div>
+            <div class="cr-note">
+                <i class="fas fa-paintbrush"></i>
+                <p><b>팬 갤러리의 그림과 커뮤니티 글은 올린 사람에게 권리가 있어요.</b> 허락 없이 가져가 쓰면 안 돼요.</p>
+            </div>
+        </section>
+    </div>
+
+    <script>
+    (function () {
+        var IMG = '/static/images/pngimg/';
+        var DEMOS = {
+            'gift.webp': function () { return '<span class="d-attend"><img src="' + IMG + 'gift.webp" alt=""> 출석체크 하고 뱃지 받기</span>'; },
+            'coin.webp': function () {
+                var c = ''; for (var d = 1; d <= 5; d++) c += '<div class="' + (d !== 3 ? 'on' : '') + '">' + d + (d !== 3 ? '<img src="' + IMG + 'coin.webp" alt="">' : '') + '</div>';
+                return '<div class="d-cal">' + c + '</div>';
+            },
+            'trophy.webp': function () { return '<div class="d-badge"><div class="box" style="background:linear-gradient(135deg,#7c3aed,#4f46e5)"><img src="' + IMG + 'trophy.webp" alt=""><div class="num">60</div></div><p>60일 연속 출석<br>체크</p></div>'; },
+            'medal.webp': function () { return '<div class="d-badge"><div class="box" style="background:linear-gradient(135deg,#10b981,#059669)"><img src="' + IMG + 'medal.webp" alt=""><div class="num">7</div></div><p>7일 연속 출석<br>진행 중!</p></div>'; },
+            'party_popper.webp': function () { return '<div class="d-pop"><img src="' + IMG + 'party_popper.webp" alt=""></div>'; },
+            'loupe.webp': function () { return '<div class="d-empty"><img src="' + IMG + 'loupe.webp" alt="">"없는검색어"에 대한 검색 결과가 없습니다.</div>'; },
+            'octopus_lost.webp': function () { return '<div class="d-page"><img src="' + IMG + 'octopus_lost.webp" alt="">여긴 아무것도 없어!<br><a href="/credits-test-404" target="_blank" rel="noopener">실제 404 화면 열기</a></div>'; },
+            'octopus_busy.webp': function () { return '<div class="d-page"><img src="' + IMG + 'octopus_busy.webp" alt="">잠시 후 다시 시도해주세요<br><a href="/50x.html" target="_blank" rel="noopener">실제 점검 화면 열기</a></div>'; }
+        };
+        function show(card, on) {
+            var box = card.querySelector('.cr-demo'), btn = card.querySelector('.cr-toggle'), key = card.getAttribute('data-file');
+            if (on) {
+                box.innerHTML = DEMOS[key] ? DEMOS[key]() : '<span class="d-empty">미리보기가 없어요.</span>';
+                box.hidden = false; card.classList.add('demo-on');
+                btn.innerHTML = '<i class="fas fa-image"></i> 그림으로 돌아가기';
+            } else {
+                box.hidden = true; box.innerHTML = ''; card.classList.remove('demo-on');
+                btn.innerHTML = '<i class="fas fa-eye"></i> 사이트에서 보기';
+            }
+        }
+        document.querySelectorAll('.cr-card').forEach(function (card) {
+            card.querySelector('.cr-toggle').addEventListener('click', function () { show(card, !card.classList.contains('demo-on')); });
+        });
+        var all = document.getElementById('crAll'), hide = document.getElementById('crHide');
+        if (all) all.addEventListener('click', function () { document.querySelectorAll('.cr-card').forEach(function (c) { show(c, true); }); });
+        if (hide) hide.addEventListener('click', function () { document.querySelectorAll('.cr-card').forEach(function (c) { show(c, false); }); });
+    })();
+    </script>
+
+    <footer class="pc-foot">
+        <div class="pc-foot-inner">
+            <span>루미너스 · 스텔라이브 비공식 팬 사이트</span>
+            <a href="/">홈</a><a href="/terms">이용약관</a><a href="/privacy">개인정보처리방침</a><a href="/credits">크레딧</a>
+        </div>
+    </footer>
+    <script src="{{ versioned_static('js/notice.js') }}" defer></script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+{
+  "targets": {
+    "release": {
+      "outFile": "../static/wasm/imagepreview.wasm",
+      "optimizeLevel": 3,
+      "shrinkLevel": 2,
+      "runtime": "stub",
+      "initialMemory": 1024,
+      "exportRuntime": false,
+      "noAssert": true
+    }
+  },
+  "options": {
+    "bindings": "raw"
+  }
+}

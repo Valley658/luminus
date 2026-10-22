@@ -1,0 +1,76 @@
+.account { display: block; }
+.account-button { display: grid; place-items: center; padding: 0; border: 0; border-radius: 50%; width: 36px; height: 36px; color: #fff; background: #333; cursor: pointer; }
+.account-button:hover { outline: 2px solid #999; outline-offset: 3px; }
+.account-button:focus-visible { outline: 2px solid #baa6ef; outline-offset: 4px; }
+.account-button img { width: 36px; height: 36px; object-fit: cover; border-radius: 50%; }
+.account-button img[hidden], .account-button span[hidden] { display: none; }
+.account-button span { font-size: 18px; background: transparent; }
+.account-tooltip { display: none; position: absolute; right: 0; top: 48px; padding: 7px 10px; border-radius: 5px; background: #555; font-size: 12px; white-space: nowrap; }
+.account-button:hover + .account-tooltip { display: block; }
+.account-menu { position: absolute; right: 0; top: 48px; width: 290px; padding: 20px; background: #282828; border: 1px solid #363636; border-radius: 12px; box-shadow: 0 8px 36px #0008; }
+.account-menu[hidden] { display: none; }
+.account-identity { display: flex; align-items: center; gap: 14px; }
+.menu-avatar { width: 44px; height: 44px; display: grid; place-items: center; border-radius: 50%; background: #514568; font-size: 22px; overflow: hidden; flex-shrink: 0; }
+.menu-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.account-menu strong, .account-menu small { display: block; }
+.account-menu small { color: #bfbfbf; margin-top: 5px; font-size: 14px; }
+.view-profile { border: 0; background: none; color: #77bfff; padding: 14px 0 0 58px; font-size: 14px; cursor: pointer; }
+.member-dialog { width: min(420px,calc(100vw - 32px)); max-height: calc(100svh - 32px); overflow-y: auto; padding: 30px; border: 1px solid #383838; border-radius: 18px; background: #202020; color: #fff; font-family: sans-serif; }
+.member-dialog::backdrop { background: #000b; backdrop-filter: blur(8px); }
+.member-dialog h2 { margin: 0 0 10px; font-size: 24px; }
+.member-dialog p { color: #aaa; line-height: 1.6; font-size: 14px; }
+.auth-tabs { display: flex; gap: 8px; margin: 22px 0; }
+.auth-tabs button { flex: 1; padding: 10px; border: 0; border-radius: 8px; background: #333; color: #ddd; font: inherit; cursor: pointer; }
+.auth-tabs button[aria-selected="true"] { background: #c1acf0; color: #151019; }
+.auth-form label,.password-form label { display: block; font-size: 14px; margin: 14px 0; }
+.auth-form input,.password-form input { display: block; width: 100%; margin-top: 7px; padding: 12px; border: 1px solid #555; border-radius: 8px; color: #fff; background: #151515; font: inherit; }
+.auth-submit,.discord-button,.profile-close,.profile-logout { display: block; width: 100%; margin-top: 14px; border: 0; border-radius: 8px; padding: 12px; background: #c1acf0; color: #18121e; font: inherit; font-weight: 600; cursor: pointer; text-align: center; text-decoration: none; }
+.discord-button { background: #5865f2; color: white; }
+.discord-button:disabled { opacity: .5; cursor: default; }
+.auth-form label[hidden] { display:none; }
+.auth-error { color: #ffb6b6 !important; min-height: 20px; }
+.member-profile-avatar { width: 76px; height: 76px; display: grid; place-items: center; margin-bottom: 18px; border-radius: 50%; background: #514568; font-size: 34px; overflow: hidden; }
+.member-profile-avatar img { width: 100%;height: 100%;object-fit: cover; }
+.profile-logout { background: #343434; color: #ddd; font-weight: normal; }
+.avatar-upload { display: inline-block; padding: 9px 13px; background: #343434; border-radius: 8px; cursor: pointer; font-size: 14px; }
+.discord-hint { font-size: 12px !important; }
+.channel-group h2 { margin: 20px 10px 8px; font-family: sans-serif; font-size: 13px; font-weight: 600; color: #a8a8a8; letter-spacing: .02em; }
+.profile { min-height: 64px; gap: 14px; padding: 10px 8px; }
+.profile-avatar { width: 44px; height: 44px; }
+.profile-name { font-size: 18px; }
+.sidebar { width: 280px; border-right: 0; }
+main { left: 280px; }
+body.sidebar-closed .sidebar { visibility: hidden; transform: translateX(-100%); pointer-events: none; border: 0; }
+body.sidebar-closed .brand { visibility: visible; }
+body.sidebar-closed main { left: 0; }
+@media(max-width:650px) { main { left:0; } .sidebar { width:280px; box-shadow: 12px 0 30px #0008; } .account-menu { width:260px;right:-2px; } }
+
+.member-dialog { position: relative; }
+.dialog-close { position:absolute;right:16px;top:12px;border:0;background:none;color:#aaa;font-size:26px;cursor:pointer; }
+.auth-switch { text-align:center; margin:22px 0 0; }
+.auth-switch button { border:0;background:none;color:#c1acf0;font:inherit;cursor:pointer;padding:4px; }
+.password-error { color:#ffb6b6 !important; }
+.auth-error:empty { display:none; }
+
+.account-button.is-guest { width:auto;min-width:76px;padding:0 16px;border:1px solid #776593;border-radius:18px;color:#d4bfff;background:transparent; }
+.account-button.is-guest span { font-size:14px;font-weight:600; }
+.sidebar { width:250px;padding-left:12px;padding-right:0; }
+.profile { padding-right:0;gap:12px; }
+.profile-name { margin-right:0;padding-right:0; }
+main { left:250px; }
+body.sidebar-closed main { left:0; }
+@media(max-width:650px) { main { left:0; } .sidebar { width:250px; } }
+
+.reserved-name-note {display:block;margin-top:8px;color:#aaa;font-size:12px;line-height:1.6;}
+.profile-name-form {margin:20px 0;}
+.profile-name-form input {display:block;box-sizing:border-box;width:100%;padding:12px;margin-top:8px;border:1px solid #555;border-radius:8px;background:#151515;color:white;font:inherit;}
+
+.menu-logout {display:block;width:100%;margin-top:16px;padding:12px;border:0;border-top:1px solid #444;background:transparent;color:#ddd;text-align:left;font:inherit;cursor:pointer;}
+.menu-logout:hover {background:#383838;border-radius:8px;}
+
+.account-settings {display:block;width:100%;padding:12px 0 0 58px;border:0;background:none;color:#ddd;text-align:left;font:inherit;cursor:pointer;}
+.settings-dialog .discord-link-status {color:#c1acf0;}
+
+.account-button:not(.is-guest),.account-button:not(.is-guest) img{width:46px;height:46px}.menu-avatar{width:56px;height:56px}.member-profile-avatar{width:100px;height:100px}.settings-dialog .member-profile-avatar{margin-inline:auto}.profile-name-form input:disabled{opacity:.7}.profile-name-form button:disabled{opacity:.5;cursor:default}
+
+.avatar-editor{position:relative;width:100px;height:100px;margin-bottom:18px}.avatar-editor .member-profile-avatar{margin:0}.settings-avatar-editor{margin-inline:auto}.avatar-camera{position:absolute;right:-5px;bottom:-3px;display:grid;place-items:center;width:36px;height:36px;padding:0;border:2px solid #202020;border-radius:50%;background:#c1acf0;color:#211a2c;cursor:pointer;box-shadow:0 2px 5px #0005}.avatar-camera:hover{background:#d6c5ff}.avatar-camera:focus-visible{outline:2px solid white;outline-offset:3px}

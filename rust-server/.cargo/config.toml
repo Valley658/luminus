@@ -1,0 +1,6 @@
+[build]
+jobs = 2
+
+[http]
+multiplexing = false
+timeout = 60

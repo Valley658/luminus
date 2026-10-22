@@ -1,0 +1,1844 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <script>try{if(localStorage.getItem("theme")==="light")document.documentElement.setAttribute("data-theme","light")}catch(e){}</script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    
+    <title>루미너스</title>
+    <meta name="description" content="루미너스는 스텔라이브 멤버들의 방송 다시보기, 쇼츠, 커버곡, 팬아트, 커뮤니티 게시판을 한곳에서 모아 볼 수 있는 비공식 팬 사이트입니다. 멤버별 최신 영상과 라이브 알림, 팬 갤러리까지 루미너스에서 편하게 확인하세요.">
+    
+    <link rel="canonical" href="https://pastellive.co.kr{{ request.path }}">
+
+    <meta name="naver-site-verification" content="c156eb12594a5716e113d14001dcdcf965851ef4" />
+    
+    <meta name="google-site-verification" content="여기에_구글서치콘솔에서_발급받은_코드_입력">
+
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="루미너스">
+    <meta property="og:title" content="루미너스">
+    <meta property="og:description" content="루미너스는 스텔라이브 멤버들의 방송 다시보기, 쇼츠, 커버곡, 팬아트, 커뮤니티 게시판을 한곳에서 모아 볼 수 있는 비공식 팬 사이트입니다.">
+    <meta property="og:image" content="{{ url_for('static', filename='icons/icon-512.png', _external=True) }}">
+    <meta property="og:url" content="https://m.pastellive.co.kr{{ request.path }}">
+
+    
+    <link rel="icon" href="{{ url_for('static', filename='icons/icon-192.png') }}" type="image/png" sizes="192x192">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='icons/icon-192.png') }}" type="image/png">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='icons/icon-192.png') }}">
+
+    <link rel="stylesheet" href="{{ versioned_static('css/m.css') }}">
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+    <meta name="theme-color" content="#0f0f0f">
+
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    <link rel="preconnect" href="https://i.ytimg.com">
+    <link rel="preconnect" href="https://encrypted-tbn0.gstatic.com">
+    
+    <link rel="preload" href="{{ url_for('static', filename='font/Paperlogy-4Regular.woff2') }}" as="font" type="font/woff2" crossorigin>
+
+    
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" media="print" onload="this.media='all'">
+    <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"></noscript>
+
+
+    <style>
+        
+        .fan-notice-bar {
+            position: fixed; top: 0; left: 0; right: 0; height: 28px; z-index: 10050;
+            background:linear-gradient(90deg, #1a1a2e, #16213e);
+            display: flex; align-items: center; justify-content: center; gap: 6px;
+            font-size: 10.5px; color:#cbd5e1; border-bottom:1px solid var(--border);
+            padding: 0 8px; box-sizing: border-box; text-align: center;
+        }
+        .fan-notice-bar b { color:var(--accent); }
+        .fan-notice-bar span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .fan-notice-link {
+            background: none; border:1px solid var(--accent); color:var(--accent); font-size: 10px;
+            padding: 1px 6px; border-radius: 10px; cursor: pointer; white-space: nowrap; flex-shrink: 0;
+        }
+        .fan-notice-modal-overlay {
+            display: none; position: fixed; inset: 0; z-index: 20150; align-items: center; justify-content: center;
+            background: rgba(4, 8, 16, 0.72); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); padding: 16px;
+        }
+        .fan-notice-modal-overlay.open { display: flex; }
+        .fan-notice-modal-box {
+            position: relative; width: 100%; max-width: 440px; max-height: calc(100vh - 32px); overflow-y: auto;
+            background: var(--bg-surface-alt); color: var(--text-primary); border-radius: 22px;
+            border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
+            box-shadow: 0 24px 70px rgba(0,0,0,.55), 0 0 0 1px rgba(255,255,255,.03) inset;
+            animation: fnmIn .32s cubic-bezier(.2,.9,.3,1.2);
+        }
+        @keyframes fnmIn { from { opacity: 0; transform: translateY(14px) scale(.96); } to { opacity: 1; transform: none; } }
+        @media (prefers-reduced-motion: reduce) { .fan-notice-modal-box { animation: none; } }
+        .fnm-hero {
+            position: relative; padding: 30px 24px 22px; text-align: center; overflow: hidden; border-radius: 22px 22px 0 0;
+            background:
+                radial-gradient(120% 90% at 50% 0%, color-mix(in srgb, var(--accent) 34%, transparent) 0%, transparent 70%),
+                radial-gradient(60% 60% at 85% 20%, rgba(167,139,250,.22) 0%, transparent 70%);
+        }
+        .fnm-hero::after {
+            content: ""; position: absolute; left: 24px; right: 24px; bottom: 0; height: 1px;
+            background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--accent) 60%, transparent), transparent);
+        }
+        .fnm-logo {
+            width: 66px; height: 66px; border-radius: 50%; display: block; margin: 0 auto 12px;
+            box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 22%, transparent), 0 0 34px color-mix(in srgb, var(--accent) 55%, transparent);
+        }
+        .fnm-title { margin: 0; font-size: 22px; font-weight: 900; letter-spacing: -.4px; color: var(--text-primary); }
+        .fnm-title span { color: var(--accent); }
+        .fnm-meaning { margin: 6px 0 0; font-size: 13px; color: var(--text-muted); }
+        .fnm-meaning b { color: var(--text-primary); font-weight: 700; }
+        .fnm-body { padding: 18px 22px 6px; display: flex; flex-direction: column; gap: 10px; }
+        .fnm-item { display: flex; gap: 12px; align-items: flex-start; padding: 12px 14px; border-radius: 14px; background: color-mix(in srgb, var(--text-primary) 4%, transparent); }
+        .fnm-icon {
+            flex: none; width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; font-size: 15px;
+            color: var(--accent); background: color-mix(in srgb, var(--accent) 15%, transparent);
+        }
+        .fnm-item h4 { margin: 0 0 3px; font-size: 14px; font-weight: 800; color: var(--text-primary); }
+        .fnm-item p { margin: 0; font-size: 13px; line-height: 1.6; color: var(--text-secondary); }
+        .fnm-links { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; padding: 14px 22px 4px; }
+        .fnm-links a {
+            display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 999px; font-size: 12.5px; text-decoration: none;
+            color: var(--text-secondary); border: 1px solid var(--border);
+        }
+        .fnm-links a:hover { color: var(--accent); border-color: var(--accent); }
+        .fan-notice-modal-close {
+            display: block; width: calc(100% - 44px); margin: 14px 22px 22px; padding: 12px; border: none; border-radius: 12px;
+            background: var(--accent); color: var(--accent-contrast); font-weight: 800; font-size: 14px; cursor: pointer;
+        }
+        .fan-notice-modal-close:hover { filter: brightness(1.08); }
+        .fnm-x {
+            position: absolute; top: 12px; right: 12px; width: 32px; height: 32px; border-radius: 50%; border: none; cursor: pointer; z-index: 2;
+            background: rgba(255,255,255,.06); color: var(--text-muted); font-size: 14px;
+        }
+        .fnm-x:hover { background: rgba(255,255,255,.12); color: var(--text-primary); }
+
+        .m-header {
+            position: fixed; top: 28px; left: 0; right: 0; height: 56px; background-color:var(--bg-page);
+            display: flex; align-items: center; justify-content: space-between; padding: 0 16px;
+            z-index: 10000; border-bottom:1px solid var(--border);
+        }
+        @font-face {
+            font-family: 'ElegantSerif';
+            src: url('/static/font/Paperlogy-4Regular.woff2') format('woff2');
+            font-weight: 500;
+            font-display: swap;
+        }
+        @font-face {
+            font-family: 'ElegantSerif';
+            src: url('/static/font/Paperlogy-7Bold.woff2') format('woff2');
+            font-weight: 700;
+            font-display: swap;
+        }
+        .m-logo { display: flex; align-items: center; gap: 6px; color:var(--text-primary); font-size: 16px; font-weight: 900; letter-spacing: -0.5px; cursor: pointer; }
+        .m-logo img { width: 24px; height: 24px; border-radius: 50%; object-fit: cover; animation: mLogoRotate 14s linear infinite; }
+        .m-logo .site-name {
+            font-family: 'ElegantSerif', serif; font-weight: 700;
+            display: inline-block; position: relative; color:var(--accent);
+            background:linear-gradient(90deg, var(--accent) 0%, #ffffff 45%, #a78bfa 55%, var(--accent) 100%);
+            background-size: 250% 100%; -webkit-background-clip: text; background-clip: text;
+            -webkit-text-fill-color: transparent; text-shadow: 0 0 10px rgba(56, 189, 248, 0.35);
+            animation: luminousGlow 3s ease-in-out infinite;
+        }
+        @keyframes luminousGlow {
+            0% { background-position: 250% 0; filter: drop-shadow(0 0 1px rgba(56, 189, 248, 0.4)); }
+            50%, 100% { background-position: -250% 0; filter: drop-shadow(0 0 5px rgba(56, 189, 248, 0.7)); }
+        }
+        @keyframes mLogoRotate { 0% { transform: rotate(0); } 100% { transform: rotate(360deg); } }
+
+        body { padding-top: 84px; }
+        
+        .m-login-btn {
+            display: flex; align-items: center; gap: 6px; background:var(--bg-elevated); border:1px solid var(--border-strong);
+            padding: 6px 12px; border-radius: 20px; font-weight: bold; font-size: 13px;
+            color:var(--text-primary); cursor: pointer; box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+            white-space: nowrap; flex-shrink: 0;
+        }
+        .m-login-btn:active { background:var(--bg-surface-alt); }
+        .m-login-btn img { width: 16px; height: 16px; background:#fff; border-radius: 50%; padding: 1px; flex-shrink: 0; }
+        .m-login-btn span { white-space: nowrap; }
+        .m-header-right-group { min-width: 0; }
+        
+        @media (max-width: 420px) {
+            .m-login-btn { padding: 0; width: 38px; height: 38px; justify-content: center; border-radius: 50%; gap: 0; }
+            .m-login-btn span { display: none; }
+            .m-login-btn img { width: 20px; height: 20px; }
+        }
+        
+        .m-profile-img { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border:1px solid var(--border-strong); cursor: pointer; }
+        
+        .m-user-profile-area { position: relative; display: flex; align-items: center; }
+        .m-user-dropdown-menu {
+            position: absolute; top: 100%; right: 0; background:var(--bg-elevated); border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5); padding: 8px 0; width: 170px; display: none; z-index: 10001; border:1px solid var(--border); margin-top: 12px;
+        }
+        .m-user-dropdown-menu.open { display: block; }
+        .m-user-dropdown-item {
+            width: 100%; text-align: left; background: none; border: none; padding: 12px 16px; color:var(--text-primary); font-size: 14px; cursor: pointer; display: flex; align-items: center; gap: 10px;
+        }
+        .m-user-dropdown-item:hover { background:var(--border); }
+        .m-user-dropdown-item.danger { color:var(--danger-alt2); }
+        
+        .nickname-edit-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7);
+            display: none; align-items: center; justify-content: center; z-index: 20000;
+        }
+        .nickname-edit-box { background:var(--bg-surface-alt); padding: 24px; border-radius: 12px; width: 90%; max-width: 320px; box-shadow: 0 4px 20px rgba(0,0,0,0.5); border:1px solid var(--border); color: white; }
+        .nickname-edit-box h3 { margin: 0 0 16px; font-size: 18px; text-align: center; }
+        .nickname-edit-box input[type="text"] { width: 100%; padding: 12px; background:var(--bg-page); border:1px solid var(--border); color:var(--text-primary); border-radius: 6px; margin-bottom: 20px; box-sizing: border-box; }
+        .nickname-edit-actions { display: flex; gap: 10px; justify-content: flex-end; }
+        .nickname-edit-actions button { padding: 10px 16px; border-radius: 6px; font-weight: bold; cursor: pointer; border: none; }
+        .btn-cancel { background:var(--border); color:var(--text-primary); }
+        .btn-save { background:var(--accent); color:var(--accent-contrast); }
+
+        
+        .m-header { justify-content: flex-start; gap: 4px; }
+        .m-header-left { display: flex; align-items: center; gap: 4px; flex-shrink: 0; }
+        .m-header-right-group { display: flex; align-items: center; gap: 4px; margin-left: auto; }
+        .m-icon-btn {
+            background: none; border: none; color:var(--text-primary); font-size: 15px; cursor: pointer;
+            width: 32px; height: 32px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            flex-shrink: 0; position: relative;
+        }
+        .m-icon-btn:active { background: rgba(255,255,255,0.12); }
+        .m-icon-btn .m-badge-dot { position: absolute; top: 6px; right: 6px; width: 8px; height: 8px; border-radius: 50%; background:var(--danger-alt2); display: none; }
+        .m-icon-btn.has-badge .m-badge-dot { display: block; }
+
+        
+        
+        .m-drawer-overlay {
+            position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 20100;
+            opacity: 0; visibility: hidden; pointer-events: none;
+            transition: opacity 0.28s ease, visibility 0s linear 0.28s;
+        }
+        .m-drawer-overlay.open {
+            opacity: 1; visibility: visible; pointer-events: auto;
+            transition: opacity 0.28s ease, visibility 0s linear 0s;
+        }
+        .m-drawer {
+            position: fixed; top: 0; left: 0; width: 85%; max-width: 320px; height: 100%;
+            background:var(--bg-surface); z-index: 20101; overflow-y: auto; -webkit-overflow-scrolling: touch;
+            overscroll-behavior: contain; scroll-behavior: smooth;
+            box-shadow: 4px 0 20px rgba(0,0,0,0.5); padding-bottom: 30px;
+            transform: translateX(-100%);
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            will-change: transform;
+        }
+        .m-drawer-overlay.open .m-drawer { transform: translateX(0); }
+        .m-drawer-header { display: flex; align-items: center; justify-content: space-between; padding: 16px; border-bottom:1px solid var(--border-soft); }
+        .m-drawer-header span { font-family: 'ElegantSerif', serif; font-size: 17px; font-weight: 700; color:var(--accent); }
+        .m-drawer-section-title { padding: 14px 16px 6px; font-size: 12px; color:var(--text-faint2); font-weight: bold; }
+        .m-drawer-item {
+            display: flex; align-items: center; gap: 14px; padding: 11px 16px; color:var(--text-secondary3); font-size: 14.5px;
+            cursor: pointer; border: none; background: none; width: 100%; text-align: left; box-sizing: border-box;
+        }
+        .m-drawer-item:active { background:var(--bg-elevated); }
+        .m-drawer-item i, .m-drawer-item .m-drawer-avatar { width: 22px; text-align: center; flex-shrink: 0; }
+        .m-drawer-avatar { width: 26px; height: 26px; border-radius: 50%; object-fit: cover; background:var(--border); }
+        .m-drawer-divider { height: 1px; background:var(--border-soft); margin: 8px 0; }
+        
+        .m-drawer-generation-group { margin: 0; }
+        .m-drawer-generation-header { display: flex; align-items: center; }
+        .m-drawer-generation-header .m-drawer-item { flex: 1; min-width: 0; }
+        .m-drawer-generation-toggle { background: none; border: none; color:var(--text-faint); width: 40px; height: 40px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
+        .m-drawer-generation-toggle i { transition: transform 0.2s ease; }
+        .m-drawer-generation-group.collapsed .m-drawer-generation-toggle i { transform: rotate(-90deg); }
+        .m-drawer-generation-unit-label { padding: 0 16px 4px 52px; font-size: 10.5px; color:var(--text-faint2); }
+        .m-drawer-generation-members { display: flex; flex-direction: column; }
+        .m-drawer-generation-group.collapsed .m-drawer-generation-members,
+        .m-drawer-generation-group.collapsed .m-drawer-generation-unit-label { display: none; }
+        .m-drawer-generation-members .m-drawer-item { padding-left: 30px; }
+        .m-drawer-item-name { min-width: 0; word-break: keep-all; overflow-wrap: break-word; }
+        .m-drawer-generation-members .m-drawer-avatar { width: 22px; height: 22px; }
+
+        
+        .m-search-view { position: fixed; inset: 0; background:var(--bg-page); z-index: 20090; display: none; flex-direction: column; }
+        .m-search-view.open { display: flex; }
+        .m-search-topbar { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-bottom:1px solid var(--border-soft); flex-shrink: 0; padding-top: calc(10px + env(safe-area-inset-top)); }
+        .m-search-topbar input {
+            flex: 1; background:var(--bg-surface); border:1px solid var(--border); border-radius: 20px; padding: 10px 16px;
+            color:var(--text-primary); font-size: 15px; outline: none;
+        }
+        .m-search-topbar input:focus { border-color:var(--accent); }
+        .m-search-topbar button.m-cancel-text { background: none; border: none; color:var(--accent); font-size: 14px; font-weight: bold; padding: 6px 4px; flex-shrink: 0; }
+        .m-search-body { flex: 1; overflow-y: auto; -webkit-overflow-scrolling: touch; }
+        .m-search-trend-item { display: flex; align-items: center; gap: 12px; padding: 12px 16px; color:var(--text-secondary3); font-size: 14.5px; border-bottom:1px solid var(--bg-surface); }
+        .m-search-trend-item .m-rank { color:var(--accent); font-weight: 900; font-style: italic; width: 18px; }
+        .m-search-result-video { display: flex; gap: 10px; padding: 10px 14px; }
+        .m-search-result-video img { width: 130px; aspect-ratio: 16/9; object-fit: cover; border-radius: 8px; background:var(--bg-elevated); flex-shrink: 0; }
+        .m-search-result-video div.t { font-size: 14px; color:var(--text-primary); line-height: 1.35; }
+        .m-search-section-label { padding: 16px 14px 4px; font-size: 14px; font-weight: bold; color:var(--accent); }
+        .m-search-fanart-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; padding: 6px 14px; }
+        .m-search-fanart-row img { width: 100%; aspect-ratio: 1/1; object-fit: cover; border-radius: 6px; background:var(--bg-elevated); }
+        .m-search-community-item { margin: 6px 14px; padding: 10px 12px; background:var(--bg-surface-alt); border-radius: 10px; border:1px solid var(--border-soft); font-size: 13px; color:var(--text-secondary); }
+        .m-empty-state { text-align: center; color:var(--text-faint); padding: 60px 20px; font-size: 14px; }
+
+        
+        .m-sheet-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.6); z-index: 20110; display: none; align-items: flex-end; }
+        .m-sheet-overlay.open { display: flex; }
+        .m-sheet { width: 100%; background:var(--bg-surface-alt); border-radius: 18px 18px 0 0; padding: 10px 0 calc(16px + env(safe-area-inset-bottom)); }
+        .m-sheet-handle { width: 36px; height: 4px; background:var(--border-strong); border-radius: 4px; margin: 6px auto 10px; }
+        .m-sheet-item {
+            display: flex; align-items: center; gap: 14px; padding: 14px 20px; color:var(--text-primary); font-size: 15px;
+            width: 100%; box-sizing: border-box; text-align: left; background: none; border: none; cursor: pointer; font-family: inherit;
+        }
+        .m-sheet-item:active { background:var(--border-soft); }
+        .m-sheet-item i { width: 22px; text-align: center; color:var(--accent); }
+
+        
+        .m-full-view { position: fixed; top: 84px; left: 0; right: 0; bottom: 0; background:var(--bg-page); z-index: 500; display: none; overflow-y: auto; -webkit-overflow-scrolling: touch; padding-bottom: calc(90px + env(safe-area-inset-bottom)); }
+        .m-full-view.open { display: block; }
+        .m-view-topbar { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-bottom:1px solid var(--border-soft); position: sticky; top: 0; background:var(--bg-page); z-index: 5; }
+        .m-view-topbar button.m-back-btn { background: none; border: none; color:var(--text-primary); font-size: 18px; padding: 6px; }
+        .m-view-topbar h2 { font-size: 17px; font-weight: bold; color:var(--text-primary); margin: 0; flex: 1; }
+        .m-view-topbar img.m-view-avatar { width: 30px; height: 30px; border-radius: 50%; object-fit: cover; }
+
+        
+        .m-member-tabs { display: flex; gap: 6px; padding: 10px 12px 0; overflow-x: auto; }
+        .m-member-tab-btn { background:var(--bg-surface); color:var(--text-secondary2); border: none; padding: 7px 14px; border-radius: 16px; font-size: 13px; font-weight: bold; white-space: nowrap; }
+        .m-member-tab-btn.active { background:var(--accent); color:var(--accent-contrast); }
+        .m-sort-dropdown { position: relative; padding: 10px 12px 0; }
+        .m-sort-trigger { display:flex; align-items:center; gap:6px; background:var(--bg-surface); color:var(--text-secondary2); border:none; padding:7px 12px; border-radius:16px; font-size:12.5px; font-weight:bold; }
+        .m-sort-menu {
+            position: fixed; top: 0; left: 0; background:var(--bg-elevated); border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5); padding: 6px 0; width: 140px; display: none; z-index: 10001; border:1px solid var(--border);
+        }
+        .m-sort-menu.open { display: block; }
+        .m-sort-menu-item { width:100%; text-align:left; background:none; border:none; padding:10px 14px; color:var(--text-secondary2); font-size:13px; cursor:pointer; display:flex; align-items:center; gap:8px; }
+        .m-sort-menu-item:hover { background:var(--border); }
+        .m-sort-menu-item i.fa-check { visibility:hidden; font-size:11px; color:var(--accent); }
+        .m-sort-menu-item.active { color:var(--text-primary); font-weight:bold; }
+        .m-sort-menu-item.active i.fa-check { visibility:visible; }
+        .m-member-grid { display: flex; flex-direction: column; gap: 28px; padding: 14px 0 10px; }
+
+        
+        .m-community-input-box { margin: 12px 14px; border:1px solid var(--border-soft); border-radius: 12px; padding: 12px; background:var(--bg-surface-2); }
+        .m-community-input-box textarea { width: 100%; background: transparent; border: none; color:var(--text-primary); font-size: 14px; resize: none; outline: none; min-height: 40px; box-sizing: border-box; }
+        .m-community-input-actions { display: flex; justify-content: space-between; align-items: center; margin-top: 8px; }
+        .m-community-post-card { margin: 0 14px 14px; padding: 14px; border:1px solid var(--border-soft); border-radius: 12px; background:var(--bg-surface-2); }
+        .m-community-post-card .hd { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+        .m-community-post-card .hd img { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; }
+        .m-community-post-card .name { font-size: 13px; font-weight: bold; color:var(--text-primary); }
+        .m-community-post-card .time { font-size: 11px; color:var(--text-faint); }
+        .m-community-post-card .content { font-size: 14px; color:var(--text-secondary3); line-height: 1.5; white-space: pre-wrap; margin-bottom: 8px; }
+        .m-community-post-card img.post-img { width: 100%; border-radius: 10px; margin-bottom: 8px; }
+        .m-community-post-card .actions { display: flex; gap: 16px; border-top:1px solid var(--border-soft); padding-top: 8px; }
+        .m-community-post-card .actions button { background: none; border: none; color:var(--text-muted); font-size: 13px; display: flex; align-items: center; gap: 5px; }
+        .m-community-post-card .actions button.active { color:var(--accent); }
+        .m-community-comments { display: none; margin-top: 10px; border-top:1px solid var(--border-soft); padding-top: 10px; }
+        .m-community-comments.open { display: block; }
+        .m-community-comment-row { display: flex; gap: 8px; margin-bottom: 8px; }
+        .m-community-comment-row input { flex: 1; background:var(--bg-input); border:1px solid var(--border); border-radius: 16px; padding: 7px 14px; color:var(--text-primary); font-size: 13px; outline: none; }
+        .m-community-comment-row button { background:var(--accent); color:var(--accent-contrast); border: none; border-radius: 16px; padding: 0 14px; font-weight: bold; font-size: 12px; }
+        .m-community-comment-item { font-size: 12.5px; color:var(--text-secondary); padding: 6px 0; border-bottom:1px solid var(--bg-surface); }
+        .m-community-comment-item b { color:var(--accent); margin-right: 6px; }
+        .m-staff-badge { display: inline-flex; align-items: center; gap: 3px; margin-left: 5px; padding: 1px 7px; border-radius: 8px; font-size: 10.5px; font-weight: 800; color: #04202e; background: #7dd3fc; vertical-align: 1px; }
+        .m-staff-badge i { font-size: 9px; }
+        .m-title-badge { display: inline-flex; align-items: center; margin-left: 5px; padding: 1px 7px; border-radius: 8px; font-size: 10px; font-weight: 800; color: #fff; background: linear-gradient(135deg, #f9a8d4, #c4b5fd 55%, #7dd3fc); vertical-align: 1px; }
+
+        
+        .m-gallery-topactions { display: flex; justify-content: flex-end; padding: 10px 14px; }
+        .m-gallery-upload-btn { background:linear-gradient(135deg,var(--accent),var(--accent-alt)); color:var(--accent-contrast); border: none; padding: 8px 16px; border-radius: 20px; font-weight: bold; font-size: 13px; }
+        .m-gallery-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; padding: 0 12px 20px; }
+        .m-gallery-card { background:var(--bg-surface-2); border-radius: 10px; overflow: hidden; border:1px solid var(--border-soft); }
+        .m-gallery-card img { width: 100%; aspect-ratio: 1/1; object-fit: cover; display: block; background:var(--bg-input); }
+        .m-gallery-card .info { padding: 8px; }
+        .m-gallery-card .title { font-size: 13px; font-weight: bold; color:var(--text-primary); margin-bottom: 3px; }
+        .m-gallery-card .author { font-size: 11px; color:var(--accent); }
+        .m-lightbox-overlay { position: fixed; inset: 0; background: rgba(0,0,0,0.95); z-index: 21000; display: none; flex-direction: column; }
+        .m-lightbox-overlay.open { display: flex; }
+        .m-lightbox-close { position: absolute; top: calc(10px + env(safe-area-inset-top)); right: 14px; color:var(--text-primary); font-size: 22px; background: rgba(0,0,0,0.5); width: 38px; height: 38px; border-radius: 50%; border: none; z-index: 2; }
+        .m-lightbox-img-wrap { flex: 1; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+        .m-lightbox-img-wrap img { max-width: 100%; max-height: 100%; object-fit: contain; }
+        .m-lightbox-panel { background:var(--bg-surface); padding: 16px; max-height: 45vh; overflow-y: auto; padding-bottom: calc(16px + env(safe-area-inset-bottom)); }
+        .m-lightbox-panel h3 { color:var(--text-primary); font-size: 16px; margin: 0 0 6px; }
+        .m-lightbox-panel p { color:var(--text-secondary2); font-size: 13px; margin: 0 0 10px; line-height: 1.5; }
+        .m-lightbox-actions { display: flex; gap: 14px; }
+        .m-lightbox-actions button { background: none; border: none; color:var(--text-muted); font-size: 13px; display: flex; align-items: center; gap: 5px; }
+
+        .m-schedule-nav { display: flex; align-items: center; justify-content: center; gap: 20px; padding: 12px 0; }
+        .m-schedule-nav button { background:var(--bg-elevated); border:1px solid var(--border); color:var(--text-primary); width: 30px; height: 30px; border-radius: 50%; }
+        .m-schedule-day-block { margin: 0 14px 14px; border:1px solid var(--border-soft); border-radius: 10px; overflow: hidden; }
+        .m-schedule-day-head { display: flex; justify-content: space-between; padding: 8px 12px; background:var(--bg-surface-alt); font-size: 13px; font-weight: bold; color:var(--text-secondary2); }
+        .m-schedule-day-head.today { color:var(--accent); }
+        .m-schedule-entry { display: flex; align-items: center; gap: 8px; padding: 9px 12px; font-size: 12.5px; border-top:1px solid var(--bg-surface); color:var(--text-secondary3); }
+        .m-schedule-entry img { width: 20px; height: 20px; border-radius: 50%; object-fit: cover; }
+        .m-schedule-add-btn { display: block; width: 100%; background: none; border-top:1px dashed var(--border); color:var(--text-faint2); font-size: 12px; padding: 8px; }
+
+        
+        .m-form-modal select, .m-form-modal input, .m-form-modal textarea {
+            width: 100%; box-sizing: border-box; background:var(--bg-input); border:1px solid var(--border); color:var(--text-primary);
+            padding: 10px 12px; border-radius: 8px; font-size: 14px; outline: none; margin-bottom: 10px; font-family: inherit;
+        }
+        .m-form-modal label { display: block; font-size: 12px; color:var(--text-muted); margin-bottom: 4px; }
+        .m-form-modal .danger-btn { background:var(--danger); color:var(--text-primary); }
+        .m-member-select-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; max-height: 260px; overflow-y: auto; }
+        .m-member-select-item { display: flex; flex-direction: column; align-items: center; gap: 4px; }
+        .m-member-select-item img { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; }
+        .m-member-select-item span { font-size: 11px; color:var(--text-secondary); text-align: center; }
+
+        
+        .m-list-row { display: flex; gap: 12px; padding: 10px 14px; align-items: center; }
+        .m-list-row img { width: 110px; aspect-ratio: 16/9; object-fit: cover; border-radius: 8px; background:var(--bg-elevated); flex-shrink: 0; }
+        .m-list-row .t { font-size: 13.5px; color:var(--text-primary); line-height: 1.4; flex: 1; }
+        .m-list-clear-btn { margin: 10px 14px; background: none; border:1px solid var(--border-strong); color:var(--text-secondary2); font-size: 12.5px; padding: 6px 12px; border-radius: 6px; }
+    
+        /* [2026-10-09] 홈(동영상 탭) 맨 위 "오늘 일정" 한 줄. 일정 없는 날은 안 나옴 */
+        .m-today-schedule { display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-bottom: 1px solid var(--border); }
+        .m-tsb-title { flex-shrink: 0; background: none; border: none; color: var(--text-primary); font-weight: 700; font-size: 13px; padding: 4px 0; }
+        .m-tsb-title i:first-child { color: var(--accent); margin-right: 4px; }
+        .m-tsb-items { display: flex; gap: 6px; overflow-x: auto; min-width: 0; flex: 1; scrollbar-width: none; }
+        .m-tsb-items::-webkit-scrollbar { display: none; }
+        .m-tsb-item { flex-shrink: 0; display: inline-flex; align-items: center; gap: 5px; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--border); font-size: 12px; color: var(--text-primary); white-space: nowrap; }
+        .m-tsb-time { color: var(--text-muted); font-variant-numeric: tabular-nums; }
+        .m-tsb-item.off { opacity: .6; }
+        .m-tsb-item.live { border-color: #ff4747; }
+        .m-tsb-live { color: #fff; background: #ff4747; border-radius: 4px; padding: 0 4px; font-size: 10px; font-weight: 800; }
+    </style>
+<script src="{{ versioned_static('js/thumbnails.js') }}"></script>
+</head>
+<body>
+    <script>window.MEMBER_FULL_NAMES = {{ MEMBER_FULL_NAMES | tojson }};</script>
+    <script>window.MEMBER_ACCENT_COLORS = {{ MEMBER_ACCENT_COLORS | tojson }};</script>
+    <script>window.MEMBER_IMAGES = {{ MEMBER_IMAGES | tojson }};</script>
+    <script>window.GENERATION_REP_IMAGE_OVERRIDES = {{ GENERATION_REP_IMAGE_OVERRIDES | tojson }};</script>
+    <div class="fan-notice-bar">
+        <span>스텔라이브 공식 사이트가 아닌 <b>팬 사이트</b>입니다</span>
+        <button class="fan-notice-link" id="m-fanNoticeOpenBtn">루미너스란?</button>
+    </div>
+    <div class="fan-notice-modal-overlay" id="fanNoticeModal">
+        <div class="fan-notice-modal-box" role="dialog" aria-modal="true" aria-labelledby="fnmTitle">
+            <button type="button" class="fnm-x" aria-label="닫기" onclick="document.getElementById('fanNoticeModal').classList.remove('open')"><i class="fas fa-xmark"></i></button>
+            <div class="fnm-hero">
+                <img class="fnm-logo" src="{{ url_for('static', filename='logo/logo.webp') }}" alt="">
+                <h3 class="fnm-title" id="fnmTitle">루미너스 <span>Luminous</span></h3>
+                <p class="fnm-meaning"><b>은은하게 빛나는</b> · 스텔라이브 팬 사이트</p>
+            </div>
+            <div class="fnm-body">
+                <div class="fnm-item">
+                    <div class="fnm-icon"><i class="fas fa-heart"></i></div>
+                    <div><h4>팬이 만든 비공식 사이트예요</h4>
+                    <p>스텔라이브(StelLive) 소속사의 공식 사이트가 아니라, 팬이 자율적으로 운영하는 2차 창작 팬 사이트예요.</p></div>
+                </div>
+                <div class="fnm-item">
+                    <div class="fnm-icon"><i class="fas fa-star"></i></div>
+                    <div><h4>이름에 담긴 뜻</h4>
+                    <p>'루미너스'는 '은은하게 빛나는'이라는 뜻이에요. 멤버들을 향한 팬심을 조용히 빛내며 응원한다는 의미의 팬덤 애칭으로, 소속사와는 관계없는 이름이에요.</p></div>
+                </div>
+                <div class="fnm-item">
+                    <div class="fnm-icon"><i class="fas fa-hand-holding-heart"></i></div>
+                    <div><h4>비영리 · 가이드라인 준수</h4>
+                    <p>스텔라이브 2차 창작 가이드라인을 지키며, 광고나 후원 없이 비영리로 운영해요.</p></div>
+                </div>
+            </div>
+            <div class="fnm-links">
+                <a href="/credits"><i class="fas fa-images"></i> 크레딧</a>
+                <a href="/terms"><i class="fas fa-file-lines"></i> 이용약관</a>
+                <a href="/privacy"><i class="fas fa-shield-alt"></i> 개인정보처리방침</a>
+            </div>
+            <button class="fan-notice-modal-close" id="m-fanNoticeCloseBtn">확인했어요</button>
+        </div>
+    </div>
+
+    <header class="m-header">
+        <div class="m-header-left">
+            <button class="m-icon-btn" id="m-hamburgerBtn" aria-label="메뉴"><i class="fas fa-bars"></i></button>
+            <div class="m-logo" id="m-logoBtn">
+                <img src="{{ url_for('static', filename='logo/logo.webp') }}" alt="Logo">
+                <span class="site-name">루미너스</span>
+            </div>
+        </div>
+        <div class="m-header-right-group">
+            <button class="m-icon-btn" id="m-searchBtn" aria-label="검색"><i class="fas fa-search"></i></button>
+            <button class="m-icon-btn" id="m-createBtn" aria-label="만들기"><i class="fas fa-plus"></i></button>
+            <div id="m-headerRight"></div>
+        </div>
+    </header>
+
+    
+    <div class="m-drawer-overlay" id="m-drawerOverlay">
+        <div class="m-drawer">
+            <div class="m-drawer-header"><span>루미너스</span><button class="m-icon-btn" id="m-drawerCloseBtn"><i class="fas fa-times"></i></button></div>
+            <div class="m-drawer-section-title">채널</div>
+            <div id="m-drawerMembers"></div>
+            <div class="m-drawer-divider"></div>
+            <button class="m-drawer-item" id="m-navHistory"><i class="fas fa-history"></i> 기록</button>
+            <button class="m-drawer-item" id="m-navBookmarks"><i class="fas fa-bookmark"></i> 북마크</button>
+            <button class="m-drawer-item" id="m-navPlaylists"><i class="fas fa-list"></i> 재생목록</button>
+            <button class="m-drawer-item" id="m-navGallery"><i class="fas fa-image" style="color:var(--accent);"></i> 팬 갤러리</button>
+            <button class="m-drawer-item" id="m-navSchedule"><i class="fas fa-calendar-days" style="color:#4ade80;"></i> 스케줄</button>
+            <div class="m-drawer-divider"></div>
+            <a class="m-drawer-item" href="https://discord.gg/swatakafam" target="_blank" style="text-decoration:none;"><i class="fab fa-discord"></i> 디스코드</a>
+            <a class="m-drawer-item" href="https://open.kakao.com/o/gKFapRIi" target="_blank" style="text-decoration:none;"><svg width="16" height="16" viewBox="0 0 24 24" style="vertical-align:-3px;"><path fill="#FEE500" d="M12 3C6.48 3 2 6.58 2 11c0 2.86 1.9 5.36 4.76 6.77-.15.55-.96 3.42-.99 3.64 0 0-.02.16.08.22.1.06.22.02.22.02.29-.04 3.36-2.2 3.9-2.58.66.1 1.34.15 2.03.15 5.52 0 10-3.58 10-8s-4.48-8-10-8z"/></svg> 카카오톡</a>
+            <a class="m-drawer-item" href="/privacy" style="text-decoration:none; color:var(--text-muted); font-size:12.5px;"><i class="fas fa-user-shield"></i> 개인정보처리방침</a>
+            <a class="m-drawer-item" href="/terms" style="text-decoration:none; color:var(--text-muted); font-size:12.5px;"><i class="fas fa-file-signature"></i> 이용약관</a>
+            <a class="m-drawer-item" href="/credits" style="text-decoration:none; color:var(--text-muted); font-size:12.5px;"><i class="fas fa-images"></i> 크레딧</a>
+        </div>
+    </div>
+
+    
+    <div class="m-search-view" id="m-searchView">
+        <div class="m-search-topbar">
+            <input type="text" id="m-searchInput" placeholder="검색" autocomplete="off">
+            <button class="m-cancel-text" id="m-searchCancelBtn">취소</button>
+        </div>
+        <div class="m-search-body" id="m-searchBody"></div>
+    </div>
+
+    
+    <div class="m-sheet-overlay" id="m-createSheetOverlay">
+        <div class="m-sheet">
+            <div class="m-sheet-handle"></div>
+            <button class="m-sheet-item" id="m-createPostBtn"><i class="fas fa-pen-to-square"></i> 게시물 작성</button>
+        </div>
+    </div>
+
+    
+    <div class="nickname-edit-overlay" id="m-createPostOverlay">
+        <div class="nickname-edit-box m-form-modal" style="max-width: 360px;">
+            <div id="m-createPostMemberStep">
+                <h3>어떤 멤버의 커뮤니티에 올릴까요?</h3>
+                <div class="m-member-select-grid" id="m-createPostMemberGrid"></div>
+                <div class="nickname-edit-actions" style="margin-top:14px;"><button class="btn-cancel" id="m-createPostCancel1">취소</button></div>
+            </div>
+            <div id="m-createPostFormStep" style="display:none;">
+                <h3 id="m-createPostSelectedName">작성</h3>
+                <input type="text" id="m-createPostTitle" placeholder="제목 (선택 사항)" maxlength="200">
+                <textarea id="m-createPostContent" rows="4" placeholder="어떤 생각을 하고 계신가요?"></textarea>
+                <label>사진 첨부 (선택)</label>
+                <input type="file" id="m-createPostImages" accept="image/*" multiple>
+                <div class="nickname-edit-actions">
+                    <button class="btn-cancel" id="m-createPostBack">뒤로</button>
+                    <button class="btn-save" id="m-createPostSubmit">게시</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    
+    <div class="m-full-view" id="m-memberView">
+        <div class="m-view-topbar">
+            <button class="m-back-btn" id="m-memberViewBack"><i class="fas fa-arrow-left"></i></button>
+            <img class="m-view-avatar" id="m-memberViewAvatar" src="" alt="">
+            <h2 id="m-memberViewName">멤버</h2>
+        </div>
+        <div class="m-member-tabs">
+            <button class="m-member-tab-btn active" data-mtab="video">동영상</button>
+            <button class="m-member-tab-btn" data-mtab="shorts">Shorts</button>
+            <button class="m-member-tab-btn" data-mtab="music">노래</button>
+            <button class="m-member-tab-btn" data-mtab="community">커뮤니티</button>
+        </div>
+        <div id="m-memberVideoWrap">
+            <div class="m-member-grid" id="m-memberVideoGrid"></div>
+        </div>
+        <div id="m-memberCommunityWrap" style="display:none;">
+            <div class="m-community-input-box" id="m-communityInputBox" style="display:none;">
+                <textarea id="m-communityTextarea" placeholder="어떤 생각을 하고 계신가요?" oninput="document.getElementById('m-communitySubmitBtn').disabled = !this.value.trim()"></textarea>
+                <div class="m-community-input-actions">
+                    <label for="m-communityImageUpload" style="color:var(--text-muted); font-size:18px;"><i class="far fa-image"></i></label>
+                    <input type="file" id="m-communityImageUpload" accept="image/*" multiple style="display:none;">
+                    <button class="btn-save" id="m-communitySubmitBtn" style="padding:6px 16px; border-radius:16px; opacity:0.6;" disabled>게시</button>
+                </div>
+            </div>
+            <div id="m-communityFeed"></div>
+        </div>
+    </div>
+
+    
+    <div class="m-full-view" id="m-galleryView">
+        <div class="m-view-topbar">
+            <button class="m-back-btn" id="m-galleryViewBack"><i class="fas fa-arrow-left"></i></button>
+            <h2>팬 갤러리</h2>
+        </div>
+        <div class="m-gallery-topactions"><button class="m-gallery-upload-btn" id="m-galleryUploadBtn"><i class="fas fa-upload"></i> 사진 올리기</button></div>
+        <div class="m-gallery-grid" id="m-galleryGrid"></div>
+    </div>
+
+    
+    <div class="nickname-edit-overlay" id="m-fanartUploadOverlay">
+        <div class="nickname-edit-box m-form-modal">
+            <h3>새 사진 등록</h3>
+            <input type="file" id="m-fanartInput" accept="image/*">
+            <input type="text" id="m-fanartTitle" placeholder="사진 제목을 입력하세요" maxlength="50">
+            <textarea id="m-fanartDesc" rows="3" placeholder="사진에 대한 설명을 적어주세요"></textarea>
+            <div class="nickname-edit-actions">
+                <button class="btn-cancel" id="m-fanartCancel">취소</button>
+                <button class="btn-save" id="m-fanartSubmit">업로드</button>
+            </div>
+        </div>
+    </div>
+
+    
+    <div class="m-lightbox-overlay" id="m-lightboxOverlay">
+        <button class="m-lightbox-close" id="m-lightboxClose"><i class="fas fa-times"></i></button>
+        <div class="m-lightbox-img-wrap"><img id="m-lightboxImg" src="" alt=""></div>
+        <div class="m-lightbox-panel">
+            <h3 id="m-lightboxTitle"></h3>
+            <p id="m-lightboxDesc"></p>
+            <div class="m-lightbox-actions">
+                <button id="m-lightboxLikeBtn"><i class="fas fa-thumbs-up"></i> <span id="m-lightboxLikeCount">0</span></button>
+                <button id="m-lightboxDislikeBtn"><i class="fas fa-thumbs-down"></i> <span id="m-lightboxDislikeCount">0</span></button>
+                <button id="m-lightboxCommentBtn"><i class="fas fa-comment"></i> 댓글</button>
+            </div>
+            <div class="m-community-comments" id="m-lightboxComments">
+                <div id="m-lightboxCommentList"></div>
+                <div class="m-community-comment-row">
+                    <input type="text" id="m-lightboxCommentInput" placeholder="댓글을 입력하세요">
+                    <button id="m-lightboxCommentSubmit">등록</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    
+    <div class="m-full-view" id="m-scheduleView">
+        <div class="m-view-topbar">
+            <button class="m-back-btn" id="m-scheduleViewBack"><i class="fas fa-arrow-left"></i></button>
+            <h2>스텔라이브 스케줄</h2>
+        </div>
+        <div class="m-schedule-nav">
+            <button id="m-schedulePrevBtn"><i class="fas fa-chevron-left"></i></button>
+            <span id="m-scheduleWeekLabel">-</span>
+            <button id="m-scheduleNextBtn"><i class="fas fa-chevron-right"></i></button>
+        </div>
+        <div id="m-scheduleList"></div>
+    </div>
+
+    
+    <div class="nickname-edit-overlay" id="m-scheduleEntryOverlay">
+        <div class="nickname-edit-box m-form-modal">
+            <h3 id="m-scheduleEntryTitle">일정 추가</h3>
+            <label>멤버</label>
+            <select id="m-scheduleEntryMember"></select>
+            <label>날짜</label>
+            <input type="date" id="m-scheduleEntryDate">
+            <label style="display:flex; align-items:center; gap:8px;"><input type="checkbox" id="m-scheduleEntryDayOff" style="width:auto; margin:0;"> 이 날은 휴방</label>
+            <div id="m-scheduleEntryTimeTitleWrap">
+                <label>시간 (선택)</label>
+                <input type="time" id="m-scheduleEntryTime">
+                <label>방송 내용</label>
+                <input type="text" id="m-scheduleEntryContentTitle" placeholder="예: 저챗 + 메이플스토리" maxlength="255">
+            </div>
+            <div class="nickname-edit-actions">
+                <button class="btn-cancel danger-btn" id="m-scheduleEntryDelete" style="display:none;">삭제</button>
+                <button class="btn-cancel" id="m-scheduleEntryCancel">취소</button>
+                <button class="btn-save" id="m-scheduleEntrySave">저장</button>
+            </div>
+            <div id="m-scheduleEntryMsg" style="color:var(--danger-soft); font-size:12px; margin-top:8px;"></div>
+        </div>
+    </div>
+
+    
+    <div class="m-full-view" id="m-historyView">
+        <div class="m-view-topbar">
+            <button class="m-back-btn" id="m-historyViewBack"><i class="fas fa-arrow-left"></i></button>
+            <h2 style="flex:none;">시청 기록</h2>
+            <button class="m-list-clear-btn" id="m-historyClearBtn" style="margin-left:auto;">전체 삭제</button>
+        </div>
+        <div id="m-historyList"></div>
+    </div>
+    <div class="m-full-view" id="m-bookmarksView">
+        <div class="m-view-topbar">
+            <button class="m-back-btn" id="m-bookmarksViewBack"><i class="fas fa-arrow-left"></i></button>
+            <h2>북마크</h2>
+        </div>
+        <div id="m-bookmarksList"></div>
+    </div>
+    <div class="m-full-view" id="m-playlistsView">
+        <div class="m-view-topbar">
+            <button class="m-back-btn" id="m-playlistsViewBack"><i class="fas fa-arrow-left"></i></button>
+            <h2>재생목록</h2>
+        </div>
+        <div id="m-playlistsList"></div>
+    </div>
+
+    <main id="m-content">
+        {%- if today_schedules %}
+        <div class="m-today-schedule" id="todayScheduleBar">
+            <button type="button" class="m-tsb-title" onclick="document.getElementById('m-navSchedule').click()"><i class="fas fa-calendar-day"></i>오늘 <i class="fas fa-chevron-right" style="font-size:10px;"></i></button>
+            <div class="m-tsb-items">
+                {%- for s in today_schedules %}
+                <span class="m-tsb-item{% if s.is_day_off %} off{% endif %}{% if s.is_live %} live{% endif %}">
+                    {%- if s.is_live %}<b class="m-tsb-live">LIVE</b>{% elif s.is_day_off %}<span class="m-tsb-time">휴방</span>{% elif s.event_time %}<span class="m-tsb-time">{{ s.event_time }}</span>{% endif %}
+                    <strong>{{ s.member_name }}</strong>{% if not s.is_day_off %} {{ s.title }}{% endif %}
+                </span>
+                {%- endfor %}
+            </div>
+        </div>
+        {%- endif %}
+        <div id="videoGrid" class="m-grid">
+        {%- for v in init_mobile_video_cards %}
+            <div class="m-card" data-href="/watch/{{ v.videoId }}?type=video">
+                {%- if loop.index0 < 6 %}
+                <img src="{{ v.thumbnail|replace('/vi/', '/vi_webp/')|replace('hqdefault.jpg', 'hqdefault.webp')|replace('i1.ytimg.com', 'i.ytimg.com')|replace('i2.ytimg.com', 'i.ytimg.com')|replace('i3.ytimg.com', 'i.ytimg.com')|replace('i4.ytimg.com', 'i.ytimg.com') }}" alt="{{ v.title }}" loading="eager"{% if loop.index0 == 0 %} fetchpriority="high"{% endif %}>
+                {%- else %}
+                <img src="{{ v.thumbnail|replace('/vi/', '/vi_webp/')|replace('hqdefault.jpg', 'hqdefault.webp')|replace('i1.ytimg.com', 'i.ytimg.com')|replace('i2.ytimg.com', 'i.ytimg.com')|replace('i3.ytimg.com', 'i.ytimg.com')|replace('i4.ytimg.com', 'i.ytimg.com') }}" alt="{{ v.title }}" loading="lazy">
+                {%- endif %}
+                <div>{{ v.title }}</div>
+                {%- if v.member_name %}
+                <div class="m-card-member" data-member="{{ v.member_name }}"><img class="m-card-member-avatar" src="{{ MEMBER_IMAGES.get(v.member_name, '') }}" alt="">{{ MEMBER_FULL_NAMES.get(v.member_name, v.member_name) }}</div>
+                {%- endif %}
+                <div class="m-card-comment-preview{% if v.comment_preview and v.comment_preview.content %} has-comment{% endif %}" data-comment-video-id="{{ v.videoId }}"{% if v.comment_preview and v.comment_preview.content %} data-observed="1"{% endif %}>{%- if v.comment_preview and v.comment_preview.content -%}💬 {{ v.comment_preview.content }}{%- endif -%}</div>
+            </div>
+        {%- endfor %}
+        </div>
+        <div id="shortsPlayerContainer" class="m-shorts-wrap"></div>
+    </main>
+
+    <nav class="m-bottom-nav">
+        <button class="m-nav-btn active" id="btn-video" aria-label="동영상">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+        </button>
+        <button class="m-nav-btn" id="btn-shorts" aria-label="쇼츠">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M17.77,10.32l-1.2-.5L18,9.06a3.74,3.74,0,0,0-3.5-6.62L6,6.94a3.74,3.74,0,0,0,.23,6.74l1.2.49L6,14.93a3.75,3.75,0,0,0,3.5,6.63l8.5-4.5a3.74,3.74,0,0,0-.23-6.74Z" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/><polygon points="10 14.65 15 12 10 9.35 10 14.65" fill="currentColor"/></svg>
+        </button>
+        <button class="m-nav-btn" id="btn-music" aria-label="음악">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>
+        </button>
+    </nav>
+
+    
+    <div class="nickname-edit-overlay" id="nicknameEditOverlay">
+        <div class="nickname-edit-box">
+            <h3>닉네임만 변경</h3>
+            <input type="text" id="nicknameInput" placeholder="새로운 닉네임을 입력하세요 (최대 20자)" maxlength="20">
+            <div class="nickname-edit-actions">
+                <button class="btn-cancel" id="nicknameCancelBtn">취소</button>
+                <button class="btn-save" id="nicknameSaveBtn">저장</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="nickname-edit-overlay" id="profileEditOverlay">
+        <div class="nickname-edit-box" style="text-align: center;">
+            <h3>프로필 변경</h3>
+            <div id="profileImageContainer" style="width: 100px; height: 100px; margin: 0 auto 20px; border-radius: 50%; overflow: hidden; border:2px solid var(--accent); cursor: pointer; position: relative; background:var(--bg-elevated);">
+                <img id="profilePreviewImg" src="" alt="Profile Preview" style="width: 100%; height: 100%; object-fit: cover;">
+                <div style="position: absolute; bottom: 0; left: 0; width: 100%; background: rgba(0,0,0,0.6); color:var(--text-primary); font-size: 12px; padding: 4px 0;">사진 변경</div>
+            </div>
+            <input type="file" id="profileImageUpload" accept="image/*" style="display: none;">
+            <input type="text" id="newProfileNicknameInput" placeholder="닉네임을 입력하세요" maxlength="20" style="margin-bottom: 20px;">
+            <div class="nickname-edit-actions" style="justify-content: center;">
+                <button class="btn-cancel" id="profileCancelBtn">취소</button>
+                <button class="btn-save" id="profileSaveBtn">저장하기</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="{{ versioned_static('js/dialog.js') }}" defer></script>
+    <script src="{{ versioned_static('js/notice.js') }}" defer></script>
+    <script type="text/javascript">window.videoData = {{ init_videos|tojson|safe }};
+
+window.__ssrRenderedCount = {{ init_mobile_video_cards|length }};
+
+window.__skipInitialVideoReset = {{ 'true' if init_mobile_video_cards else 'false' }};</script>
+    
+    <script src="{{ versioned_static('js/m.js') }}" defer></script>
+
+    <script type="text/javascript">(function() {
+    var checkInterval = setInterval(function() {
+        if (typeof window.switchTab === "function") {
+            clearInterval(checkInterval);
+            window.switchTab("video");
+        }
+    }, 50);
+})();</script>
+    <script>(function() {
+    if ("scrollRestoration" in history) {
+        try {
+            history.scrollRestoration = "manual";
+        } catch (e) {}
+    }
+    function scrollKey() {
+        return "scrollPos:" + location.pathname + location.search;
+    }
+    function saveScrollPos() {
+        try {
+            sessionStorage.setItem(scrollKey(), String(window.scrollY));
+        } catch (e) {}
+    }
+    let scrollSaveTimer = null;
+    window.addEventListener("scroll", () => {
+        clearTimeout(scrollSaveTimer);
+        scrollSaveTimer = setTimeout(saveScrollPos, 200);
+    }, {
+        passive: true
+    });
+    window.addEventListener("pagehide", saveScrollPos);
+    document.addEventListener("visibilitychange", () => {
+        if (document.visibilityState === "hidden") saveScrollPos();
+    });
+    function attemptScrollRestore() {
+        let saved;
+        try {
+            saved = sessionStorage.getItem(scrollKey());
+        } catch (e) {
+            saved = null;
+        }
+        if (saved === null) return;
+        const y = parseInt(saved, 10);
+        if (isNaN(y) || y < 40) return;
+        [ 0, 150, 400, 800, 1500 ].forEach(delay => {
+            setTimeout(() => {
+                if (document.body.scrollHeight - window.innerHeight >= y) window.scrollTo(0, y);
+            }, delay);
+        });
+    }
+    if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", attemptScrollRestore);
+    } else {
+        attemptScrollRestore();
+    }
+})();</script>
+    <script>if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+        navigator.serviceWorker.register("/sw.js", {
+            scope: "/"
+        }).catch(() => {});
+    });
+}</script>
+    <script>(function() {
+    const byId = id => document.getElementById(id);
+    const bind = (id, fn) => {
+        const el = byId(id);
+        if (el) el.addEventListener("click", fn);
+    };
+    bind("m-fanNoticeOpenBtn", () => byId("fanNoticeModal").classList.add("open"));
+    bind("m-fanNoticeCloseBtn", () => byId("fanNoticeModal").classList.remove("open"));
+    const fanNoticeModalEl = byId("fanNoticeModal");
+    if (fanNoticeModalEl) fanNoticeModalEl.addEventListener("click", e => {
+        if (e.target === fanNoticeModalEl) fanNoticeModalEl.classList.remove("open");
+    });
+    bind("m-logoBtn", () => window.location.href = "/");
+    const drawerInnerEl = document.querySelector(".m-drawer");
+    if (drawerInnerEl) drawerInnerEl.addEventListener("click", e => e.stopPropagation());
+    const sheetInnerEl = document.querySelector(".m-sheet");
+    if (sheetInnerEl) sheetInnerEl.addEventListener("click", e => e.stopPropagation());
+    bind("btn-video", () => {
+        if (typeof window.switchTab === "function") window.switchTab("video");
+    });
+    bind("btn-shorts", () => {
+        if (typeof window.switchTab === "function") window.switchTab("shorts");
+    });
+    bind("btn-music", () => {
+        if (typeof window.switchTab === "function") window.switchTab("music");
+    });
+    const videoGridEl = byId("videoGrid");
+    if (videoGridEl) videoGridEl.addEventListener("click", e => {
+        const memberEl = e.target.closest(".m-card-member");
+        if (memberEl) {
+            e.stopPropagation();
+            const name = memberEl.dataset.member;
+            const m = M_MEMBERS.find(mm => mm.name === name);
+            if (m) openMemberView(m);
+            return;
+        }
+        const card = e.target.closest(".m-card[data-href]");
+        if (card) window.location.href = card.dataset.href;
+    });
+    const M_COMMENT_PREVIEW_CHUNK = 40;
+    const M_COMMENT_PREVIEW_RETRY_MS = 2500;
+    const M_COMMENT_PREVIEW_BATCH_MS = 150;
+    function mApplyCommentPreviewResult(chunk, data) {
+        if (!data || !data.success) return [];
+        const stillMissing = [];
+        chunk.forEach(el => {
+            const c = data.comments[el.dataset.commentVideoId];
+            if (c && c.content) {
+                el.textContent = "💬 " + c.content;
+                el.classList.add("has-comment");
+            } else if (!el.classList.contains("has-comment")) {
+                stillMissing.push(el);
+            }
+        });
+        return stillMissing;
+    }
+    function mFetchCommentPreviewChunk(chunk) {
+        const ids = chunk.map(el => el.dataset.commentVideoId).filter(Boolean);
+        if (!ids.length) return;
+        fetch("/api/comment_previews?ids=" + encodeURIComponent(ids.join(",")))
+            .then(r => r.json())
+            .then(data => {
+                const stillMissing = mApplyCommentPreviewResult(chunk, data);
+                if (stillMissing.length) {
+                    const retryIds = stillMissing.map(el => el.dataset.commentVideoId).filter(Boolean);
+                    setTimeout(() => {
+                        fetch("/api/comment_previews?ids=" + encodeURIComponent(retryIds.join(",")))
+                            .then(r => r.json())
+                            .then(d => mApplyCommentPreviewResult(stillMissing, d))
+                            .catch(() => {});
+                    }, M_COMMENT_PREVIEW_RETRY_MS);
+                }
+            })
+            .catch(() => {});
+    }
+    let mCommentPreviewPending = [];
+    let mCommentPreviewBatchTimer = null;
+    function mFlushCommentPreviewBatch() {
+        mCommentPreviewBatchTimer = null;
+        const els = mCommentPreviewPending;
+        mCommentPreviewPending = [];
+        for (let i = 0; i < els.length; i += M_COMMENT_PREVIEW_CHUNK) {
+            mFetchCommentPreviewChunk(els.slice(i, i + M_COMMENT_PREVIEW_CHUNK));
+        }
+    }
+    const mCommentPreviewObserver = ("IntersectionObserver" in window) ? new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+            if (!entry.isIntersecting) return;
+            mCommentPreviewObserver.unobserve(entry.target);
+            mCommentPreviewPending.push(entry.target);
+        });
+        if (mCommentPreviewPending.length && !mCommentPreviewBatchTimer) {
+            mCommentPreviewBatchTimer = setTimeout(mFlushCommentPreviewBatch, M_COMMENT_PREVIEW_BATCH_MS);
+        }
+    }, { rootMargin: "800px 0px" }) : null;
+    function loadCommentPreviews(root) {
+        const scope = (root && typeof root.querySelectorAll === "function") ? root : document;
+        const els = Array.from(scope.querySelectorAll(".m-card-comment-preview[data-comment-video-id]:not([data-observed])"));
+        if (!els.length) return;
+        els.forEach(el => el.setAttribute("data-observed", "1"));
+        if (!mCommentPreviewObserver) {
+            for (let i = 0; i < els.length; i += M_COMMENT_PREVIEW_CHUNK) {
+                mFetchCommentPreviewChunk(els.slice(i, i + M_COMMENT_PREVIEW_CHUNK));
+            }
+            return;
+        }
+        els.forEach(el => mCommentPreviewObserver.observe(el));
+    }
+    loadCommentPreviews();
+    if (videoGridEl) new MutationObserver(loadCommentPreviews).observe(videoGridEl, { childList: true });
+    const M_MEMBERS = [ {
+        name: "스텔라이브",
+        img: "/static/logo/logo.webp"
+    }, {
+        name: "칸나",
+        img: "/static/images/members/kanna.webp"
+    }, {
+        name: "유니",
+        img: "https://i.namu.wiki/i/cFNB6OKfcmtOZxrYnFPBE3QXgeWSr5jDbjuZJdxbaa_Bei_0b5KUzIxSJpf12b5WlanvdAvNo5bugjKvCgbZ5A.webp"
+    }, {
+        name: "후야",
+        img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQva7Y0OaVg2bJ75b4AaHIB9Uz12JjRyhMt7A&s"
+    }, {
+        name: "히나",
+        img: "https://i.namu.wiki/i/k7tGg6CuciwAe2TeNcQ8k_hbr6ah06ZebZMEMMJJcKBrkBtYT1d4g-R8vBj0Yx3IE_HtLibeY6cvu6lqfvAMhg.webp"
+    }, {
+        name: "리제",
+        img: "https://i.namu.wiki/i/pPA5qnRQ3rtOgq87QEHxq85myPmYQqehKSCNRQNnz_vL8UhOqIo60EyFaSWqOb0KYZzz96CvaNNTWt1Bgu9-ug.webp"
+    }, {
+        name: "마시로",
+        img: "https://i.namu.wiki/i/rdq9InW9BTpqFEEYM5AzomulOksp2eYwqx1HImO8v2pl7-Rczp55LlsQYNkU8rqGJbY6gBFIZB_VVM-9wd-RNQ.webp"
+    }, {
+        name: "타비",
+        img: "https://i.namu.wiki/i/4kOBEy-ArnkKnVU5rtoU5KHZ-qgo7uw8BfY5wet2ZWfde7FDiQDPj9Yw6VOC06AoWezjS8IS5atEDdZrZJgUcg.webp"
+    }, {
+        name: "린",
+        img: "https://i.namu.wiki/i/mpQFPkG7lhVg2X7r5xvcJ48X006rbZtOXLaX8Erq5gkXRD46bsI02hZsI4d8cA1-n8XwjHYNfhQCYTp_N62jzQ.webp"
+    }, {
+        name: "시부키",
+        img: "https://i.namu.wiki/i/sJ0lxsphEpqfg8VK4OCLhWq5i37wLT8u9h2beQJC1cT9ndCTZDTq5Hrc7zmIpKPj-AICP-9j5Jfaeq3QBHVbrw.webp"
+    }, {
+        name: "나나",
+        img: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSo7HYH2zlWzSDoX-WotjV7M_Wr9SFtV_PZWg&s"
+    }, {
+        name: "리코",
+        img: "https://i.namu.wiki/i/X-g_0AeDF8JemoX-4ALKitt2I4AY2hdKoFK00K_Zl9M4ceNjgUh_qb3CfMEDF2gnJ474_XMMdi0tIuQgFPT36w.webp"
+    }, {
+        name: "강지",
+        img: "https://pbs.twimg.com/media/ESBmIZDVAAAXQs_.jpg"
+    }, {
+        name: "김블루",
+        img: "https://pbs.twimg.com/media/ESBmIZDVAAAXQs_.jpg"
+    } ];
+    // 운영진 배지 (관리자 화면에서 지정한 운영진 포함)
+    let mStaffRoles = {};
+    fetch("/api/staff-roles").then(r => r.json()).then(d => {
+        if (d && typeof d === "object") mStaffRoles = d;
+        document.querySelectorAll("[data-staff-nick]").forEach(el => {
+            const old = el.querySelector(".name-badge");
+            if (old) old.remove();
+            el.insertAdjacentHTML("beforeend", mStaffBadge(el.dataset.staffNick));
+        });
+    }).catch(() => {});
+    function mStaffBadge(nickname) {
+        if (!nickname) return "";
+        const role = mStaffRoles[nickname];
+        return role ? `<span class="m-staff-badge name-badge"><i class="fas fa-crown"></i> ${mEsc(role)}</span>` : `<span class="m-title-badge name-badge">파스텔</span>`;
+    }
+    function mEsc(str) {
+        if (str === null || str === undefined) return "";
+        return String(str).replace(/[&<>"']/g, c => ({
+            "&": "&amp;",
+            "<": "&lt;",
+            ">": "&gt;",
+            '"': "&quot;",
+            "'": "&#39;"
+        }[c]));
+    }
+    function mEscAttr(s) {
+        return String(s || "").replace(/'/g, "\\'");
+    }
+    function mFullName(name) {
+        return (window.MEMBER_FULL_NAMES && window.MEMBER_FULL_NAMES[name]) || name;
+    }
+    function mColor(name) {
+        return (window.MEMBER_ACCENT_COLORS && window.MEMBER_ACCENT_COLORS[name]) || "";
+    }
+    function isLoggedIn() {
+        return typeof currentMobileUser !== "undefined" && !!currentMobileUser;
+    }
+    const ALL_FULL_VIEWS = [ "m-memberView", "m-galleryView", "m-scheduleView", "m-historyView", "m-bookmarksView", "m-playlistsView" ];
+    function openMFullView(id) {
+        ALL_FULL_VIEWS.forEach(v => {
+            const el = document.getElementById(v);
+            if (el) el.classList.remove("open");
+        });
+        const grid = document.getElementById("videoGrid"), shorts = document.getElementById("shortsPlayerContainer"), nav = document.querySelector(".m-bottom-nav");
+        if (grid) grid.style.display = "none";
+        if (shorts) shorts.style.display = "none";
+        if (nav) nav.style.display = "none";
+        const target = document.getElementById(id);
+        if (target) {
+            target.classList.add("open");
+            target.scrollTop = 0;
+        }
+        closeDrawer();
+    }
+    function closeMFullView() {
+        ALL_FULL_VIEWS.forEach(v => {
+            const el = document.getElementById(v);
+            if (el) el.classList.remove("open");
+        });
+        const nav = document.querySelector(".m-bottom-nav");
+        if (nav) nav.style.display = "";
+        const activeBtn = document.querySelector(".m-nav-btn.active");
+        const tab = activeBtn ? activeBtn.id.replace("btn-", "") : "video";
+        const grid = document.getElementById("videoGrid"), shorts = document.getElementById("shortsPlayerContainer");
+        if (tab === "shorts") {
+            if (shorts) shorts.style.display = "block";
+            if (grid) grid.style.display = "none";
+        } else {
+            if (grid) grid.style.display = "flex";
+            if (shorts) shorts.style.display = "none";
+        }
+    }
+    [ "m-memberViewBack", "m-galleryViewBack", "m-scheduleViewBack", "m-historyViewBack", "m-bookmarksViewBack", "m-playlistsViewBack" ].forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.addEventListener("click", closeMFullView);
+    });
+    const drawerOverlay = document.getElementById("m-drawerOverlay");
+    function openDrawer() {
+        drawerOverlay.classList.add("open");
+        document.body.style.overflow = "hidden";
+    }
+    function closeDrawer() {
+        drawerOverlay.classList.remove("open");
+        document.body.style.overflow = "";
+    }
+    document.getElementById("m-hamburgerBtn").addEventListener("click", openDrawer);
+    document.getElementById("m-drawerCloseBtn").addEventListener("click", closeDrawer);
+    drawerOverlay.addEventListener("click", closeDrawer);
+    const M_MEMBER_GENERATIONS = [ {
+        key: "1기생",
+        unitLabel: "미스틱 · 에버리스",
+        members: [ "칸나", "유니", "후야" ]
+    }, {
+        key: "2기생",
+        unitLabel: "유니버스",
+        members: [ "히나", "마시로", "리제", "타비" ]
+    }, {
+        key: "3기생",
+        unitLabel: "클리셰",
+        members: [ "시부키", "린", "나나", "리코" ]
+    } ];
+    const drawerMembersEl = document.getElementById("m-drawerMembers");
+    function mMakeDrawerMemberBtn(m, extraClass) {
+        const btn = document.createElement("button");
+        btn.className = "m-drawer-item" + (extraClass ? " " + extraClass : "");
+        const c = mColor(m.name);
+        btn.innerHTML = `<img class="m-drawer-avatar" src="${m.img}" alt=""><span class="m-drawer-item-name"${c ? ` style="color:${c};"` : ""}>${mEsc(mFullName(m.name))}</span>`;
+        btn.addEventListener("click", () => openMemberView(m));
+        return btn;
+    }
+    (function renderDrawerMembersGrouped() {
+        const byName = {};
+        M_MEMBERS.forEach(m => {
+            byName[m.name] = m;
+        });
+        const groupedNames = new Set;
+        M_MEMBER_GENERATIONS.forEach(gen => gen.members.forEach(n => groupedNames.add(n)));
+        const stellive = M_MEMBERS.find(m => m.name === "스텔라이브");
+        if (stellive) drawerMembersEl.appendChild(mMakeDrawerMemberBtn(stellive));
+        M_MEMBER_GENERATIONS.forEach(gen => {
+            const genMembers = gen.members.map(n => byName[n]).filter(Boolean);
+            const repImg = (window.GENERATION_REP_IMAGE_OVERRIDES && window.GENERATION_REP_IMAGE_OVERRIDES[gen.key]) || (genMembers[0] ? genMembers[0].img : "");
+            const groupEl = document.createElement("div");
+            groupEl.className = "m-drawer-generation-group";
+            groupEl.id = "mGenGroup_" + gen.key;
+            const headerEl = document.createElement("div");
+            headerEl.className = "m-drawer-generation-header";
+            headerEl.appendChild(mMakeDrawerMemberBtn({
+                name: gen.key,
+                img: repImg
+            }));
+            const toggleBtn = document.createElement("button");
+            toggleBtn.type = "button";
+            toggleBtn.className = "m-drawer-generation-toggle";
+            toggleBtn.setAttribute("aria-label", gen.key + " 펼치기/접기");
+            toggleBtn.innerHTML = '<i class="fas fa-chevron-down"></i>';
+            toggleBtn.addEventListener("click", e => {
+                e.stopPropagation();
+                const collapsed = groupEl.classList.toggle("collapsed");
+                try {
+                    localStorage.setItem("genCollapsed_" + gen.key, collapsed ? "1" : "0");
+                } catch (err) {}
+            });
+            headerEl.appendChild(toggleBtn);
+            groupEl.appendChild(headerEl);
+            const unitLabelEl = document.createElement("div");
+            unitLabelEl.className = "m-drawer-generation-unit-label";
+            unitLabelEl.textContent = gen.unitLabel;
+            groupEl.appendChild(unitLabelEl);
+            const membersWrap = document.createElement("div");
+            membersWrap.className = "m-drawer-generation-members";
+            genMembers.forEach(m => membersWrap.appendChild(mMakeDrawerMemberBtn(m)));
+            groupEl.appendChild(membersWrap);
+            try {
+                if (localStorage.getItem("genCollapsed_" + gen.key) === "1") groupEl.classList.add("collapsed");
+            } catch (err) {}
+            drawerMembersEl.appendChild(groupEl);
+        });
+        M_MEMBERS.forEach(m => {
+            if (m.name === "스텔라이브" || groupedNames.has(m.name)) return;
+            drawerMembersEl.appendChild(mMakeDrawerMemberBtn(m));
+        });
+    })();
+    document.getElementById("m-navHistory").addEventListener("click", () => {
+        openMFullView("m-historyView");
+        loadMHistory();
+    });
+    document.getElementById("m-navBookmarks").addEventListener("click", () => {
+        openMFullView("m-bookmarksView");
+        loadMBookmarks();
+    });
+    document.getElementById("m-navPlaylists").addEventListener("click", () => {
+        openMFullView("m-playlistsView");
+        loadMPlaylists();
+    });
+    document.getElementById("m-navGallery").addEventListener("click", () => {
+        openMFullView("m-galleryView");
+        loadMGallery();
+    });
+    document.getElementById("m-navSchedule").addEventListener("click", () => {
+        openMFullView("m-scheduleView");
+        initMSchedule();
+    });
+    let mSearchDebounce = null;
+    document.getElementById("m-searchBtn").addEventListener("click", () => {
+        document.getElementById("m-searchView").classList.add("open");
+        document.getElementById("m-searchInput").focus();
+        showMTrending();
+    });
+    document.getElementById("m-searchCancelBtn").addEventListener("click", () => document.getElementById("m-searchView").classList.remove("open"));
+    document.getElementById("m-searchInput").addEventListener("input", function() {
+        clearTimeout(mSearchDebounce);
+        const v = this.value.trim();
+        if (!v) {
+            showMTrending();
+            return;
+        }
+        mSearchDebounce = setTimeout(() => fetchMSuggestions(v), 250);
+    });
+    document.getElementById("m-searchInput").addEventListener("keypress", function(e) {
+        if (e.key === "Enter") execMSearch(this.value.trim());
+    });
+    function showMTrending() {
+        const body = document.getElementById("m-searchBody");
+        body.innerHTML = '<div class="m-empty-state">불러오는 중...</div>';
+        fetch("/api/search/trending").then(r => r.json()).then(data => {
+            if (data.success && data.trends && data.trends.length) {
+                body.innerHTML = data.trends.map((k, i) => `<div class="m-search-trend-item" onclick="document.getElementById('m-searchInput').value='${mEscAttr(k)}'; execMSearch('${mEscAttr(k)}')"><span class="m-rank">${i + 1}</span><span>${mEsc(k)}</span></div>`).join("");
+            } else body.innerHTML = '<div class="m-empty-state">인기 검색어가 없습니다.</div>';
+        }).catch(() => {
+            body.innerHTML = "";
+        });
+    }
+    function fetchMSuggestions(q) {
+        fetch(`/api/search/suggest?q=${encodeURIComponent(q)}`).then(r => r.json()).then(data => {
+            const body = document.getElementById("m-searchBody");
+            const cur = document.getElementById("m-searchInput").value.trim();
+            if (!cur) return;
+            const sugg = data.success && data.suggestions ? data.suggestions : [];
+            if (!sugg.length) {
+                body.innerHTML = '<div class="m-empty-state">일치하는 결과가 없습니다.</div>';
+                return;
+            }
+            body.innerHTML = sugg.map(s => {
+                if (s.type === "video") return `<div class="m-search-trend-item" onclick="window.location.href='/watch/${s.videoId || ""}'"><img src="${s.thumbnail || ""}" style="width:44px;height:26px;object-fit:cover;border-radius:4px;background:var(--border);"><span>${mEsc(s.text)}</span></div>`;
+                return `<div class="m-search-trend-item" onclick="document.getElementById('m-searchInput').value='${mEscAttr(s.text)}'; execMSearch('${mEscAttr(s.text)}')"><i class="fas fa-user" style="color:var(--accent); width:20px; text-align:center;"></i><span>${mEsc(s.text)} 채널</span></div>`;
+            }).join("");
+        }).catch(() => {});
+    }
+    window.execMSearch = function(q) {
+        q = (q || "").trim();
+        if (!q) return;
+        const body = document.getElementById("m-searchBody");
+        body.innerHTML = '<div class="m-empty-state">검색중...</div>';
+        fetch(`/api/search?q=${encodeURIComponent(q)}`).then(r => r.json()).then(data => {
+            if (!data.success) {
+                body.innerHTML = '<div class="m-empty-state">검색 결과가 없습니다.</div>';
+                return;
+            }
+            const videos = data.videos || [], fanarts = data.fanarts || [], community = data.community || [];
+            if (!videos.length && !fanarts.length && !community.length) {
+                body.innerHTML = '<div class="m-empty-state">검색 결과가 없습니다.</div>';
+                return;
+            }
+            let html = "";
+            if (videos.length) html += `<div class="m-search-section-label">영상 (${videos.length})</div>` + videos.map(v => `<div class="m-search-result-video" onclick="window.location.href='/watch/${v.videoId}'"><img src="${v.thumbnail || ""}" loading="lazy" decoding="async"><div class="t">${mEsc(v.title || "")}</div></div>`).join("");
+            if (fanarts.length) html += `<div class="m-search-section-label">팬 갤러리 (${fanarts.length})</div><div class="m-search-fanart-row">` + fanarts.map(a => `<img src="${a.thumbnail_url || a.image_url}" loading="lazy" decoding="async" onclick="document.getElementById('m-searchView').classList.remove('open'); openMFullView('m-galleryView'); loadMGallery();">`).join("") + "</div>";
+            if (community.length) html += `<div class="m-search-section-label">커뮤니티 게시물 (${community.length})</div>` + community.map(p => `<div class="m-search-community-item" onclick="window.location.href='/${encodeURIComponent(p.member_name)}/community'"><b style="color:var(--accent);">${mEsc(p.author || "익명")} · ${mEsc(p.member_name)}</b><div style="margin-top:4px;">${mEsc((p.content || "").substring(0, 80))}</div></div>`).join("");
+            body.innerHTML = html;
+        }).catch(() => {
+            body.innerHTML = '<div class="m-empty-state">검색 중 오류가 발생했습니다.</div>';
+        });
+    };
+    const createSheet = document.getElementById("m-createSheetOverlay");
+    document.getElementById("m-createBtn").addEventListener("click", () => createSheet.classList.add("open"));
+    createSheet.addEventListener("click", () => createSheet.classList.remove("open"));
+    let mPostSelectedMember = null;
+    document.getElementById("m-createPostBtn").addEventListener("click", () => {
+        createSheet.classList.remove("open");
+        if (!isLoggedIn()) {
+            showToast("로그인 후 이용할 수 있습니다.", "warning");
+            return;
+        }
+        const grid = document.getElementById("m-createPostMemberGrid");
+        grid.innerHTML = M_MEMBERS.map(m => `<div class="m-member-select-item" data-name="${mEscAttr(m.name)}"><img src="${m.img}"><span>${mEsc(mFullName(m.name))}</span></div>`).join("");
+        grid.querySelectorAll(".m-member-select-item").forEach(el => el.addEventListener("click", () => selectMPostMember(el.dataset.name)));
+        document.getElementById("m-createPostMemberStep").style.display = "block";
+        document.getElementById("m-createPostFormStep").style.display = "none";
+        document.getElementById("m-createPostOverlay").style.display = "flex";
+    });
+    document.getElementById("m-createPostCancel1").addEventListener("click", () => document.getElementById("m-createPostOverlay").style.display = "none");
+    document.getElementById("m-createPostBack").addEventListener("click", () => {
+        document.getElementById("m-createPostMemberStep").style.display = "block";
+        document.getElementById("m-createPostFormStep").style.display = "none";
+    });
+    function selectMPostMember(name) {
+        mPostSelectedMember = name;
+        document.getElementById("m-createPostSelectedName").textContent = name + "님의 커뮤니티에 작성";
+        document.getElementById("m-createPostTitle").value = "";
+        document.getElementById("m-createPostContent").value = "";
+        document.getElementById("m-createPostImages").value = "";
+        document.getElementById("m-createPostMemberStep").style.display = "none";
+        document.getElementById("m-createPostFormStep").style.display = "block";
+    }
+    document.getElementById("m-createPostSubmit").addEventListener("click", () => {
+        const content = document.getElementById("m-createPostContent").value.trim();
+        if (!content) {
+            showToast("내용을 입력해주세요.", "warning");
+            return;
+        }
+        const fd = new FormData;
+        fd.append("member_name", mPostSelectedMember);
+        fd.append("title", document.getElementById("m-createPostTitle").value.trim());
+        fd.append("content", content);
+        const files = document.getElementById("m-createPostImages").files;
+        for (let i = 0; i < files.length; i++) fd.append("images", files[i]);
+        const btn = document.getElementById("m-createPostSubmit");
+        btn.disabled = true;
+        fetch("/api/community/post", {
+            method: "POST",
+            body: fd
+        }).then(r => r.json()).then(data => {
+            if (data.success) {
+                showToast("게시물이 작성되었습니다.", "success");
+                document.getElementById("m-createPostOverlay").style.display = "none";
+                if (mCurrentMember === mPostSelectedMember && document.getElementById("m-memberView").classList.contains("open")) loadMemberCommunity();
+            } else showToast(data.message || "게시물 작성에 실패했습니다.", "error");
+        }).catch(() => showToast("게시물 작성 중 오류가 발생했습니다.", "error")).finally(() => {
+            btn.disabled = false;
+        });
+    });
+    let mCurrentMember = null;
+    let mCurrentType = "video";
+    let mCurrentSort = "latest";
+    function openMemberView(member) {
+        mCurrentMember = member.name;
+        mCurrentType = "video";
+        mCurrentSort = "latest";
+        updateMSortUI();
+        document.getElementById("m-memberViewAvatar").src = member.img;
+        document.getElementById("m-memberViewName").textContent = mFullName(member.name);
+        document.querySelectorAll(".m-member-tab-btn").forEach(b => b.classList.toggle("active", b.dataset.mtab === "video"));
+        document.getElementById("m-memberVideoWrap").style.display = "";
+        document.getElementById("m-memberCommunityWrap").style.display = "none";
+        openMFullView("m-memberView");
+        loadMemberVideos("video", mCurrentSort);
+    }
+    document.querySelectorAll(".m-member-tab-btn").forEach(btn => {
+        btn.addEventListener("click", () => {
+            document.querySelectorAll(".m-member-tab-btn").forEach(b => b.classList.remove("active"));
+            btn.classList.add("active");
+            const tab = btn.dataset.mtab;
+            mCurrentType = tab;
+            if (tab === "community") {
+                document.getElementById("m-memberVideoWrap").style.display = "none";
+                document.getElementById("m-memberCommunityWrap").style.display = "";
+                loadMemberCommunity();
+            } else {
+                document.getElementById("m-memberVideoWrap").style.display = "";
+                document.getElementById("m-memberCommunityWrap").style.display = "none";
+                loadMemberVideos(tab, mCurrentSort);
+            }
+        });
+    });
+    const mSortLabels = { latest: "최신순", views: "인기순", oldest: "날짜순" };
+    function updateMSortUI() {
+        document.querySelectorAll(".m-sort-menu-item").forEach(b => b.classList.toggle("active", b.dataset.msort === mCurrentSort));
+        const oldestItem = document.querySelector('.m-sort-menu-item[data-msort="oldest"]');
+        if (oldestItem) {
+            oldestItem.style.display = ("강지" === mCurrentMember || "김블루" === mCurrentMember) ? "none" : "";
+        }
+        const l = document.getElementById("m-sortTriggerLabel");
+        if (l) l.textContent = "정렬: " + (mSortLabels[mCurrentSort] || mSortLabels.latest);
+    }
+    const mSortTriggerBtn = document.getElementById("m-sortTriggerBtn"),
+        mSortMenu = document.getElementById("m-sortMenu");
+    if (mSortTriggerBtn && mSortMenu) {
+        document.body.appendChild(mSortMenu);
+        mSortTriggerBtn.addEventListener("click", e => {
+            e.stopPropagation();
+            const opening = !mSortMenu.classList.contains("open");
+            if (opening) {
+                const r = mSortTriggerBtn.getBoundingClientRect();
+                mSortMenu.style.top = (r.bottom + 6) + "px";
+                mSortMenu.style.left = r.left + "px";
+            }
+            mSortMenu.classList.toggle("open", opening);
+        });
+    }
+    document.addEventListener("click", () => {
+        mSortMenu && mSortMenu.classList.remove("open");
+    });
+    document.querySelectorAll(".m-sort-menu-item").forEach(btn => {
+        btn.addEventListener("click", () => {
+            const sort = btn.dataset.msort;
+            mSortMenu && mSortMenu.classList.remove("open");
+            if (sort === mCurrentSort) return;
+            mCurrentSort = sort;
+            updateMSortUI();
+            loadMemberVideos(mCurrentType, mCurrentSort);
+        });
+    });
+    function loadMemberVideos(type, sort) {
+        sort = sort || mCurrentSort || "latest";
+        const grid = document.getElementById("m-memberVideoGrid");
+        grid.innerHTML = '<div class="m-empty-state">불러오는 중...</div>';
+        fetch(`/api/videos/${encodeURIComponent(mCurrentMember)}?type=${type}&sort=${sort}`).then(r => r.json()).then(data => {
+            const videos = data.videos || [];
+            if (data.oldest_limited && sort === "oldest") {
+                showToast(
+                    data.oldest_limited_reason === "quota"
+                        ? `⚠️ 유튜브 할당량 초과로 오래된 영상을 모두 불러오지 못했습니다.${data.quota_reset_kst_label ? ` (한국시간 ${mEsc(data.quota_reset_kst_label)}경 해결)` : ""}`
+                        : "⚠️ 영상이 너무 많아 일부 오래된 영상은 표시되지 않을 수 있습니다.",
+                    "warning"
+                );
+            }
+            if (!videos.length) {
+                if (data.quota_exceeded) {
+                    const eta = data.quota_reset_kst_label ? `(한국시간 ${mEsc(data.quota_reset_kst_label)}경 자동으로 해결됩니다)` : "";
+                    grid.innerHTML = `<div class="m-empty-state">⚠️ 유튜브 서버 할당량이 초과되어 영상을 일시적으로 불러올 수 없습니다.</div>`;
+                    if (typeof Swal !== "undefined" && !window.__quotaPopupShown) {
+                        window.__quotaPopupShown = true;
+                        Swal.fire({
+                            icon: "warning",
+                            title: "유튜브 서버 할당량 초과",
+                            html: `영상을 일시적으로 불러올 수 없습니다.<br>${eta}<br><span style="opacity:.7;font-size:.85em;">사이트 운영자가 지금 당장 해결할 수 있는 문제가 아니에요.</span>`,
+                            confirmButtonText: "확인",
+                            confirmButtonColor: "#38bdf8",
+                            background: "#1c1c1c",
+                            color: "#fff"
+                        });
+                    }
+                } else {
+                    grid.innerHTML = '<div class="m-empty-state">영상이 없습니다.</div>';
+                }
+                return;
+            }
+            grid.innerHTML = videos.map(v => `<div class="m-card" onclick="window.location.href='/watch/${v.videoId}?type=${type}'"><img src="${v.thumbnail || ""}" alt="${mEsc(v.title || "")}" loading="lazy"><div>${mEsc(v.title || "")}</div><div class="m-card-comment-preview" data-comment-video-id="${mEsc(v.videoId || "")}"></div></div>`).join("");
+            loadCommentPreviews(grid);
+        }).catch(() => {
+            grid.innerHTML = '<div class="m-empty-state">불러오지 못했습니다.</div>';
+        });
+    }
+    function loadMemberCommunity(sort) {
+        sort = sort || "latest";
+        document.getElementById("m-communityInputBox").style.display = isLoggedIn() ? "block" : "none";
+        const feed = document.getElementById("m-communityFeed");
+        feed.innerHTML = '<div class="m-empty-state">불러오는 중...</div>';
+        fetch(`/api/community/${encodeURIComponent(mCurrentMember)}/posts?sort=${sort}`).then(r => r.json()).then(data => {
+            if (!data.success || !data.posts || !data.posts.length) {
+                feed.innerHTML = '<div class="m-empty-state">등록된 게시물이 없습니다. 첫 번째 글을 남겨보세요!</div>';
+                return;
+            }
+            feed.innerHTML = data.posts.map(renderMCommunityPost).join("");
+        }).catch(() => {
+            feed.innerHTML = '<div class="m-empty-state">불러오지 못했습니다.</div>';
+        });
+    }
+    function renderMCommunityPost(post) {
+        const likeActive = post.my_reaction === "like" ? "active" : "";
+        let imagesHtml = "";
+        if (post.images && post.images.length) imagesHtml = post.images.map(img => `<img class="post-img" src="${img}" loading="lazy">`).join("");
+        return `<div class="m-community-post-card" data-post-id="${post.id}">\n                <div class="hd"><img src="${post.picture || "https://www.gravatar.com/avatar/?d=mp"}"><div><div class="name" data-staff-nick="${mEsc(post.nickname || "")}">${mEsc(post.nickname || post.author || "익명")}${mStaffBadge(post.nickname)}</div><div class="time">${mEsc(post.created_at || "")}</div></div></div>\n                ${post.title ? `<div style="font-weight:bold; color:var(--text-primary); margin-bottom:6px;">${mEsc(post.title)}</div>` : ""}\n                <div class="content">${mEsc(post.content || "")}</div>\n                ${imagesHtml}\n                <div class="actions">\n                    <button class="${likeActive} m-post-like-btn"><i class="fa${likeActive ? "s" : "r"} fa-thumbs-up"></i> <span class="lc">${post.likes_count || 0}</span></button>\n                    <button class="m-post-comment-toggle-btn"><i class="far fa-comment"></i> <span class="cc">${post.comments_count || 0}</span></button>\n                </div>\n                <div class="m-community-comments" id="mPostComments_${post.id}">\n                    <div id="mPostCommentList_${post.id}"></div>\n                    ${isLoggedIn() ? `<div class="m-community-comment-row"><input type="text" placeholder="댓글을 입력하세요"><button class="m-post-comment-submit-btn">등록</button></div>` : ""}\n                </div>\n            </div>`;
+    }
+    document.getElementById("m-communityFeed").addEventListener("click", function(e) {
+        const card = e.target.closest(".m-community-post-card");
+        if (!card) return;
+        const postId = card.dataset.postId;
+        if (e.target.closest(".m-post-like-btn")) {
+            const btn = e.target.closest(".m-post-like-btn");
+            if (!isLoggedIn()) {
+                showToast("로그인 후 이용할 수 있습니다.", "warning");
+                return;
+            }
+            fetch("/api/community/like", {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    target_type: "post",
+                    target_id: parseInt(postId, 10),
+                    reaction: "like"
+                })
+            }).then(r => r.json()).then(data => {
+                if (!data.success) {
+                    showToast(data.message || "처리에 실패했습니다.", "error");
+                    return;
+                }
+                const active = data.my_reaction === "like";
+                btn.classList.toggle("active", active);
+                btn.querySelector("i").className = active ? "fas fa-thumbs-up" : "far fa-thumbs-up";
+                btn.querySelector(".lc").textContent = data.like_count;
+            });
+        } else if (e.target.closest(".m-post-comment-toggle-btn")) {
+            const section = document.getElementById("mPostComments_" + postId);
+            const opening = !section.classList.contains("open");
+            section.classList.toggle("open", opening);
+            if (opening && !section.dataset.loaded) {
+                section.dataset.loaded = "1";
+                fetch(`/api/community/comments/${postId}`).then(r => r.json()).then(data => {
+                    const listEl = document.getElementById("mPostCommentList_" + postId);
+                    if (!data.success || !data.comments || !data.comments.length) {
+                        listEl.innerHTML = '<div class="m-empty-state" style="padding:14px;">첫 댓글을 남겨보세요!</div>';
+                        return;
+                    }
+                    listEl.innerHTML = data.comments.map(c => `<div class="m-community-comment-item"><b data-staff-nick="${mEsc(c.nickname)}">${mEsc(c.nickname)}${mStaffBadge(c.nickname)}</b>${mEsc(c.content)}</div>`).join("");
+                });
+            }
+        } else if (e.target.closest(".m-post-comment-submit-btn")) {
+            if (!isLoggedIn()) {
+                showToast("로그인 후 이용할 수 있습니다.", "warning");
+                return;
+            }
+            const inputEl = card.querySelector(".m-community-comment-row input");
+            const content = (inputEl.value || "").trim();
+            if (!content) return;
+            inputEl.disabled = true;
+            fetch(`/api/community/comments/${postId}`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    content: content
+                })
+            }).then(r => r.json()).then(data => {
+                if (!data.success) {
+                    showToast(data.message || "댓글 작성에 실패했습니다.", "error");
+                    return;
+                }
+                inputEl.value = "";
+                fetch(`/api/community/comments/${postId}`).then(r => r.json()).then(data2 => {
+                    const listEl = document.getElementById("mPostCommentList_" + postId);
+                    listEl.innerHTML = (data2.comments || []).map(c => `<div class="m-community-comment-item"><b data-staff-nick="${mEsc(c.nickname)}">${mEsc(c.nickname)}${mStaffBadge(c.nickname)}</b>${mEsc(c.content)}</div>`).join("") || '<div class="m-empty-state" style="padding:14px;">첫 댓글을 남겨보세요!</div>';
+                });
+                const cc = card.querySelector(".cc");
+                if (cc) cc.textContent = (parseInt(cc.textContent, 10) || 0) + 1;
+            }).finally(() => {
+                inputEl.disabled = false;
+            });
+        }
+    });
+    document.getElementById("m-communitySubmitBtn").addEventListener("click", () => {
+        const content = document.getElementById("m-communityTextarea").value;
+        if (!content.trim()) return;
+        const files = document.getElementById("m-communityImageUpload").files;
+        const fd = new FormData;
+        fd.append("content", content);
+        fd.append("member_name", mCurrentMember);
+        for (let i = 0; i < files.length; i++) fd.append("images", files[i]);
+        const btn = document.getElementById("m-communitySubmitBtn");
+        btn.disabled = true;
+        btn.textContent = "게시 중...";
+        fetch("/api/community/post", {
+            method: "POST",
+            body: fd
+        }).then(r => r.json()).then(data => {
+            if (data.success) {
+                document.getElementById("m-communityTextarea").value = "";
+                document.getElementById("m-communityImageUpload").value = "";
+                document.getElementById("m-communitySubmitBtn").disabled = true;
+                loadMemberCommunity();
+            } else showToast(data.message || "실패했습니다.", "error");
+        }).finally(() => {
+            btn.disabled = false;
+            btn.textContent = "게시";
+        });
+    });
+    document.getElementById("m-galleryUploadBtn").addEventListener("click", () => {
+        if (!isLoggedIn()) {
+            openMobileLoginModal();
+            return;
+        }
+        document.getElementById("m-fanartInput").value = "";
+        document.getElementById("m-fanartTitle").value = "";
+        document.getElementById("m-fanartDesc").value = "";
+        document.getElementById("m-fanartUploadOverlay").style.display = "flex";
+    });
+    document.getElementById("m-fanartCancel").addEventListener("click", () => document.getElementById("m-fanartUploadOverlay").style.display = "none");
+    document.getElementById("m-fanartSubmit").addEventListener("click", () => {
+        const fileInput = document.getElementById("m-fanartInput");
+        if (!fileInput.files || !fileInput.files.length) {
+            showToast("업로드할 이미지를 선택해주세요.", "warning");
+            return;
+        }
+        const fd = new FormData;
+        fd.append("image", fileInput.files[0]);
+        fd.append("title", document.getElementById("m-fanartTitle").value.trim());
+        fd.append("description", document.getElementById("m-fanartDesc").value.trim());
+        document.getElementById("m-fanartUploadOverlay").style.display = "none";
+        fetch("/api/fanart/upload", {
+            method: "POST",
+            body: fd
+        }).then(r => r.json()).then(data => {
+            if (data.success) {
+                showToast("사진이 등록되었습니다.", "success");
+                loadMGallery();
+            } else showToast(data.message || "오류가 발생했습니다.", "error");
+        });
+    });
+    let mGlobalFanarts = [];
+    function loadMGallery() {
+        const grid = document.getElementById("m-galleryGrid");
+        grid.innerHTML = '<div class="m-empty-state">불러오는 중...</div>';
+        fetch("/api/fanart").then(r => r.json()).then(data => {
+            if (!data.success || !data.fanarts.length) {
+                grid.innerHTML = '<div class="m-empty-state">아직 올라온 사진이 없습니다.</div>';
+                return;
+            }
+            mGlobalFanarts = data.fanarts;
+            grid.innerHTML = data.fanarts.map(a => `<div class="m-gallery-card" data-id="${a.id}"><img src="${a.thumbnail_url || a.image_url}" loading="lazy"><div class="info"><div class="title">${mEsc(a.title || "무제")}</div><div class="author">${mEsc(a.nickname || "")}</div></div></div>`).join("");
+            grid.querySelectorAll(".m-gallery-card").forEach(card => card.addEventListener("click", () => openMLightbox(parseInt(card.dataset.id, 10))));
+        }).catch(() => {
+            grid.innerHTML = '<div class="m-empty-state">불러오지 못했습니다.</div>';
+        });
+    }
+    let mLightboxCurrentId = null;
+    function openMLightbox(id) {
+        const art = mGlobalFanarts.find(a => a.id === id);
+        if (!art) return;
+        mLightboxCurrentId = id;
+        document.getElementById("m-lightboxImg").src = art.image_url;
+        document.getElementById("m-lightboxTitle").textContent = art.title || "무제";
+        document.getElementById("m-lightboxDesc").textContent = art.description || "";
+        document.getElementById("m-lightboxDesc").style.display = art.description ? "" : "none";
+        document.getElementById("m-lightboxLikeCount").textContent = art.like_count || 0;
+        document.getElementById("m-lightboxDislikeCount").textContent = art.dislike_count || 0;
+        document.getElementById("m-lightboxComments").classList.remove("open");
+        document.getElementById("m-lightboxCommentList").innerHTML = '<div class="m-empty-state" style="padding:14px;">등록된 댓글이 없습니다.</div>';
+        document.getElementById("m-lightboxOverlay").classList.add("open");
+    }
+    document.getElementById("m-lightboxClose").addEventListener("click", () => document.getElementById("m-lightboxOverlay").classList.remove("open"));
+    function reactMFanart(type) {
+        if (!isLoggedIn()) {
+            showToast("로그인 후 이용할 수 있습니다.", "warning");
+            return;
+        }
+        fetch(`/api/fanart/${mLightboxCurrentId}/react`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({
+                reaction: type
+            })
+        }).then(r => r.json()).then(data => {
+            if (!data.success) {
+                showToast(data.message || "이미 반응을 남기셨습니다.", "info");
+                return;
+            }
+            const el = document.getElementById(type === "like" ? "m-lightboxLikeCount" : "m-lightboxDislikeCount");
+            el.textContent = (parseInt(el.textContent, 10) || 0) + 1;
+        });
+    }
+    document.getElementById("m-lightboxLikeBtn").addEventListener("click", () => reactMFanart("like"));
+    document.getElementById("m-lightboxDislikeBtn").addEventListener("click", () => reactMFanart("dislike"));
+    document.getElementById("m-lightboxCommentBtn").addEventListener("click", () => document.getElementById("m-lightboxComments").classList.toggle("open"));
+    document.getElementById("m-lightboxCommentSubmit").addEventListener("click", () => {
+        if (!isLoggedIn()) {
+            openMobileLoginModal();
+            return;
+        }
+        const inputEl = document.getElementById("m-lightboxCommentInput");
+        const content = inputEl.value.trim();
+        if (!content) return;
+        const listEl = document.getElementById("m-lightboxCommentList");
+        if (listEl.textContent.includes("등록된 댓글이 없습니다")) listEl.innerHTML = "";
+        const item = document.createElement("div");
+        item.className = "m-community-comment-item";
+        item.innerHTML = `<b>${mEsc(currentMobileUser ? currentMobileUser.nickname : "")}</b>${mEsc(content)}`;
+        listEl.prepend(item);
+        inputEl.value = "";
+        showToast("댓글이 등록되었습니다.", "success");
+    });
+    let mScheduleWeekStart = null, mScheduleEditingId = null;
+    function mSunday(d) {
+        const r = new Date(d);
+        r.setHours(0, 0, 0, 0);
+        r.setDate(r.getDate() - r.getDay());
+        return r;
+    }
+    function mFmtDate(d) {
+        return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+    }
+    function initMSchedule() {
+        if (!mScheduleWeekStart) mScheduleWeekStart = mSunday(new Date);
+        fetchMSchedule();
+    }
+    document.getElementById("m-schedulePrevBtn").addEventListener("click", () => {
+        mScheduleWeekStart.setDate(mScheduleWeekStart.getDate() - 7);
+        fetchMSchedule();
+    });
+    document.getElementById("m-scheduleNextBtn").addEventListener("click", () => {
+        mScheduleWeekStart.setDate(mScheduleWeekStart.getDate() + 7);
+        fetchMSchedule();
+    });
+    const M_SCHEDULE_COLORS = [ "#38bdf8", "#a78bfa", "#f472b6", "#4ade80", "#fbbf24", "#f87171", "#22d3ee", "#c084fc", "#fb923c", "#34d399", "#818cf8", "#e879f9" ];
+    function mMemberColor(name) {
+        const list = M_MEMBERS.filter(m => m.name !== "스텔라이브" && m.name !== "칸나");
+        const idx = list.findIndex(m => m.name === name);
+        return M_SCHEDULE_COLORS[idx >= 0 ? idx % M_SCHEDULE_COLORS.length : 0];
+    }
+    function mMemberAvatar(name) {
+        const m = M_MEMBERS.find(m => m.name === name);
+        return m ? m.img : "";
+    }
+    function fetchMSchedule() {
+        const list = document.getElementById("m-scheduleList");
+        list.innerHTML = '<div class="m-empty-state">불러오는 중...</div>';
+        const startStr = mFmtDate(mScheduleWeekStart);
+        document.getElementById("m-scheduleWeekLabel").textContent = mScheduleWeekStart.getMonth() + 1 + "월 " + mScheduleWeekStart.getFullYear();
+        fetch("/api/schedules?start=" + startStr).then(r => r.json()).then(data => {
+            if (!data.success) {
+                list.innerHTML = '<div class="m-empty-state">불러오지 못했습니다.</div>';
+                return;
+            }
+            renderMSchedule(data.schedules || []);
+        }).catch(() => {
+            list.innerHTML = '<div class="m-empty-state">불러오지 못했습니다.</div>';
+        });
+    }
+    function renderMSchedule(schedules) {
+        const list = document.getElementById("m-scheduleList");
+        list.innerHTML = "";
+        const dayNames = [ "일", "월", "화", "수", "목", "금", "토" ];
+        const todayStr = mFmtDate(new Date);
+        for (let i = 0; i < 7; i++) {
+            const colDate = new Date(mScheduleWeekStart);
+            colDate.setDate(colDate.getDate() + i);
+            const dateStr = mFmtDate(colDate);
+            const dayEntries = schedules.filter(s => s.event_date === dateStr && !s.is_day_off);
+            const dayOffs = schedules.filter(s => s.event_date === dateStr && s.is_day_off);
+            const block = document.createElement("div");
+            block.className = "m-schedule-day-block";
+            const head = document.createElement("div");
+            head.className = "m-schedule-day-head" + (dateStr === todayStr ? " today" : "");
+            head.innerHTML = `<span>${dayNames[i]}요일</span><span>${colDate.getMonth() + 1}/${colDate.getDate()}</span>`;
+            block.appendChild(head);
+            dayEntries.forEach(s => {
+                const row = document.createElement("div");
+                row.className = "m-schedule-entry";
+                row.innerHTML = `<span style="width:8px;height:8px;border-radius:50%;background:${mMemberColor(s.member_name)};flex-shrink:0;"></span>${mMemberAvatar(s.member_name) ? `<img src="${mMemberAvatar(s.member_name)}">` : ""}<span>${s.event_time ? mEsc(s.event_time) + " · " : ""}${mEsc(s.member_name)} - ${mEsc(s.title)}</span>`;
+                if (isLoggedIn()) row.addEventListener("click", () => openMScheduleEntry(dateStr, s));
+                block.appendChild(row);
+            });
+            dayOffs.forEach(s => {
+                const row = document.createElement("div");
+                row.className = "m-schedule-entry";
+                row.style.color = "#000";
+                row.style.background = mMemberColor(s.member_name);
+                row.style.fontWeight = "bold";
+                row.innerHTML = `${mMemberAvatar(s.member_name) ? `<img src="${mMemberAvatar(s.member_name)}">` : ""}<span>${mEsc(s.member_name)} 휴방</span>`;
+                if (isLoggedIn()) row.addEventListener("click", () => openMScheduleEntry(dateStr, s));
+                block.appendChild(row);
+            });
+            if (isLoggedIn()) {
+                const addBtn = document.createElement("button");
+                addBtn.className = "m-schedule-add-btn";
+                addBtn.textContent = "+ 추가";
+                addBtn.addEventListener("click", () => openMScheduleEntry(dateStr, null));
+                block.appendChild(addBtn);
+            }
+            list.appendChild(block);
+        }
+    }
+    function openMScheduleEntry(dateStr, existing) {
+        if (!isLoggedIn()) {
+            showToast("로그인 후 스케줄을 등록/수정할 수 있습니다.", "info");
+            openMobileLoginModal();
+            return;
+        }
+        mScheduleEditingId = existing ? existing.id : null;
+        const sel = document.getElementById("m-scheduleEntryMember");
+        sel.innerHTML = M_MEMBERS.filter(m => m.name !== "스텔라이브" && m.name !== "칸나").map(m => `<option value="${mEsc(m.name)}">${mEsc(mFullName(m.name))}</option>`).join("");
+        document.getElementById("m-scheduleEntryDate").value = dateStr;
+        document.getElementById("m-scheduleEntryMsg").textContent = "";
+        document.getElementById("m-scheduleEntryDelete").style.display = existing ? "block" : "none";
+        document.getElementById("m-scheduleEntryTitle").textContent = existing ? "일정 수정" : "일정 추가";
+        if (existing) {
+            sel.value = existing.member_name;
+            document.getElementById("m-scheduleEntryDayOff").checked = !!existing.is_day_off;
+            document.getElementById("m-scheduleEntryTime").value = existing.event_time || "";
+            document.getElementById("m-scheduleEntryContentTitle").value = existing.is_day_off ? "" : existing.title;
+        } else {
+            document.getElementById("m-scheduleEntryDayOff").checked = false;
+            document.getElementById("m-scheduleEntryTime").value = "";
+            document.getElementById("m-scheduleEntryContentTitle").value = "";
+        }
+        mToggleMScheduleDayOff();
+        document.getElementById("m-scheduleEntryOverlay").style.display = "flex";
+    }
+    function mToggleMScheduleDayOff() {
+        const isOff = document.getElementById("m-scheduleEntryDayOff").checked;
+        document.getElementById("m-scheduleEntryTimeTitleWrap").style.display = isOff ? "none" : "block";
+    }
+    document.getElementById("m-scheduleEntryDayOff").addEventListener("change", mToggleMScheduleDayOff);
+    document.getElementById("m-scheduleEntryCancel").addEventListener("click", () => document.getElementById("m-scheduleEntryOverlay").style.display = "none");
+    document.getElementById("m-scheduleEntrySave").addEventListener("click", () => {
+        const isDayOff = document.getElementById("m-scheduleEntryDayOff").checked;
+        const payload = {
+            member_name: document.getElementById("m-scheduleEntryMember").value,
+            event_date: document.getElementById("m-scheduleEntryDate").value,
+            is_day_off: isDayOff,
+            event_time: isDayOff ? "" : document.getElementById("m-scheduleEntryTime").value,
+            title: isDayOff ? "" : document.getElementById("m-scheduleEntryContentTitle").value.trim()
+        };
+        const url = mScheduleEditingId ? "/api/schedules/" + mScheduleEditingId : "/api/schedules";
+        fetch(url, {
+            method: mScheduleEditingId ? "PUT" : "POST",
+            headers: {
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify(payload)
+        }).then(r => r.json()).then(data => {
+            if (!data.success) {
+                document.getElementById("m-scheduleEntryMsg").textContent = data.message || "저장에 실패했습니다.";
+                return;
+            }
+            document.getElementById("m-scheduleEntryOverlay").style.display = "none";
+            showToast("저장되었습니다.", "success");
+            fetchMSchedule();
+        }).catch(() => {
+            document.getElementById("m-scheduleEntryMsg").textContent = "오류가 발생했습니다.";
+        });
+    });
+    document.getElementById("m-scheduleEntryDelete").addEventListener("click", () => {
+        if (!mScheduleEditingId) return;
+        confirmDialog("이 일정을 삭제할까요?", {
+            dangerous: true,
+            confirmButtonText: "삭제"
+        }).then(ok => {
+            if (!ok) return;
+            fetch("/api/schedules/" + mScheduleEditingId, {
+                method: "DELETE"
+            }).then(r => r.json()).then(data => {
+                if (!data.success) {
+                    document.getElementById("m-scheduleEntryMsg").textContent = data.message || "삭제에 실패했습니다.";
+                    return;
+                }
+                document.getElementById("m-scheduleEntryOverlay").style.display = "none";
+                showToast("삭제되었습니다.", "success");
+                fetchMSchedule();
+            });
+        });
+    });
+    document.getElementById("m-historyClearBtn").addEventListener("click", () => {
+        confirmDialog("시청 기록을 모두 삭제할까요?", {
+            dangerous: true,
+            confirmButtonText: "삭제"
+        }).then(ok => {
+            if (!ok) return;
+            fetch("/api/history/clear", {
+                method: "POST"
+            }).then(r => r.json()).then(() => loadMHistory());
+        });
+    });
+    function loadMHistory() {
+        const list = document.getElementById("m-historyList");
+        if (!isLoggedIn()) {
+            list.innerHTML = '<div class="m-empty-state">로그인 후 이용할 수 있습니다.</div>';
+            return;
+        }
+        list.innerHTML = '<div class="m-empty-state">불러오는 중...</div>';
+        fetch("/api/history").then(r => r.json()).then(data => {
+            if (!data.success || !data.videos || !data.videos.length) {
+                list.innerHTML = '<div class="m-empty-state">시청 기록이 없습니다.</div>';
+                return;
+            }
+            list.innerHTML = data.videos.map(v => `<div class="m-list-row" onclick="window.location.href='/watch/${v.videoId}'"><img src="${v.thumbnail || ""}" loading="lazy" decoding="async"><div class="t">${mEsc(v.title || "")}</div></div>`).join("");
+        }).catch(() => {
+            list.innerHTML = '<div class="m-empty-state">불러오지 못했습니다.</div>';
+        });
+    }
+    function loadMBookmarks() {
+        const list = document.getElementById("m-bookmarksList");
+        if (!isLoggedIn()) {
+            list.innerHTML = '<div class="m-empty-state">로그인 후 이용할 수 있습니다.</div>';
+            return;
+        }
+        list.innerHTML = '<div class="m-empty-state">불러오는 중...</div>';
+        fetch("/api/bookmarks").then(r => r.json()).then(data => {
+            if (!data.success || !data.bookmarks || !data.bookmarks.length) {
+                list.innerHTML = '<div class="m-empty-state">북마크가 없습니다.</div>';
+                return;
+            }
+            list.innerHTML = data.bookmarks.map(v => `<div class="m-list-row" onclick="window.location.href='/watch/${v.videoId}'"><img src="${v.thumbnail || ""}" loading="lazy" decoding="async"><div class="t">${mEsc(v.title || "")}</div></div>`).join("");
+        }).catch(() => {
+            list.innerHTML = '<div class="m-empty-state">불러오지 못했습니다.</div>';
+        });
+    }
+    function loadMPlaylists() {
+        const list = document.getElementById("m-playlistsList");
+        if (!isLoggedIn()) {
+            list.innerHTML = '<div class="m-empty-state">로그인 후 이용할 수 있습니다.</div>';
+            return;
+        }
+        list.innerHTML = '<div class="m-empty-state">불러오는 중...</div>';
+        fetch("/api/playlists").then(r => r.json()).then(data => {
+            const playlists = data.playlists || [];
+            if (!data.success || !playlists.length) {
+                list.innerHTML = '<div class="m-empty-state">재생목록이 없습니다.</div>';
+                return;
+            }
+            list.innerHTML = playlists.map(p => `<div class="m-list-row" style="cursor:pointer;" onclick="window.location.href='/playlists'"><div style="width:60px;height:60px;border-radius:8px;background:var(--bg-elevated);display:flex;align-items:center;justify-content:center;flex-shrink:0;"><i class="fas fa-list" style="color:var(--accent);"></i></div><div class="t">${mEsc(p.title || "재생목록")}</div></div>`).join("");
+        }).catch(() => {
+            list.innerHTML = '<div class="m-empty-state">불러오지 못했습니다.</div>';
+        });
+    }
+})();</script>
+</body>
+</html>

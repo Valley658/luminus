@@ -1,0 +1,14 @@
+{
+  "name": "luminus",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Build tooling for pastellive.co.kr (minified static/js build)",
+  "scripts": {
+    "build:js": "node build-js.js",
+    "build:wasm": "asc assembly/imagepreview.ts --target release"
+  },
+  "devDependencies": {
+    "assemblyscript": "^0.28.20",
+    "terser": "^5.36.0"
+  }
+}

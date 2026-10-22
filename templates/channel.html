@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <script>try{if(localStorage.getItem("theme")==="light")document.documentElement.setAttribute("data-theme","light")}catch(e){}</script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>채널 - 루미너스</title>
+    <link rel="icon" href="{{ url_for('static', filename='logo/logo.webp') }}" type="image/webp">
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+    <meta name="theme-color" content="#0f0f0f">
+    <link rel="canonical" href="https://pastellive.co.kr{{ request.path }}">
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    <link rel="preconnect" href="https://lh3.googleusercontent.com">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" media="print" onload="this.media='all'">
+    <noscript><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css"></noscript>
+
+    <link rel="stylesheet" href="{{ versioned_static('css/style.css') }}">
+
+    <style>
+        body { margin: 0; padding-top: 110px; background:var(--bg-page); color:var(--text-primary); }
+
+        .pl-header {
+            position: fixed; top: 46px; left: 0; right: 0; height: 64px; background-color:var(--bg-page);
+            display: flex; align-items: center; justify-content: space-between; padding: 0 24px; z-index: 10000;
+        }
+        .pl-header-left { display: flex; align-items: center; gap: 16px; }
+        .pl-logo { display: flex; align-items: center; gap: 12px; cursor: pointer; }
+        .pl-logo img { width: 48px; height: 48px; border-radius: 50%; }
+        .pl-logo .site-name {
+            font-size: 24px; font-weight: 900; letter-spacing: -0.5px; margin-right: 20px;
+            display: inline-block; position: relative; color:var(--accent);
+            background:linear-gradient(90deg, var(--accent) 0%, #ffffff 45%, #a78bfa 55%, var(--accent) 100%);
+            background-size: 250% 100%; -webkit-background-clip: text; background-clip: text;
+            -webkit-text-fill-color: transparent; text-shadow: 0 0 10px rgba(56, 189, 248, 0.35);
+            animation: luminousGlow 3s ease-in-out infinite;
+        }
+        @keyframes luminousGlow {
+            0% { background-position: 250% 0; filter: drop-shadow(0 0 1px rgba(56, 189, 248, 0.4)); }
+            50%, 100% { background-position: -250% 0; filter: drop-shadow(0 0 5px rgba(56, 189, 248, 0.7)); }
+        }
+        .pl-header-right { display: flex; align-items: center; gap: 12px; min-width: 150px; justify-content: flex-end; }
+        .header-profile-img { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; }
+        .header-nickname { font-size: 16px; font-weight: bold; }
+
+        .fan-notice-bar {
+            position: fixed; top: 0; left: 0; right: 0; height: 38px; z-index: 10050;
+            background:linear-gradient(90deg, #1a1a2e, #16213e);
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            font-size: 15px; color:#cbd5e1; border-bottom:1px solid var(--border);
+            padding: 0 12px; box-sizing: border-box; text-align: center;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+        }
+        .fan-notice-bar b { color:var(--accent); }
+        .fan-notice-link {
+            background: none; border:1px solid var(--accent); color:var(--accent); font-size: 13px;
+            padding: 2px 10px; border-radius: 10px; cursor: pointer; white-space: nowrap; flex-shrink: 0;
+        }
+        .fan-notice-link:hover { background:var(--accent); color:var(--accent-contrast); }
+        .fan-notice-modal-overlay {
+            display: none; position: fixed; inset: 0; z-index: 20150; align-items: center; justify-content: center;
+            background: rgba(4, 8, 16, 0.72); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); padding: 16px;
+        }
+        .fan-notice-modal-overlay.open { display: flex; }
+        .fan-notice-modal-box {
+            position: relative; width: 100%; max-width: 440px; max-height: calc(100vh - 32px); overflow-y: auto;
+            background: var(--bg-surface-alt); color: var(--text-primary); border-radius: 22px;
+            border: 1px solid color-mix(in srgb, var(--accent) 45%, transparent);
+            box-shadow: 0 24px 70px rgba(0,0,0,.55), 0 0 0 1px rgba(255,255,255,.03) inset;
+            animation: fnmIn .32s cubic-bezier(.2,.9,.3,1.2);
+        }
+        @keyframes fnmIn { from { opacity: 0; transform: translateY(14px) scale(.96); } to { opacity: 1; transform: none; } }
+        @media (prefers-reduced-motion: reduce) { .fan-notice-modal-box { animation: none; } }
+        .fnm-hero {
+            position: relative; padding: 30px 24px 22px; text-align: center; overflow: hidden; border-radius: 22px 22px 0 0;
+            background:
+                radial-gradient(120% 90% at 50% 0%, color-mix(in srgb, var(--accent) 34%, transparent) 0%, transparent 70%),
+                radial-gradient(60% 60% at 85% 20%, rgba(167,139,250,.22) 0%, transparent 70%);
+        }
+        .fnm-hero::after {
+            content: ""; position: absolute; left: 24px; right: 24px; bottom: 0; height: 1px;
+            background: linear-gradient(90deg, transparent, color-mix(in srgb, var(--accent) 60%, transparent), transparent);
+        }
+        .fnm-logo {
+            width: 66px; height: 66px; border-radius: 50%; display: block; margin: 0 auto 12px;
+            box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 22%, transparent), 0 0 34px color-mix(in srgb, var(--accent) 55%, transparent);
+        }
+        .fnm-title { margin: 0; font-size: 22px; font-weight: 900; letter-spacing: -.4px; color: var(--text-primary); }
+        .fnm-title span { color: var(--accent); }
+        .fnm-meaning { margin: 6px 0 0; font-size: 13px; color: var(--text-muted); }
+        .fnm-meaning b { color: var(--text-primary); font-weight: 700; }
+        .fnm-body { padding: 18px 22px 6px; display: flex; flex-direction: column; gap: 10px; }
+        .fnm-item { display: flex; gap: 12px; align-items: flex-start; padding: 12px 14px; border-radius: 14px; background: color-mix(in srgb, var(--text-primary) 4%, transparent); }
+        .fnm-icon {
+            flex: none; width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; font-size: 15px;
+            color: var(--accent); background: color-mix(in srgb, var(--accent) 15%, transparent);
+        }
+        .fnm-item h4 { margin: 0 0 3px; font-size: 14px; font-weight: 800; color: var(--text-primary); }
+        .fnm-item p { margin: 0; font-size: 13px; line-height: 1.6; color: var(--text-secondary); }
+        .fnm-links { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; padding: 14px 22px 4px; }
+        .fnm-links a {
+            display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 999px; font-size: 12.5px; text-decoration: none;
+            color: var(--text-secondary); border: 1px solid var(--border);
+        }
+        .fnm-links a:hover { color: var(--accent); border-color: var(--accent); }
+        .fan-notice-modal-close {
+            display: block; width: calc(100% - 44px); margin: 14px 22px 22px; padding: 12px; border: none; border-radius: 12px;
+            background: var(--accent); color: var(--accent-contrast); font-weight: 800; font-size: 14px; cursor: pointer;
+        }
+        .fan-notice-modal-close:hover { filter: brightness(1.08); }
+        .fnm-x {
+            position: absolute; top: 12px; right: 12px; width: 32px; height: 32px; border-radius: 50%; border: none; cursor: pointer; z-index: 2;
+            background: rgba(255,255,255,.06); color: var(--text-muted); font-size: 14px;
+        }
+        .fnm-x:hover { background: rgba(255,255,255,.12); color: var(--text-primary); }
+
+        
+        .channel-header { max-width: 1100px; margin: 30px auto 0; padding: 0 24px; display: flex; gap: 24px; align-items: flex-start; flex-wrap: wrap; }
+        .channel-avatar { width: 120px; height: 120px; border-radius: 50%; object-fit: cover; flex-shrink: 0; background:var(--bg-elevated); }
+        .channel-header-info { flex: 1; min-width: 260px; }
+        .channel-name { font-size: 28px; font-weight: 900; margin: 0 0 6px; }
+        .channel-meta-line { color:var(--text-muted); font-size: 14px; margin-bottom: 10px; }
+        .channel-desc-box { color:var(--text-secondary); font-size: 14px; line-height: 1.5; max-width: 700px; }
+        .channel-desc-short { display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
+        .channel-desc-more-btn { background: none; border: none; color:var(--text-muted); font-size: 13px; font-weight: bold; cursor: pointer; padding: 4px 0; }
+        .channel-desc-more-btn:hover { color:var(--text-primary); }
+        .channel-desc-full { display: none; margin-top: 8px; }
+        .channel-desc-full.open { display: block; }
+        .channel-desc-full a { color:var(--accent); text-decoration: none; }
+        .channel-desc-full .desc-row { margin-bottom: 6px; }
+        .channel-actions { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
+        .channel-sub-btn {
+            background:#fff; color:#0f0f0f; border: none; border-radius: 20px; padding: 10px 22px;
+            font-weight: bold; font-size: 14px; cursor: pointer;
+        }
+        .channel-sub-btn.subscribed { background:var(--border-soft2); color:var(--text-primary); }
+        .channel-share-btn {
+            background:var(--border-soft2); color:var(--text-primary); border: none; border-radius: 20px; padding: 10px 20px;
+            font-weight: bold; font-size: 14px; cursor: pointer; display: flex; align-items: center; gap: 8px;
+        }
+        .channel-share-btn:hover { background:var(--border-strong3); }
+
+        .channel-tabs { max-width: 1100px; margin: 30px auto 0; padding: 0 24px; border-bottom:1px solid var(--border-strong2); display: flex; gap: 30px; }
+        .channel-tab-btn { background: none; border: none; color:var(--text-muted); font-size: 15px; font-weight: bold; padding: 14px 4px; cursor: pointer; border-bottom: 2px solid transparent; }
+        .channel-tab-btn.active { color:var(--text-primary); border-bottom-color:var(--accent); }
+
+        .channel-section { max-width: 1100px; margin: 0 auto; padding: 24px; }
+        .channel-video-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 20px; }
+        .channel-video-card { cursor: pointer; }
+        .channel-video-card .thumb-wrap { position: relative; aspect-ratio: 16/9; border-radius: 12px; overflow: hidden; background:var(--bg-elevated); }
+        .channel-video-card img { width: 100%; height: 100%; object-fit: cover; }
+        .channel-video-card .cv-title { font-size: 14px; font-weight: bold; margin-top: 8px; color:var(--text-primary); }
+        .channel-video-card .cv-meta { font-size: 12px; color:var(--text-muted); }
+
+        .channel-post-card { border:1px solid var(--border-strong2); border-radius: 12px; padding: 16px; margin-bottom: 16px; background-color:var(--bg-surface-alt); cursor: pointer; }
+        .channel-post-card .cp-member { color:var(--accent); font-size: 12px; font-weight: bold; margin-bottom: 6px; }
+        .channel-post-card .cp-title { font-size: 16px; font-weight: 800; margin-bottom: 6px; }
+        .channel-post-card .cp-content { font-size: 14px; color:var(--text-secondary); line-height: 1.5; white-space: pre-wrap; }
+        .channel-post-card .cp-date { font-size: 12px; color:var(--text-faint); margin-top: 8px; }
+
+        .empty-message { text-align: center; color:var(--text-muted); margin: 60px 0; font-size: 15px; line-height: 1.6; }
+    </style>
+<script src="{{ versioned_static('js/thumbnails.js') }}"></script>
+</head>
+<body>
+
+    <div class="fan-notice-bar">
+        <span>스텔라이브 공식 사이트가 아닌 <b>팬 사이트</b>입니다</span>
+        <button class="fan-notice-link" onclick="document.getElementById('fanNoticeModal').classList.add('open')">루미너스란?</button>
+    </div>
+    <div class="fan-notice-modal-overlay" id="fanNoticeModal" onclick="if(event.target===this) this.classList.remove('open')">
+        <div class="fan-notice-modal-box" role="dialog" aria-modal="true" aria-labelledby="fnmTitle">
+            <button type="button" class="fnm-x" aria-label="닫기" onclick="document.getElementById('fanNoticeModal').classList.remove('open')"><i class="fas fa-xmark"></i></button>
+            <div class="fnm-hero">
+                <img class="fnm-logo" src="{{ url_for('static', filename='logo/logo.webp') }}" alt="">
+                <h3 class="fnm-title" id="fnmTitle">루미너스 <span>Luminous</span></h3>
+                <p class="fnm-meaning"><b>은은하게 빛나는</b> · 스텔라이브 팬 사이트</p>
+            </div>
+            <div class="fnm-body">
+                <div class="fnm-item">
+                    <div class="fnm-icon"><i class="fas fa-heart"></i></div>
+                    <div><h4>팬이 만든 비공식 사이트예요</h4>
+                    <p>스텔라이브(StelLive) 소속사의 공식 사이트가 아니라, 팬이 자율적으로 운영하는 2차 창작 팬 사이트예요.</p></div>
+                </div>
+                <div class="fnm-item">
+                    <div class="fnm-icon"><i class="fas fa-star"></i></div>
+                    <div><h4>이름에 담긴 뜻</h4>
+                    <p>'루미너스'는 '은은하게 빛나는'이라는 뜻이에요. 멤버들을 향한 팬심을 조용히 빛내며 응원한다는 의미의 팬덤 애칭으로, 소속사와는 관계없는 이름이에요.</p></div>
+                </div>
+                <div class="fnm-item">
+                    <div class="fnm-icon"><i class="fas fa-hand-holding-heart"></i></div>
+                    <div><h4>비영리 · 가이드라인 준수</h4>
+                    <p>스텔라이브 2차 창작 가이드라인을 지키며, 광고나 후원 없이 비영리로 운영해요.</p></div>
+                </div>
+            </div>
+            <div class="fnm-links">
+                <a href="/credits"><i class="fas fa-images"></i> 크레딧</a>
+                <a href="/terms"><i class="fas fa-file-lines"></i> 이용약관</a>
+                <a href="/privacy"><i class="fas fa-shield-alt"></i> 개인정보처리방침</a>
+            </div>
+            <button class="fan-notice-modal-close" onclick="document.getElementById('fanNoticeModal').classList.remove('open')">확인했어요</button>
+        </div>
+    </div>
+
+    <header class="pl-header">
+        <div class="pl-header-left">
+            <div class="pl-logo" id="channelHeaderLogo">
+                <img src="{{ url_for('static', filename='logo/logo.webp') }}" alt="Logo" class="circle-logo programmatic-rotate-logo">
+                <span class="site-name">루미너스</span>
+            </div>
+        </div>
+        <div class="pl-header-right" id="headerRight"></div>
+    </header>
+
+    <div id="channelLoadingMsg" class="empty-message"><i class="fas fa-spinner fa-spin"></i> 채널 정보를 불러오는 중...</div>
+
+    <div id="channelContent" style="display:none;">
+        <div class="channel-header">
+            <img class="channel-avatar" id="channelAvatarImg" src="" alt="채널 프로필">
+            <div class="channel-header-info">
+                <h1 class="channel-name" id="channelNameText"></h1>
+                <div class="channel-meta-line"><span id="channelSubCountText"></span> · 동영상 <span id="channelVideoCountText"></span>개</div>
+                <div class="channel-desc-box">
+                    <div class="channel-desc-short" id="channelDescShort"></div>
+                    <button class="channel-desc-more-btn" id="channelDescMoreBtn" onclick="toggleChannelDescMore()" style="display:none;">더보기</button>
+                    <div class="channel-desc-full" id="channelDescFull"></div>
+                </div>
+                <div class="channel-actions">
+                    <button class="channel-sub-btn" id="channelSubBtn" onclick="toggleChannelSubscribe()" style="display:none;">구독</button>
+                    <button class="channel-share-btn" onclick="shareChannel()"><i class="fas fa-share"></i> 공유</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="channel-tabs">
+            <button class="channel-tab-btn active" id="channelTabVideos" onclick="switchChannelTab('videos')">동영상</button>
+            <button class="channel-tab-btn" id="channelTabPosts" onclick="switchChannelTab('posts')">게시물</button>
+        </div>
+
+        <div class="channel-section" id="channelVideosSection">
+            <div class="channel-video-grid" id="channelVideoGrid"></div>
+        </div>
+        <div class="channel-section" id="channelPostsSection" style="display:none;">
+            <div id="channelPostList"></div>
+        </div>
+    </div>
+
+    <script src="{{ versioned_static('js/dialog.js') }}" defer></script>
+    <script src="{{ versioned_static('js/notice.js') }}" defer></script>
+    <script src="{{ versioned_static('js/script.js') }}"></script>
+    <script>const CHANNEL_ID = {{ channel_id|tojson }};
+
+let channelData = null;
+
+(function() {
+    const logoEl = document.getElementById("channelHeaderLogo");
+    if (logoEl) logoEl.addEventListener("click", () => {
+        window.location.href = "https://pastellive.co.kr/";
+    });
+})();
+
+function esc(s) {
+    return typeof escapeHtml === "function" ? escapeHtml(s || "") : String(s || "").replace(/[&<>"']/g, c => ({
+        "&": "&amp;",
+        "<": "&lt;",
+        ">": "&gt;",
+        '"': "&quot;",
+        "'": "&#39;"
+    }[c]));
+}
+
+function formatCount(n) {
+    n = n || 0;
+    if (n >= 1e4) return (n / 1e4).toFixed(n % 1e4 === 0 ? 0 : 1) + "만";
+    return String(n);
+}
+
+function loadChannel() {
+    fetch("/api/channel/" + encodeURIComponent(CHANNEL_ID)).then(res => res.json()).then(data => {
+        document.getElementById("channelLoadingMsg").style.display = "none";
+        if (!data.success) {
+            document.getElementById("channelLoadingMsg").style.display = "block";
+            document.getElementById("channelLoadingMsg").textContent = data.message || "채널을 찾을 수 없습니다.";
+            return;
+        }
+        channelData = data;
+        document.getElementById("channelContent").style.display = "block";
+        renderChannelHeader(data);
+        renderChannelVideos(data.videos || []);
+        renderChannelPosts(data.posts || []);
+    }).catch(() => {
+        document.getElementById("channelLoadingMsg").textContent = "채널 정보를 불러오지 못했습니다.";
+    });
+}
+
+function renderChannelHeader(data) {
+    const ch = data.channel;
+    document.getElementById("channelAvatarImg").src = ch.picture || "https://www.gravatar.com/avatar/?d=mp";
+    document.getElementById("channelNameText").textContent = ch.nickname || "이름 없음";
+    document.getElementById("channelSubCountText").textContent = "구독자 " + formatCount(ch.subscriber_count) + "명";
+    document.getElementById("channelVideoCountText").textContent = ch.video_count;
+    document.getElementById("channelDescShort").textContent = ch.description || "";
+    const infoLines = [];
+    if (ch.description) infoLines.push(`<div class="desc-row">${esc(ch.description)}</div>`);
+    if (ch.link) infoLines.push(`<div class="desc-row"><a href="${esc(ch.link)}" target="_blank" rel="noopener noreferrer">${esc(ch.link)}</a></div>`);
+    if (ch.country) infoLines.push(`<div class="desc-row">${esc(ch.country)}</div>`);
+    if (ch.joined_at) infoLines.push(`<div class="desc-row">가입일: ${esc(ch.joined_at)}</div>`);
+    infoLines.push(`<div class="desc-row">구독자 ${formatCount(ch.subscriber_count)}명</div>`);
+    infoLines.push(`<div class="desc-row">동영상 ${ch.video_count}개</div>`);
+    infoLines.push(`<div class="desc-row">조회수 ${(ch.view_count || 0).toLocaleString()}회</div>`);
+    document.getElementById("channelDescFull").innerHTML = infoLines.join("");
+    document.getElementById("channelDescMoreBtn").style.display = "block";
+    if (!data.is_owner) {
+        const subBtn = document.getElementById("channelSubBtn");
+        subBtn.style.display = "inline-block";
+        subBtn.textContent = data.is_subscribed ? "구독중" : "구독";
+        subBtn.classList.toggle("subscribed", data.is_subscribed);
+    }
+}
+
+function toggleChannelDescMore() {
+    document.getElementById("channelDescFull").classList.toggle("open");
+}
+
+function renderChannelVideos(videos) {
+    const grid = document.getElementById("channelVideoGrid");
+    if (!videos.length) {
+        grid.innerHTML = '<div class="empty-message">아직 업로드한 영상이 없습니다.</div>';
+        return;
+    }
+    grid.innerHTML = videos.map(v => `\n                <div class="channel-video-card" onclick="window.location.href='/watch/${v.video_url}'">\n                    <div class="thumb-wrap"><img src="${v.thumbnail || ""}" alt="${esc(v.title)}" loading="lazy" decoding="async"></div>\n                    <div class="cv-title">${esc(v.title)}</div>\n                    <div class="cv-meta">조회수 ${(v.view_count || 0).toLocaleString()}회</div>\n                </div>\n            `).join("");
+}
+
+function renderChannelPosts(posts) {
+    const list = document.getElementById("channelPostList");
+    if (!posts.length) {
+        list.innerHTML = '<div class="empty-message">아직 작성한 게시물이 없습니다.</div>';
+        return;
+    }
+    list.innerHTML = posts.map(p => `\n                <div class="channel-post-card" onclick="window.location.href='/${encodeURIComponent(p.member_name)}/community'">\n                    <div class="cp-member">${esc(p.member_name)} 커뮤니티</div>\n                    ${p.title ? `<div class="cp-title">${esc(p.title)}</div>` : ""}\n                    <div class="cp-content">${esc((p.content || "").slice(0, 200))}</div>\n                    <div class="cp-date">${p.created_at}</div>\n                </div>\n            `).join("");
+}
+
+function switchChannelTab(tab) {
+    document.getElementById("channelTabVideos").classList.toggle("active", tab === "videos");
+    document.getElementById("channelTabPosts").classList.toggle("active", tab === "posts");
+    document.getElementById("channelVideosSection").style.display = tab === "videos" ? "block" : "none";
+    document.getElementById("channelPostsSection").style.display = tab === "posts" ? "block" : "none";
+}
+
+function toggleChannelSubscribe() {
+    if (!currentUser || !currentUser.logged_in) {
+        showToast("로그인 후 이용할 수 있습니다.", "warning");
+        return;
+    }
+    const btn = document.getElementById("channelSubBtn");
+    btn.disabled = true;
+    fetch("/api/channel/subscribe", {
+        method: "POST",
+        headers: {
+            "Content-Type": "application/json"
+        },
+        body: JSON.stringify({
+            channel_id: CHANNEL_ID
+        })
+    }).then(res => res.json()).then(data => {
+        if (!data.success) {
+            showToast(data.message || "처리에 실패했습니다.", "error");
+            return;
+        }
+        btn.textContent = data.subscribed ? "구독중" : "구독";
+        btn.classList.toggle("subscribed", data.subscribed);
+        document.getElementById("channelSubCountText").textContent = "구독자 " + formatCount(data.subscriber_count) + "명";
+    }).catch(() => showToast("처리 중 오류가 발생했습니다.", "error")).finally(() => {
+        btn.disabled = false;
+    });
+}
+
+function shareChannel() {
+    const url = window.location.origin + "/channel/" + encodeURIComponent(CHANNEL_ID);
+    if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(url).then(() => showToast("채널 링크가 복사되었습니다.", "success")).catch(() => prompt("아래 링크를 복사하세요:", url));
+    } else {
+        prompt("아래 링크를 복사하세요:", url);
+    }
+}
+
+loadChannel();</script>
+</body>
+</html>

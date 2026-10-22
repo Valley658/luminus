@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<link rel="icon" href="/favicon.ico?v=2" sizes="any">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>페이지 안내 · 루미너스</title>
+<style>
+* { box-sizing: border-box; }
+html, body { margin: 0; min-height: 100%; background: #000; color: #fff; font-family: 'Malgun Gothic', sans-serif; }
+body { min-height: 100svh; display: grid; place-items: center; padding: 24px; }
+.notice { width: min(440px, 100%); padding: 36px 28px 28px; border: 1px solid #303030; border-radius: 18px; background: #151515; text-align: center; box-shadow: 0 24px 80px #0009; }
+.symbol { display: grid; place-items: center; width: 64px; height: 64px; margin: 0 auto 22px; border: 2px solid #b8a1ed; border-radius: 50%; color: #b8a1ed; font-size: 38px; }
+h1 { margin: 0 0 14px; font-size: 23px; }
+p { margin: 0 0 26px; color: #bdbdbd; line-height: 1.7; word-break: keep-all; }
+a { display: block; padding: 13px 20px; border-radius: 9px; background: #b8a1ed; color: #171021; font-weight: 700; text-decoration: none; }
+a:hover { background: #cab8f3; }
+a:focus-visible { outline: 2px solid white; outline-offset: 4px; }
+</style>
+</head>
+<body>
+<section class="notice" role="alertdialog" aria-modal="true" aria-labelledby="title" aria-describedby="description">
+  <div class="symbol" aria-hidden="true">!</div>
+  <h1 id="title">페이지를 열 수 없습니다</h1>
+  <p id="description">아직 공개되지 않았거나 존재하지 않는 페이지입니다.<br>메인 화면에서 다시 확인해 주세요.</p>
+  <a href="/" autofocus>메인으로 돌아가기</a>
+</section>
+</body>
+</html>

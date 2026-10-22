@@ -1,0 +1,70 @@
+# Secrets and machine-specific operations
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.pfx
+*.p12
+*.kdbx
+.ssh/
+AGENTS.md
+scripts/sync-vm.py
+scripts/setup-sync.ps1
+scripts/start-sync.ps1
+VM동기화설정.bat
+
+# Persistent application data, uploads and backups
+DB/
+data/
+uploads/
+**/uploads/
+backups/
+*.sqlite
+*.sqlite3
+*.sqlite3-*
+*.db
+*.db-*
+*.sql
+*.dump
+*.bak
+
+# Runtime state and downloaded executables
+bin/
+runtime/
+logs/
+*.exe
+*.dll
+*.download
+*.log
+*.pid
+.running.lock
+.stop-request
+
+# Dependencies and build output
+node_modules/
+target/
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+
+# VM images and archives
+*.vdi
+*.vmdk
+*.vhd
+*.vhdx
+*.qcow2
+*.iso
+*.zip
+*.7z
+*.tar
+*.gz
+
+# Local editor settings
+.vscode/
+.idea/
+Thumbs.db
+.DS_Store
+scripts/install-nginx.py

@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<link rel="icon" href="/favicon.ico?v=2" sizes="any">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>부활준비 · 루미너스</title>
+<style>
+@font-face {
+  font-family: 'YeongyanggunEumsikdimibang';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_2104@1.1/dimibang_new.woff') format('woff');
+  font-weight: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: 'NostalgicPoliceVibe';
+  src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/2601-6@1.0/Griun_PolSensibility-Rg.woff2') format('woff2');
+  font-weight: normal;
+  font-display: swap;
+}
+html, body { margin: 0; background: #000; }
+body { min-height: 100vh; min-height: 100svh; display: grid; place-items: center; color: #fff; }
+main { position: relative; z-index: 1; text-align: center; padding: 24px; }
+.frame-art { position: fixed; pointer-events: none; object-fit: fill; opacity: .85; }
+.frame-top, .frame-bottom { left: 8%; width: 84%; height: clamp(48px, 13vh, 120px); }
+.frame-top { top: 0; }
+.frame-bottom { bottom: 0; transform: rotate(180deg); }
+.frame-left, .frame-right { top: 14%; height: 72%; width: clamp(30px, 7vw, 110px); }
+.frame-left { left: 0; }
+.frame-right { right: 0; transform: rotate(180deg); }
+.rainbow-label { position: fixed; z-index: 2; pointer-events: none; margin: 0; font-family: 'NostalgicPoliceVibe', sans-serif; font-size: clamp(18px, 2.5vw, 36px); white-space: nowrap; background: linear-gradient(90deg, #ff7b9d, #ffbd74, #fff18a, #91efbb, #80d9ff, #aa9bff, #ef9bff, #ff7b9d); background-size: 200% 100%; -webkit-background-clip: text; background-clip: text; color: transparent; animation: rainbow-flow 8s linear infinite, rainbow-glow 4s ease-in-out infinite; }
+.label-top { top: 5%; left: 50%; transform: translateX(-50%); }
+.label-bottom { bottom: 5%; left: 50%; transform: translateX(-50%); }
+.label-left { left: 3%; top: 50%; writing-mode: vertical-rl; transform: translateY(-50%); }
+.label-right { right: 3%; top: 50%; writing-mode: vertical-rl; transform: translateY(-50%); }
+@keyframes rainbow-flow { to { background-position: 200% 0; } }
+@keyframes rainbow-glow { 0%, 100% { opacity: .55; filter: drop-shadow(0 0 3px #b8a1ed44); } 50% { opacity: 1; filter: drop-shadow(0 0 10px #b8a1ed88); } }
+@media (prefers-reduced-motion: reduce) {
+  .rainbow-label { animation: none; opacity: 1; }
+  .frame-top, .frame-bottom { content: url('/media/stars-horizontal.png'); }
+  .frame-left, .frame-right { content: url('/media/stars-vertical.png'); }
+}
+h1 { margin: 0; font-family: 'NostalgicPoliceVibe', sans-serif; font-size: clamp(64px, 18vw, 240px); font-weight: normal; line-height: 1.2; white-space: nowrap; }
+p { margin: 24px 0 0; font-family: 'YeongyanggunEumsikdimibang', 'Batang', serif; font-size: clamp(18px, 2.2vw, 30px); font-weight: normal; letter-spacing: .04em; line-height: 1.6; color: #ddd; word-break: keep-all; }
+
+.revive-button {margin-top:30px;padding:13px 42px;border:1px solid #b9a2ed;border-radius:30px;background:#c1acf0;color:#20172e;font:600 20px sans-serif;cursor:pointer;box-shadow:0 0 28px #b9a2ed33;}
+.revive-button:hover {background:#d7c5ff;transform:translateY(-2px);}
+.revive-button:disabled {opacity:.6;cursor:wait;}
+.revive-status {font:14px/1.6 sans-serif;color:#ffbaba;letter-spacing:0;}
+.revive-target {position:fixed;inset:0;width:100%;height:100%;border:0;z-index:100;background:#0f0f0f;}
+.revive-half {position:fixed;inset:0;z-index:101;pointer-events:none;background:#000;transition:transform 1.15s cubic-bezier(.65,0,.25,1),filter 1.15s;}
+.revive-half.left {clip-path:polygon(0 0,50.3% 0,49.7% 24%,50.5% 48%,49.8% 73%,50.3% 100%,0 100%);transform-origin:left center;}
+.revive-half.right {clip-path:polygon(50.3% 0,100% 0,100% 100%,50.3% 100%,49.8% 73%,50.5% 48%,49.7% 24%);transform-origin:right center;}
+.revive-snapshot {position:absolute;inset:0;display:grid;place-items:center;}
+.revive-half.open.left {transform:perspective(1800px) translateX(-60%) rotateY(-14deg);filter:brightness(.45);}
+.revive-half.open.right {transform:perspective(1800px) translateX(60%) rotateY(14deg);filter:brightness(.45);}
+@media(prefers-reduced-motion:reduce){.revive-half{transition:none;}.revive-button:hover{transform:none;}}
+</style>
+</head>
+<body>
+<span class="rainbow-label label-top">✦ 부활예정 26.10.30 ✦</span>
+<span class="rainbow-label label-bottom">✦ 새로운 이야기로 다시 만나요 ✦</span>
+<span class="rainbow-label label-left">루미너스의 꿈을 모아</span>
+<span class="rainbow-label label-right">다시 빛나는 우리들의 별</span>
+<img class="frame-art frame-top" src="/media/stars-horizontal.gif" alt="" aria-hidden="true">
+<img class="frame-art frame-bottom" src="/media/stars-horizontal.gif" alt="" aria-hidden="true">
+<img class="frame-art frame-left" src="/media/stars-vertical.gif" alt="" aria-hidden="true">
+<img class="frame-art frame-right" src="/media/stars-vertical.gif" alt="" aria-hidden="true">
+<main><h1>부활준비</h1><p>사이트가 완전히 새롭게 되살아납니다.</p><button type="button" class="revive-button">부활</button><p class="revive-status" role="status"></p></main>
+<script>
+const button=document.querySelector('.revive-button'),status=document.querySelector('.revive-status');
+button.addEventListener('click',async()=>{
+ button.disabled=true;status.textContent='';
+ try{
+  const response=await fetch('/api/site/revive',{method:'POST',headers:{'Content-Type':'application/json'},body:'{}'});
+  const result=await response.json();if(!response.ok)throw Error(result.error||'다시 시도해 주세요.');
+  const snapshot=Array.from(document.body.children).filter(node=>node.tagName!=='SCRIPT');
+  const target=document.createElement('iframe');target.className='revive-target';target.title='새로운 루미너스';
+  const ready=new Promise(resolve=>{target.addEventListener('load',resolve,{once:true});setTimeout(resolve,8000);});
+  target.src='/';document.body.append(target);
+  const halves=['left','right'].map(side=>{const half=document.createElement('div');half.className='revive-half '+side;half.setAttribute('aria-hidden','true');const scene=document.createElement('div');scene.className='revive-snapshot';snapshot.forEach(node=>scene.append(node.cloneNode(true)));half.append(scene);document.body.append(half);return half;});
+  await ready;
+  if(matchMedia('(prefers-reduced-motion: reduce)').matches){location.replace('/');return;}
+  requestAnimationFrame(()=>requestAnimationFrame(()=>halves.forEach(half=>half.classList.add('open'))));
+  setTimeout(()=>location.replace('/'),1200);
+ }catch(e){status.textContent=e.message;button.disabled=false;}
+});
+</script>
+</body>
+</html>

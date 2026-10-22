@@ -1,0 +1,30 @@
+.videos-section { margin: 36px 32px; }
+.videos-section h2 { font-size: 24px; margin: 0 0 22px; }
+.video-grid { display: grid; grid-template-columns: repeat(auto-fill,minmax(min(100%,270px),1fr)); gap: 30px 20px; }
+.video-card { min-width: 0; }
+.video-card a { text-decoration: none; color: #eee; }
+.video-card img { display: block; width: 100%; aspect-ratio: 16/9; object-fit: cover; background: #181818; border-radius: 12px; }
+.video-card h3 { font-size: var(--video-title-size,20px); line-height: 1.5; margin: 12px 0 6px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.video-card p { margin: 0; color: #999; font-size: 13px; }
+.video-status { color: #aaa; padding: 24px 0; font-size: 14px; }
+.video-more { background: #252525; color: #fff; border: 1px solid #444; padding: 10px 20px; border-radius: 8px; cursor: pointer; }
+@media(max-width:800px) { .videos-section { margin: 28px 16px; } }
+
+.video-grid { grid-template-columns:repeat(3,minmax(0,1fr));gap:40px 16px; }
+body.sidebar-closed .video-grid { grid-template-columns:repeat(4,minmax(0,1fr)); }
+.video-card { animation:video-appear .24s ease both; }
+@keyframes video-appear { from {opacity:0;transform:translateY(8px)} to {opacity:1;transform:none} }
+main { transition:left .22s ease; }
+@media(max-width:1100px) { .video-grid,body.sidebar-closed .video-grid { grid-template-columns:repeat(2,minmax(0,1fr)); } }
+@media(max-width:600px) { .video-grid,body.sidebar-closed .video-grid { grid-template-columns:1fr; } }
+@media(prefers-reduced-motion:reduce) { main {transition:none} .video-card {animation:none} }
+
+.video-card a,.search-suggestions a { position:relative; }
+.video-card a { display:block; }
+.video-hover-preview { position:absolute;top:0;left:0;width:100%;aspect-ratio:16/9;height:auto;border:0;border-radius:12px;pointer-events:none;background:#181818; }
+.search-suggestions .video-hover-preview { top:8px;left:8px;width:96px;height:54px;border-radius:6px; }
+@media(max-width:650px) { .search-suggestions .video-hover-preview {width:70px;height:39.375px;} }
+
+.video-hover-preview iframe {display:block;width:100%;height:100%;border:0;pointer-events:none;}
+
+.video-card.is-short img {object-fit:contain;background:#181818;}

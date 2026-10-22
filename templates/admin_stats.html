@@ -1,0 +1,2528 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>관리자 대시보드 - 루미너스</title>
+    <link rel="icon" href="{{ url_for('static', filename='logo/logo.webp') }}" type="image/webp">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="preload" href="{{ url_for('static', filename='font/Paperlogy-4Regular.woff2') }}" as="font" type="font/woff2" crossorigin>
+    <style>
+        @font-face {
+            font-family: "Paperozi";
+            src: url("{{ url_for('static', filename='font/Paperlogy-4Regular.woff2') }}") format("woff2");
+            font-weight: normal;
+            font-style: normal;
+            font-display: fallback;
+        }
+        :root {
+            --bg-dark: #060708;
+            --bg-sidebar: #0a0b0e;
+            --bg-panel: #101218;
+            --bg-elevated: #171a22;
+            --border-line: #1f2229;
+            --point-blue: #38bdf8;
+            --point-purple: #a78bfa;
+            --point-pink: #f472b6;
+            --text-primary: #ffffff;
+            --text-muted: #9a9ea8;
+            --text-faint: #6b6f7a;
+            --danger: #f87171;
+            --success: #34d399;
+        }
+        * { box-sizing: border-box; }
+        body {
+            background-color: var(--bg-dark);
+            background-image:
+                radial-gradient(900px circle at 12% -8%, rgba(56, 189, 248, 0.055), transparent 45%),
+                radial-gradient(800px circle at 100% 0%, rgba(167, 139, 250, 0.045), transparent 45%);
+            background-attachment: fixed;
+            color: var(--text-primary);
+            font-family: "Paperozi", 'Segoe UI', system-ui, -apple-system, sans-serif;
+            margin: 0; padding: 0;
+        }
+        @keyframes adminLogoGlow {
+            0% { background-position: 250% 0; filter: drop-shadow(0 0 1px rgba(56, 189, 248, 0.4)); }
+            50%, 100% { background-position: -250% 0; filter: drop-shadow(0 0 5px rgba(56, 189, 248, 0.7)); }
+        }
+
+        .admin-shell { display: flex; min-height: 100vh; }
+
+        .admin-sidebar {
+            width: 232px; flex-shrink: 0; background: var(--bg-sidebar); border-right: 1px solid var(--border-line);
+            display: flex; flex-direction: column; position: sticky; top: 0; height: 100vh;
+            box-shadow: 6px 0 30px rgba(0, 0, 0, 0.4);
+            z-index: 2;
+        }
+        .sidebar-brand { display: flex; align-items: center; gap: 12px; padding: 22px 20px; border-bottom: 1px solid var(--border-line); }
+        .sidebar-brand img { width: 38px; height: 38px; border-radius: 50%; flex-shrink: 0; }
+        .sidebar-brand .site-name {
+            font-size: 18px; font-weight: 900; letter-spacing: -0.5px;
+            background: linear-gradient(90deg, var(--point-blue) 0%, #ffffff 45%, var(--point-purple) 55%, var(--point-blue) 100%);
+            background-size: 250% 100%; -webkit-background-clip: text; background-clip: text;
+            -webkit-text-fill-color: transparent; text-shadow: 0 0 10px rgba(56, 189, 248, 0.35);
+            animation: adminLogoGlow 3s ease-in-out infinite;
+        }
+        .sidebar-brand .admin-tag { font-size: 11px; color: var(--text-muted); font-weight: bold; letter-spacing: 1px; }
+
+        .sidebar-nav { flex: 1; padding: 14px 12px; display: flex; flex-direction: column; gap: 4px; }
+        .nav-item {
+            display: flex; align-items: center; gap: 12px; width: 100%; text-align: left;
+            background: none; border: none; color: var(--text-muted); font-size: 14px; font-weight: bold;
+            padding: 11px 14px; border-radius: 10px; cursor: pointer; font-family: inherit;
+            border-left: 3px solid transparent; transition: background 0.15s, color 0.15s;
+        }
+        .nav-item i { width: 18px; text-align: center; font-size: 15px; }
+        .nav-item:hover { background: var(--bg-elevated); color: var(--text-primary); }
+        .nav-item.active {
+            background: var(--bg-elevated); color: var(--point-blue); border-left-color: var(--point-blue);
+            box-shadow: inset 0 0 18px rgba(56, 189, 248, 0.08);
+        }
+        .sidebar-section-label {
+            font-size: 10.5px; color: var(--text-faint); font-weight: bold; letter-spacing: 0.6px;
+            padding: 14px 14px 6px; text-transform: uppercase;
+        }
+        .sidebar-section-label:first-child { padding-top: 4px; }
+
+        .sidebar-footer { padding: 14px 12px; border-top: 1px solid var(--border-line); display: flex; flex-direction: column; gap: 4px; }
+        .sidebar-link {
+            display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-radius: 10px;
+            color: var(--text-muted); text-decoration: none; font-size: 13px; font-weight: bold;
+        }
+        .sidebar-link i { width: 18px; text-align: center; }
+        .sidebar-link:hover { background: var(--bg-elevated); color: var(--text-primary); }
+
+        .admin-main { flex: 1; min-width: 0; padding: 28px 34px 60px; max-width: 1680px; }
+        .admin-topbar { display: flex; align-items: center; justify-content: space-between; margin-bottom: 22px; flex-wrap: wrap; gap: 12px; }
+        .admin-topbar h1 { margin: 0; font-size: 22px; color: var(--text-primary); }
+        .topbar-actions { display: flex; gap: 8px; align-items: center; }
+
+        .btn {
+            background: var(--bg-elevated); color: #fff; border: 1px solid var(--border-line); padding: 9px 16px;
+            border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 13px; cursor: pointer;
+            font-family: inherit; transition: all 0.15s; display: inline-flex; align-items: center; gap: 6px;
+        }
+        .btn:hover { background: #262a34; }
+        .btn.danger { border-color: #5c2020; background: #2a1414; color: #f5a3a3; }
+        .btn.danger:hover { background: #3a1a1a; }
+        .btn:disabled { opacity: 0.5; cursor: default; }
+
+        .tab-panel { display: none; }
+        .tab-panel.active { display: block; }
+
+        .stat-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 20px; }
+        @media (max-width: 900px) { .stat-row { grid-template-columns: repeat(2, 1fr); } }
+        .stat-pill {
+            background: var(--bg-panel); border: 1px solid var(--border-line); border-radius: 14px;
+            padding: 18px 20px; position: relative; overflow: hidden;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.35);
+            transition: transform 0.15s, box-shadow 0.15s;
+        }
+        .stat-pill:hover { transform: translateY(-2px); box-shadow: 0 12px 28px rgba(0, 0, 0, 0.45); }
+        .stat-pill::before {
+            content: ""; position: absolute; top: 0; left: 0; right: 0; height: 3px;
+            background: linear-gradient(90deg, var(--point-blue), var(--point-purple));
+        }
+        .stat-pill .label { font-size: 12.5px; color: var(--text-muted); font-weight: bold; margin-bottom: 8px; }
+        .stat-pill .value { font-size: 28px; font-weight: 900; color: var(--text-primary); }
+        .stat-pill .sub { font-size: 11.5px; color: var(--text-faint); margin-top: 5px; }
+
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+        .card {
+            background: var(--bg-panel); border: 1px solid var(--border-line); border-radius: 14px;
+            padding: 20px; box-sizing: border-box;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+        }
+        .card.wide { grid-column: 1 / -1; }
+        .card h2 { margin: 0 0 14px; font-size: 14.5px; color: var(--text-muted); font-weight: bold; display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+        .card canvas { max-height: 280px; }
+        .empty-message { text-align: center; color: var(--text-muted); padding: 80px 0; font-size: 15px; }
+        .denied-box { text-align: center; padding: 100px 20px; color: var(--text-muted); }
+
+        .toolbar { display: flex; align-items: center; gap: 8px; font-weight: normal; }
+        .toolbar label { font-size: 12px; color: var(--text-muted); display: flex; align-items: center; gap: 4px; cursor: pointer; }
+        .toolbar-btn {
+            background: #222; color: #fff; border: 1px solid #333; padding: 5px 10px; border-radius: 6px;
+            font-size: 12px; cursor: pointer; font-weight: bold; font-family: inherit;
+        }
+        .toolbar-btn:hover { background: #333; }
+        .toolbar-btn.danger { background: #2a1414; border-color: #5c2020; color: #f5a3a3; }
+        .toolbar-btn.danger:hover { background: #3a1a1a; }
+
+        .user-avatar-img {
+            width: 30px; height: 30px; border-radius: 50%; object-fit: cover;
+            background: var(--bg-elevated); display: block;
+        }
+        .user-avatar-fallback {
+            width: 30px; height: 30px; border-radius: 50%; flex-shrink: 0;
+            display: flex; align-items: center; justify-content: center;
+            color: #fff; font-size: 12.5px; font-weight: 900;
+            box-shadow: inset 0 0 0 1px rgba(255,255,255,0.15);
+        }
+        .channel-badge {
+            display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: bold;
+            padding: 3px 9px; border-radius: 20px; background: rgba(167,139,250,.12); color: var(--point-purple);
+            border: 1px solid rgba(167,139,250,.3); white-space: nowrap;
+        }
+        .email-missing-badge {
+            display: inline-flex; align-items: center; gap: 5px; font-size: 11px; font-weight: bold;
+            padding: 3px 9px; border-radius: 20px; background: rgba(251,146,60,.12); color: #fb923c;
+            border: 1px solid rgba(251,146,60,.3); white-space: nowrap;
+        }
+
+        .log-toolbar-row { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 12px; }
+        .log-toolbar-row .toolbar { flex-wrap: wrap; }
+        .log-stats { display: flex; align-items: center; gap: 6px; margin-right: auto; }
+        .log-stat-chip {
+            font-size: 11px; font-weight: bold; padding: 3px 9px; border-radius: 20px;
+            background: var(--bg-elevated); color: var(--text-faint); border: 1px solid var(--border-line);
+            display: inline-flex; align-items: center; gap: 5px;
+        }
+        .log-stat-chip.err { color: #f87171; border-color: rgba(248,113,113,.3); background: rgba(248,113,113,.08); }
+        .log-stat-chip.warn { color: #fbbf24; border-color: rgba(251,191,36,.3); background: rgba(251,191,36,.08); }
+        .toolbar label.switch-label {
+            font-size: 12px; color: var(--text-muted); display: flex; align-items: center; gap: 5px; cursor: pointer;
+            background: var(--bg-elevated); border: 1px solid var(--border-line); padding: 5px 10px; border-radius: 6px;
+        }
+        .toolbar label.switch-label input { accent-color: var(--point-blue); }
+
+        .log-viewer {
+            background: #08090b; border: 1px solid var(--border-line); border-radius: 10px; padding: 8px;
+            font-family: "Consolas", "Menlo", monospace; font-size: 12px; line-height: 1.55; color: #cfcfcf;
+            max-height: 560px; overflow-y: auto;
+        }
+        .log-viewer .log-empty { text-align: center; color: var(--text-faint); padding: 60px 0; font-size: 13px; }
+        .log-row { display: flex; align-items: flex-start; gap: 8px; padding: 3px 8px; border-radius: 5px; }
+        .log-row:hover { background: rgba(255,255,255,0.035); }
+        .log-time { flex-shrink: 0; color: var(--text-faint); font-size: 10.5px; white-space: nowrap; padding-top: 2px; width: 68px; }
+        .log-badge {
+            flex-shrink: 0; font-size: 9.5px; font-weight: 900; padding: 2px 6px; border-radius: 4px;
+            text-transform: uppercase; letter-spacing: .3px; white-space: nowrap; margin-top: 1px;
+        }
+        .log-badge.comp-wsgi { background: rgba(56,189,248,.15); color: #38bdf8; }
+        .log-badge.comp-app { background: rgba(167,139,250,.15); color: #a78bfa; }
+        .log-badge.comp-service_loop { background: rgba(251,146,60,.15); color: #fb923c; }
+        .log-badge.comp-default { background: rgba(255,255,255,.08); color: var(--text-faint); }
+        .log-badge.level-info { background: rgba(255,255,255,.06); color: var(--text-muted); }
+        .log-badge.level-warning { background: rgba(251,191,36,.16); color: #fbbf24; }
+        .log-badge.level-error { background: rgba(248,113,113,.18); color: #f87171; }
+        .log-msg { flex: 1; min-width: 0; white-space: pre-wrap; word-break: break-all; padding-top: 1px; }
+        .log-msg .log-method { color: #38bdf8; font-weight: bold; }
+        .log-msg .log-status { font-weight: bold; }
+        .log-msg .log-status.st-2xx { color: #4ade80; }
+        .log-msg .log-status.st-3xx { color: #60a5fa; }
+        .log-msg .log-status.st-4xx { color: #fbbf24; }
+        .log-msg .log-status.st-5xx { color: #f87171; }
+        .log-row.err-line { background: rgba(248,113,113,.06); }
+        .log-row.err-line .log-msg { color: var(--danger); }
+        .log-row.raw-row .log-msg { color: #9a9ea8; padding-left: 76px; }
+        .log-row.raw-row.err-line .log-msg { color: var(--danger); }
+
+        .data-table-wrap { overflow-x: auto; }
+        table.data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+        table.data-table th, table.data-table td {
+            text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--border-line);
+            white-space: nowrap; max-width: 240px; overflow: hidden; text-overflow: ellipsis;
+        }
+        table.data-table th { color: var(--text-muted); font-size: 11.5px; text-transform: uppercase; letter-spacing: 0.3px; }
+        table.data-table tbody tr:hover { background: var(--bg-elevated); }
+
+        table.users-table th, table.users-table td { max-width: none; }
+        table.users-table th:first-child, table.users-table td:first-child { width: 46px; padding-right: 4px; }
+        table.users-table th:nth-child(2), table.users-table td:nth-child(2) { width: 46px; }
+        table.users-table th:last-child, table.users-table td:last-child {
+            width: 44px; position: sticky; right: 0; background: var(--bg-panel);
+            box-shadow: -8px 0 10px -8px rgba(0,0,0,0.5);
+        }
+        table.users-table tbody tr:hover td:last-child { background: var(--bg-elevated); }
+
+        .search-row { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+        .search-row input {
+            flex: 1; min-width: 180px; background: var(--bg-elevated); border: 1px solid var(--border-line);
+            color: var(--text-primary); padding: 10px 14px; border-radius: 8px; font-size: 13px; font-family: inherit;
+        }
+        .search-row input:focus { outline: none; border-color: var(--point-blue); }
+
+        .pagination { display: flex; align-items: center; justify-content: center; gap: 10px; margin-top: 16px; font-size: 13px; color: var(--text-muted); }
+
+        .db-groups { display: flex; flex-direction: column; gap: 10px; }
+        .db-group-label {
+            font-size: 12px; color: var(--text-muted); font-weight: bold; letter-spacing: 0.3px;
+            margin: 14px 0 4px; padding-bottom: 6px; border-bottom: 1px solid var(--border-line);
+        }
+        .db-group-label:first-child { margin-top: 0; }
+        .db-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 14px; margin-bottom: 6px; }
+        .db-card { background: var(--bg-elevated); border: 1px solid var(--border-line); border-radius: 12px; padding: 16px; }
+        .db-card .tname { font-size: 12px; color: var(--text-muted); font-weight: bold; margin-bottom: 6px; font-family: "Consolas", monospace; }
+        .db-card .tcount { font-size: 22px; font-weight: 900; color: var(--point-purple); }
+
+        .controls-section {
+            display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 12px;
+            background: var(--bg-panel); padding: 15px 20px; border-radius: 12px; border: 1px solid var(--border-line); margin-bottom: 20px;
+        }
+        .filter-tabs { display: flex; gap: 8px; flex-wrap: wrap; }
+        .filter-tabs button {
+            background: var(--bg-elevated); color: var(--text-muted); border: 1px solid var(--border-line); padding: 8px 16px;
+            border-radius: 20px; cursor: pointer; font-size: 13px; font-weight: bold; transition: 0.2s; font-family: inherit;
+        }
+        .filter-tabs button.active, .filter-tabs button:hover { background: var(--point-blue); color: #000; border-color: var(--point-blue); }
+        .report-count { color: var(--text-muted); font-size: 14px; }
+        .checkbox-label { display: flex; align-items: center; gap: 8px; cursor: pointer; font-size: 14px; font-weight: bold; user-select: none; color: var(--text-primary); }
+        .checkbox-label input[type="checkbox"] { width: 18px; height: 18px; cursor: pointer; accent-color: var(--point-blue); }
+
+        .report-card {
+            display: flex; gap: 16px; background: var(--bg-panel); border: 1px solid var(--border-line);
+            border-radius: 12px; padding: 16px; margin-bottom: 14px; align-items: flex-start;
+        }
+        .report-thumb { width: 90px; height: 90px; border-radius: 8px; object-fit: cover; background: #000; flex-shrink: 0; }
+        .report-thumb-missing {
+            width: 90px; height: 90px; border-radius: 8px; background: #000; flex-shrink: 0; display: flex;
+            align-items: center; justify-content: center; color: var(--text-muted); font-size: 12px; text-align: center;
+        }
+        .report-info { flex: 1; min-width: 0; }
+        .report-top-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-bottom: 6px; flex-wrap: wrap; }
+        .report-title { font-size: 16px; font-weight: bold; color: var(--text-primary); }
+        .report-status { font-size: 12px; font-weight: bold; padding: 3px 10px; border-radius: 10px; }
+        .report-status.pending { background: rgba(248,113,113,0.15); color: var(--danger); }
+        .report-status.resolved { background: rgba(56,189,248,0.15); color: var(--point-blue); }
+        .report-status.auto_deleted { background: rgba(255,255,255,0.1); color: var(--text-muted); }
+        .report-meta { font-size: 13px; color: var(--text-muted); margin-bottom: 8px; }
+        .report-reason { font-size: 14px; color: #e5e7eb; background: var(--bg-dark); border-left: 3px solid var(--point-blue); padding: 8px 12px; border-radius: 6px; margin-bottom: 10px; }
+        .report-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+        .report-actions button, .report-actions a {
+            border: none; padding: 8px 14px; border-radius: 6px; font-size: 13px; font-weight: bold; cursor: pointer; text-decoration: none; transition: 0.2s; font-family: inherit;
+        }
+        .btn-view { background: var(--bg-elevated); color: var(--text-primary); border: 1px solid var(--border-line) !important; }
+        .btn-view:hover { background: #262a34; }
+        .btn-resolve { background: var(--point-blue); color: #000; }
+        .btn-resolve:hover { background: #0ea5e9; }
+        .btn-delete { background: var(--danger); color: #1a0000; }
+        .btn-delete:hover { background: #dc2626; color:#fff; }
+
+        .comment-list { display: flex; flex-direction: column; gap: 16px; }
+        .comment-card {
+            background: var(--bg-panel); border: 1px solid var(--border-line); border-radius: 12px;
+            padding: 18px; display: flex; gap: 15px; transition: transform 0.2s ease, border-color 0.2s;
+        }
+        .comment-card:hover { border-color: var(--point-blue); }
+        .comment-card.selected { border-color: var(--danger); background: rgba(248,113,113,0.06); }
+        .checkbox-wrapper { display: flex; align-items: flex-start; padding-top: 5px; }
+        .comment-content-wrapper { flex: 1; display: flex; flex-direction: column; gap: 10px; min-width: 0; }
+        .comment-header { display: flex; justify-content: space-between; align-items: center; font-size: 13px; color: var(--text-muted); gap: 10px; flex-wrap: wrap; }
+        .comment-author { font-weight: 800; color: var(--text-primary); font-size: 15px; }
+        .admin-author { color: #facc15 !important; background: rgba(250,204,21,.1); padding: 2px 8px; border-radius: 4px; border: 1px solid rgba(250,204,21,.35); font-size: 13px; display: inline-flex; align-items: center; gap: 4px; }
+        .comment-body { font-size: 14.5px; color: #e5e7eb; line-height: 1.6; word-break: break-all; }
+        .comment-footer { display: flex; justify-content: flex-end; }
+        .btn-watch { background: var(--point-blue); color: #000; padding: 8px 16px; border-radius: 6px; font-weight: bold; font-size: 13px; text-decoration: none; display: inline-flex; align-items: center; gap: 6px; transition: background 0.2s; }
+        .btn-watch:hover { background: #7dd3fc; }
+
+        @media (max-width: 800px) {
+            .admin-shell { flex-direction: column; }
+            .admin-sidebar { width: 100%; height: auto; position: static; flex-direction: row; align-items: center; overflow-x: auto; }
+            .sidebar-brand { border-bottom: none; border-right: 1px solid var(--border-line); flex-shrink: 0; }
+            .sidebar-nav { flex-direction: row; flex: none; padding: 10px; }
+            .nav-item { border-left: none; border-bottom: 3px solid transparent; white-space: nowrap; }
+            .nav-item.active { border-left-color: transparent; border-bottom-color: var(--point-blue); }
+            .sidebar-section-label { padding: 0 8px; white-space: nowrap; align-self: center; }
+            .sidebar-section-label:first-child { padding-top: 0; }
+            .sidebar-footer { flex-direction: row; border-top: none; border-left: 1px solid var(--border-line); }
+            .admin-main { padding: 20px 16px 40px; }
+        }
+    </style>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flag-icons@7.2.3/css/flag-icons.min.css">
+    <style>
+        .ip-geo { display: inline-flex; align-items: center; gap: 7px; margin-right: 10px; vertical-align: middle; }
+        .ip-flag { display: inline-block; width: 30px; height: 22px; border-radius: 4px; box-shadow: 0 0 0 1px rgba(255,255,255,.15), 0 2px 6px rgba(0,0,0,.35); background-size: cover; background-position: center; flex: none; }
+        .ip-flag.unknown { box-shadow: none; display: inline-grid; place-items: center; font-size: 18px; line-height: 1; }
+        .ip-cc { font-size: 12.5px; color: var(--text-secondary, #cbd5e1); font-weight: 700; white-space: nowrap; }
+        .ip-pager { flex-wrap: wrap; gap: 6px; }
+        .pe-card { padding-bottom: 0; overflow: hidden; }
+        .pe-head { display: flex; justify-content: space-between; align-items: flex-start; gap: 14px; flex-wrap: wrap; margin-bottom: 14px; }
+        .pe-title { font-size: 17px; font-weight: 800; color: var(--text-primary); display: flex; align-items: center; gap: 8px; }
+        .pe-title i { color: #38bdf8; }
+        .pe-summary { display: flex; gap: 14px; flex-wrap: wrap; margin-top: 6px; font-size: 12.5px; color: var(--text-muted); }
+        .pe-summary b { color: var(--text-primary); font-size: 14px; margin-right: 2px; }
+        .pe-sum-red b { color: #f87171; }
+        .pe-tools { display: flex; gap: 8px; align-items: center; }
+        .pe-search { display: flex; align-items: center; gap: 8px; padding: 0 12px; height: 36px; border-radius: 10px; background: var(--bg-elevated); border: 1px solid var(--border-line); color: var(--text-muted); }
+        .pe-search:focus-within { border-color: #38bdf8; }
+        .pe-search input { border: none; background: none; outline: none; color: var(--text-primary); font: inherit; font-size: 13px; width: 200px; }
+        .pe-select { height: 36px; border-radius: 10px; background: var(--bg-elevated); border: 1px solid var(--border-line); color: var(--text-primary); padding: 0 10px; font: inherit; font-size: 13px; }
+        .pe-tabs { display: flex; gap: 6px; overflow-x: auto; padding-bottom: 12px; border-bottom: 1px solid var(--border-line); scrollbar-width: none; }
+        .pe-tab { flex: none; display: inline-flex; align-items: center; gap: 6px; padding: 7px 12px; border-radius: 999px; border: 1px solid var(--border-line); background: transparent; color: var(--text-muted); font: inherit; font-size: 12.5px; font-weight: 700; cursor: pointer; transition: all .15s; }
+        .pe-tab em { font-style: normal; font-size: 11px; padding: 1px 7px; border-radius: 999px; background: var(--bg-elevated); }
+        .pe-tab:hover { color: var(--text-primary); }
+        .pe-tab.on { color: #0b0d12; background: #38bdf8; border-color: #38bdf8; }
+        .pe-tab.on em { background: rgba(11,13,18,.18); }
+        .pe-list-head { display: flex; justify-content: space-between; align-items: center; padding: 10px 6px; font-size: 11.5px; color: var(--text-muted); font-weight: 700; }
+        .pe-list-head > span { width: 80px; text-align: right; margin-right: 92px; }
+        .pe-check { display: inline-flex; align-items: center; gap: 8px; cursor: pointer; }
+        .pe-list { display: flex; flex-direction: column; max-height: 560px; overflow-y: auto; margin: 0 -6px; padding: 0 6px; }
+        .pe-row { display: grid; grid-template-columns: 22px 34px minmax(0, 1fr) 80px 84px; align-items: center; gap: 10px; padding: 9px 8px; border-radius: 10px; transition: background .12s; }
+        .pe-row:hover { background: var(--bg-elevated); }
+        .pe-row.selected { background: rgba(239,68,68,.09); }
+        .pe-row.blocked { opacity: .6; }
+        .pe-ic { width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; background: var(--bg-elevated); color: #7dd3fc; font-size: 14px; }
+        .pe-row.blocked .pe-ic { color: #f87171; }
+        .pe-name { min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+        .pe-name b { font-size: 13.5px; color: var(--text-primary); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .pe-name small { font-size: 11.5px; color: var(--text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .pe-bar { display: block; height: 5px; border-radius: 99px; background: var(--bg-elevated); overflow: hidden; margin-top: 4px; }
+        .pe-row:hover .pe-bar { background: rgba(255,255,255,.06); }
+        .pe-bar i { display: block; height: 100%; border-radius: 99px; background: linear-gradient(90deg, #38bdf8, #a78bfa); }
+        .pe-row.blocked .pe-bar i { background: #ef4444; }
+        .pe-num { text-align: right; display: flex; flex-direction: column; }
+        .pe-num b { font-size: 14px; font-variant-numeric: tabular-nums; }
+        .pe-num small { font-size: 11px; color: var(--text-muted); }
+        .pe-action { display: flex; justify-content: flex-end; }
+        .pe-act { display: inline-flex; align-items: center; gap: 6px; padding: 6px 11px; border-radius: 8px; border: 1px solid rgba(239,68,68,.45); background: transparent; color: #f87171; font: inherit; font-size: 12px; font-weight: 700; cursor: pointer; opacity: .55; transition: all .15s; }
+        .pe-row:hover .pe-act { opacity: 1; }
+        .pe-act:hover { background: #ef4444; color: #fff; }
+        .pe-act.undo { opacity: 1; border-color: var(--border-line); color: var(--text-primary); }
+        .pe-act.undo:hover { background: var(--bg-elevated); color: #38bdf8; }
+        .pe-lock { color: var(--text-muted); font-size: 12px; padding-right: 12px; }
+        .pe-empty { text-align: center; padding: 40px 0; color: var(--text-muted); font-size: 13px; }
+        .pe-more { display: block; width: 100%; margin: 8px 0 4px; padding: 10px; border-radius: 10px; border: 1px dashed var(--border-line); background: none; color: var(--text-muted); font: inherit; font-size: 13px; cursor: pointer; }
+        .pe-more:hover { color: #38bdf8; border-color: #38bdf8; }
+        .pe-bulk { position: sticky; bottom: 0; z-index: 2; display: flex; align-items: center; gap: 8px; margin: 10px -20px 0; padding: 12px 20px; background: linear-gradient(90deg, rgba(239,68,68,.22), rgba(239,68,68,.1)); border-top: 1px solid rgba(239,68,68,.4); backdrop-filter: blur(6px); font-size: 13px; font-weight: 700; color: #fecaca; }
+        .pe-bulk[hidden] { display: none; }
+        .pe-bulk span { margin-right: auto; }
+        .pe-blocked { margin: 14px -20px 0; padding: 16px 20px 18px; background: rgba(0,0,0,.18); border-top: 1px solid var(--border-line); }
+        .pe-blocked-head { display: flex; flex-wrap: wrap; gap: 6px 12px; align-items: baseline; margin-bottom: 10px; font-size: 13.5px; font-weight: 800; }
+        .pe-blocked-head b { color: #f87171; }
+        .pe-blocked-head small { font-weight: 500; color: var(--text-muted); font-size: 11.5px; }
+        @media (max-width: 760px) { .pe-row { grid-template-columns: 22px minmax(0, 1fr) 60px 70px; } .pe-ic { display: none; } .pe-search input { width: 120px; } .pe-list-head > span { margin-right: 78px; } .pe-act span { display: none; } }
+
+        .mini-input.wide-input { width: 260px; }
+        .content-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
+        .fa-admin-card { position: relative; display: flex; flex-direction: column; border-radius: 12px; overflow: hidden; background: var(--bg-elevated); border: 1px solid var(--border-line); cursor: pointer; transition: border-color .15s, transform .15s; }
+        .fa-admin-card:hover { transform: translateY(-2px); }
+        .fa-admin-card.selected { border-color: #ef4444; box-shadow: 0 0 0 2px rgba(239,68,68,.35); }
+        .fa-admin-card img { width: 100%; aspect-ratio: 1; object-fit: cover; background: #0d0f15; }
+        .fa-admin-check { position: absolute; top: 8px; left: 8px; width: 18px; height: 18px; accent-color: #ef4444; z-index: 1; }
+        .fa-admin-open { position: absolute; top: 6px; right: 6px; width: 28px; height: 28px; border-radius: 8px; display: grid; place-items: center; color: #fff; background: rgba(0,0,0,.55); font-size: 12px; }
+        .fa-admin-info { display: flex; flex-direction: column; gap: 3px; padding: 10px 12px; font-size: 12px; color: var(--text-muted); }
+        .fa-admin-info b { color: var(--text-primary); font-size: 13.5px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .fa-admin-stats { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+        .fa-admin-stats em { font-style: normal; color: #f87171; font-weight: 700; }
+        .post-admin-list { display: flex; flex-direction: column; gap: 8px; }
+        .post-admin-item { display: flex; gap: 12px; padding: 12px 14px; border-radius: 10px; background: var(--bg-elevated); border: 1px solid var(--border-line); cursor: pointer; }
+        .post-admin-item.selected { border-color: #ef4444; background: rgba(239,68,68,.06); }
+        .post-admin-item input { width: 16px; height: 16px; margin-top: 3px; accent-color: #ef4444; flex: none; }
+        .post-admin-body { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 5px; }
+        .post-admin-head { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; font-size: 12px; color: var(--text-muted); }
+        .post-admin-head b { color: var(--text-primary); }
+        .post-admin-member { padding: 1px 8px; border-radius: 999px; background: rgba(56,189,248,.15); color: #7dd3fc; font-weight: 700; }
+        .post-admin-title { font-weight: 800; font-size: 14px; }
+        .post-admin-content { font-size: 13px; color: var(--text-secondary, #cbd5e1); white-space: pre-wrap; word-break: break-word; }
+        .post-admin-foot { font-size: 12px; color: var(--text-muted); display: flex; gap: 6px; align-items: center; }
+        .post-admin-foot a { margin-left: auto; color: var(--point-blue, #38bdf8); }
+        .settings-card { max-width: 760px; }
+        .notice-layout { display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px;align-items:start; }
+        .notice-layout .settings-card { max-width:none;min-width:0; }
+        .notice-preview { overflow-wrap:anywhere;line-height:1.45; }
+        @media(max-width:1000px){ .notice-layout {grid-template-columns:minmax(0,1fr);} }
+        .settings-help { margin: -4px 0 14px; font-size: 13px; color: var(--text-muted); line-height: 1.6; }
+        .settings-label { display: block; margin: 12px 0 6px; font-size: 12.5px; color: var(--text-muted); font-weight: 700; }
+        .settings-input { width: 100%; box-sizing: border-box; background: var(--bg-elevated); border: 1px solid var(--border-line); color: var(--text-primary); padding: 10px 12px; border-radius: 8px; font-size: 13.5px; font-family: inherit; resize: vertical; }
+        .settings-row2 { display: grid; grid-template-columns: 200px 1fr; gap: 12px; }
+        .settings-actions { display: flex; justify-content: flex-end; margin-top: 16px; }
+        .notice-preview { padding: 10px 16px; border-radius: 8px; color: #fff; font-weight: 700; font-size: 14px; text-align: center; transition: opacity .2s; }
+        .switch { position: relative; display: inline-block; width: 46px; height: 26px; flex: none; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .switch span { position: absolute; inset: 0; border-radius: 999px; background: #3a3f50; cursor: pointer; transition: background .2s; }
+        .switch span::before { content: ""; position: absolute; left: 3px; top: 3px; width: 20px; height: 20px; border-radius: 50%; background: #fff; transition: transform .2s; }
+        .switch input:checked + span { background: #22c55e; }
+        .switch.danger input:checked + span { background: #ef4444; }
+        .switch input:checked + span::before { transform: translateX(20px); }
+        .maint-status { padding: 10px 12px; border-radius: 8px; font-size: 13px; display: flex; gap: 8px; align-items: center; }
+        .maint-status.on { background: rgba(239,68,68,.12); color: #fca5a5; }
+        .maint-status.on i { color: #ef4444; animation: maintBlink 1.2s infinite; }
+        .maint-status.off { background: rgba(34,197,94,.1); color: #86efac; }
+        .maint-status.off i { color: #22c55e; }
+        @keyframes maintBlink { 50% { opacity: .3; } }
+        @media (max-width: 700px) { .settings-row2 { grid-template-columns: 1fr; } .mini-input.wide-input { width: 100%; } }
+
+        .mini-input { background: var(--bg-elevated); border: 1px solid var(--border-line); color: var(--text-primary); padding: 5px 10px; border-radius: 6px; font-size: 12px; font-family: inherit; width: 140px; }
+        .scroll-table { max-height: 440px; overflow-y: auto; }
+        .scroll-table thead th { position: sticky; top: 0; background: var(--bg-card, #15171f); z-index: 1; }
+        .bulk-bar { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin: 0 0 10px; padding: 8px 10px; border-radius: 8px; background: rgba(239,68,68,.08); border: 1px solid rgba(239,68,68,.3); font-size: 12.5px; }
+        .bulk-bar.inline { margin: 0 0 0 auto; padding: 4px 8px; font-weight: 500; }
+        .bulk-bar[hidden] { display: none; }
+        .row-selected td { background: rgba(56,189,248,.08); }
+        .row-blocked { opacity: .55; }
+        input.ip-check, input.path-check, #ipSelectAll, #pathSelectAll { width: 15px; height: 15px; cursor: pointer; accent-color: #ef4444; }
+        .path-block-box { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--border-line); }
+        .path-block-box h3 { margin: 0 0 8px; font-size: 13.5px; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+        .path-block-box h3 small { font-weight: 500; color: var(--text-muted); font-size: 11.5px; }
+        .path-block-form { display: flex; gap: 6px; }
+        .path-block-form input { flex: 1; min-width: 0; background: var(--bg-elevated); border: 1px solid var(--border-line); color: var(--text-primary); padding: 6px 10px; border-radius: 6px; font-size: 12px; font-family: inherit; }
+        .blocked-path-list { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+        .blocked-path { display: inline-flex; align-items: center; gap: 4px; padding: 3px 4px 3px 10px; border-radius: 999px; font-size: 12px; background: rgba(239,68,68,.12); border: 1px solid rgba(239,68,68,.35); color: #fca5a5; }
+        .blocked-path button { border: none; background: none; color: inherit; cursor: pointer; padding: 0 4px; font-size: 12px; }
+        .path-blocked-tag { font-size: 10.5px; font-weight: 700; color: #f87171; border: 1px solid rgba(239,68,68,.4); border-radius: 999px; padding: 0 6px; margin-left: 4px; }
+        .ip-sub { display: block; font-size: 11px; color: var(--text-muted); font-weight: 500; }
+        .ip-paths { display: flex; flex-wrap: wrap; gap: 4px; max-width: 560px; }
+        .ip-path { display: inline-flex; align-items: center; gap: 4px; max-width: 220px; padding: 2px 8px; border-radius: 999px; font-size: 11.5px; background: var(--bg-elevated); border: 1px solid var(--border-line); color: var(--text-secondary, #cbd5e1); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .ip-path em { font-style: normal; font-weight: 800; color: var(--accent, #38bdf8); }
+        .ip-path.more { cursor: pointer; color: var(--accent, #38bdf8); border-style: dashed; }
+        .ip-pager-num { min-width: 34px; justify-content: center; }
+        .ip-pager-num.active { background: var(--accent, #38bdf8); color: #0b0d12; border-color: transparent; font-weight: 800; }
+        .ip-pager-gap { color: var(--text-muted); padding: 0 2px; }
+        .geo-credit { margin-top: 8px; font-size: 11px; color: var(--text-muted); text-align: right; }
+        .geo-credit a { color: inherit; }
+    </style>
+<script src="{{ versioned_static('js/thumbnails.js') }}"></script>
+</head>
+<body>
+    <div class="admin-shell">
+        <aside class="admin-sidebar">
+            <div class="sidebar-brand">
+                <img src="{{ url_for('static', filename='logo/logo.webp') }}" alt="루미너스 로고">
+                <div>
+                    <div class="site-name">루미너스</div>
+                    <div class="admin-tag">ADMIN</div>
+                </div>
+            </div>
+            <nav class="sidebar-nav">
+                <div class="sidebar-section-label">모니터링</div>
+                <button class="nav-item active" data-tab="dashboard"><i class="fas fa-gauge-high"></i> 대시보드</button>
+                <button class="nav-item" data-tab="users"><i class="fas fa-users"></i> 회원 관리</button>
+                <button class="nav-item" data-tab="ratelimit"><i class="fas fa-chart-line"></i> 트래픽</button>
+                <button class="nav-item" data-tab="system"><i class="fas fa-heart-pulse"></i> 서버 상태</button>
+                <button class="nav-item" data-tab="serverlog"><i class="fas fa-server"></i> 서버 로그</button>
+                <button class="nav-item" data-tab="auditlog"><i class="fas fa-user-shield"></i> 활동 로그</button>
+                <div class="sidebar-section-label">콘텐츠 관리</div>
+                <button class="nav-item" data-tab="reports"><i class="fas fa-flag"></i> 신고 관리</button>
+                <button class="nav-item" data-tab="comments"><i class="fas fa-comments"></i> 댓글 관리</button>
+                <button class="nav-item" data-tab="fanarts"><i class="fas fa-palette"></i> 팬아트 관리</button>
+                <button class="nav-item" data-tab="posts"><i class="fas fa-pen-to-square"></i> 게시글 관리</button>
+                <div class="sidebar-section-label">사이트 운영</div>
+                <button class="nav-item" data-tab="notice"><i class="fas fa-bullhorn"></i> 공지 배너</button>
+                <button class="nav-item" data-tab="maintenance"><i class="fas fa-screwdriver-wrench"></i> 점검 모드</button>
+                <button class="nav-item" data-tab="bannedwords"><i class="fas fa-filter-circle-xmark"></i> 금지어</button>
+                <div class="sidebar-section-label">AI</div>
+                <button class="nav-item" data-tab="lumi"><i class="fas fa-robot"></i> AI 관리</button>
+            </nav>
+            <div class="sidebar-footer">
+                <a href="https://pastellive.co.kr/" class="sidebar-link"><i class="fas fa-home"></i> 홈으로</a>
+            </div>
+        </aside>
+
+        <main class="admin-main">
+            <header class="admin-topbar">
+                <h1 id="pageTitle">대시보드</h1>
+                <div class="topbar-actions" id="topbarActions-dashboard"></div>
+            </header>
+
+            <section class="tab-panel active" id="tab-dashboard">
+                <div id="loadingMsg" class="empty-message"><i class="fas fa-spinner fa-spin"></i> 불러오는 중...</div>
+                <div class="stat-row" id="statRow" style="display:none;"></div>
+                <div class="grid" id="statsGrid" style="display:none;">
+                    <div class="card wide">
+                        <h2>최근 14일 업로드 / 댓글 추이</h2>
+                        <canvas id="dailyChart"></canvas>
+                    </div>
+                    <div class="card">
+                        <h2>
+                            <span>인기 검색어 TOP 10</span>
+                            <button class="toolbar-btn danger" id="btnDeleteAllKeywords" title="인기 검색어 데이터 전체 삭제"><i class="fas fa-trash"></i> 전체 삭제</button>
+                        </h2>
+                        <canvas id="keywordChart"></canvas>
+                        <div class="search-row" style="margin-top:14px;">
+                            <input type="text" id="keywordSearchInput" placeholder="검색어로 조회...">
+                            <button class="btn" id="btnKeywordSearch"><i class="fas fa-magnifying-glass"></i> 검색</button>
+                        </div>
+                        <div class="data-table-wrap" style="margin-top:8px;">
+                            <table class="data-table">
+                                <thead><tr><th>검색어</th><th>검색 횟수</th><th>최근 검색</th><th></th></tr></thead>
+                                <tbody id="keywordSearchTableBody"><tr><td colspan="4" style="text-align:center; padding:16px; color:var(--text-muted); font-size:12px;">검색어를 입력해 조회하세요.</td></tr></tbody>
+                            </table>
+                        </div>
+                    </div>
+                    <div class="card">
+                        <h2>신고 처리 현황</h2>
+                        <canvas id="reportsChart"></canvas>
+                    </div>
+                </div>
+            </section>
+
+            <section class="tab-panel" id="tab-users">
+                <div class="search-row">
+                    <input type="text" id="userSearchInput" placeholder="이메일 / 닉네임 / 아이디 / 디스코드로 검색">
+                    <button class="btn" id="btnUserSearch"><i class="fas fa-magnifying-glass"></i> 검색</button>
+                    <select id="userSortSelect" style="background:var(--bg-elevated); border:1px solid var(--border-line); color:var(--text-primary); padding:7px 10px; border-radius:6px; font-size:13px; font-family:inherit;">
+                        <option value="id_desc">최신 가입순</option>
+                        <option value="id_asc">오래된 가입순</option>
+                        <option value="updated_desc">최근 활동순</option>
+                        <option value="nickname_asc">닉네임순</option>
+                    </select>
+                    <select id="userFilterSelect" style="background:var(--bg-elevated); border:1px solid var(--border-line); color:var(--text-primary); padding:7px 10px; border-radius:6px; font-size:13px; font-family:inherit;">
+                        <option value="">전체 회원</option>
+                        <option value="staff">운영진만</option>
+                        <option value="suspended">정지된 회원만</option>
+                    </select>
+                </div>
+                <div class="card wide">
+                    <div class="data-table-wrap">
+                        <table class="data-table users-table">
+                            <thead><tr><th></th><th>ID</th><th>이메일</th><th>닉네임</th><th>로그인ID</th><th>디스코드</th><th>채널</th><th>최근 IP</th><th>상태</th><th>가입일</th><th>최근 수정일</th><th></th></tr></thead>
+                            <tbody id="usersTableBody"><tr><td colspan="11" style="text-align:center; padding:30px; color:var(--text-muted);">불러오는 중...</td></tr></tbody>
+                        </table>
+                    </div>
+                    <div class="pagination" id="usersPagination"></div>
+                </div>
+            </section>
+
+
+            <section class="tab-panel" id="tab-ratelimit">
+                <div class="stat-row" id="trafficStatRow"></div>
+                <div class="grid">
+                    <div class="card wide">
+                        <h2>
+                            <span>최근 14일 방문자 · 페이지뷰 추이</span>
+                            <button class="toolbar-btn" id="btnTrafficRefresh"><i class="fas fa-rotate"></i> 새로고침</button>
+                        </h2>
+                        <canvas id="dailyTrafficChart"></canvas>
+                    </div>
+                    <div class="card wide">
+                        <h2>오늘 시간대별 페이지뷰</h2>
+                        <canvas id="hourlyTrafficChart"></canvas>
+                    </div>
+                    <div class="card wide pe-card">
+                        <div class="pe-head">
+                            <div>
+                                <div class="pe-title"><i class="fas fa-route"></i> 오늘 본 경로</div>
+                                <div class="pe-summary" id="peSummary"></div>
+                            </div>
+                            <div class="pe-tools">
+                                <button class="toolbar-btn danger" id="btnResetTodayPaths">오늘 경로 초기화</button>
+                                <label class="pe-search"><i class="fas fa-magnifying-glass"></i><input type="text" id="topPathsFilterInput" placeholder="경로 검색"></label>
+                                <select id="peSort" class="pe-select">
+                                    <option value="views">조회 많은 순</option>
+                                    <option value="views_asc">조회 적은 순</option>
+                                    <option value="name">주소 순</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="pe-tabs" id="peTabs"></div>
+                        <div class="pe-list-head">
+                            <label class="pe-check"><input type="checkbox" id="pathSelectAll"><span>보이는 경로 모두 선택</span></label>
+                            <span>조회</span>
+                        </div>
+                        <div class="pe-list" id="peList"><div class="pe-empty">불러오는 중...</div></div>
+                        <button type="button" class="pe-more" id="peMore" hidden></button>
+                        <div class="pe-bulk" id="pathBulkBar" hidden>
+                            <span id="pathBulkCount">0개 선택</span>
+                            <button class="toolbar-btn" id="btnPathBulkClear">선택 해제</button>
+                            <button class="toolbar-btn danger" id="btnPathBulkBlock"><i class="fas fa-ban"></i> 선택한 경로 차단</button>
+                        </div>
+                        <div class="pe-blocked">
+                            <div class="pe-blocked-head">
+                                <span><i class="fas fa-shield-halved"></i> 차단 중인 경로 <b id="peBlockedCount">0</b></span>
+                                <button class="toolbar-btn danger" id="btnResetBlockedPaths">차단 목록 초기화</button>
+                                <small>차단한 경로로 들어오면 홈(/)으로 보내요 · <code>/경로/*</code> 로 적으면 그 아래 전체</small>
+                            </div>
+                            <div class="path-block-form">
+                                <input type="text" id="pathBlockInput" placeholder="직접 적어서 차단: /경로">
+                                <button class="toolbar-btn danger" id="btnPathBlock"><i class="fas fa-ban"></i> 차단</button>
+                            </div>
+                            <div id="blockedPathList" class="blocked-path-list"></div>
+                        </div>
+                    </div>
+                </div>
+                <div class="card wide">
+                    <h2>
+                        <span><i class="fas fa-network-wired"></i> IP별 트래픽 (요청 많은 순, 최대 1,000개) <small id="ipTrafficTotal" style="color:var(--text-muted); font-weight:500;"></small></span>
+                        <span class="bulk-bar inline" id="ipBulkBar" hidden>
+                            <span id="ipBulkCount">0개 선택</span>
+                            <button class="toolbar-btn danger" id="btnIPBulkBan"><i class="fas fa-ban"></i> 선택한 IP 차단</button>
+                            <button class="toolbar-btn" id="btnIPBulkClear">선택 해제</button>
+                        </span>
+                        <label>기간 <select id="ipTrafficDate" class="settings-input" style="width:auto;padding:5px"><option value="">전체 기간</option></select></label> <input type="text" id="ipTrafficFilterInput" placeholder="IP 필터" style="background:var(--bg-elevated); border:1px solid var(--border-line); color:var(--text-primary); padding:5px 10px; border-radius:6px; font-size:12px; font-family:inherit; width:140px;">
+                    </h2>
+                    <button class="toolbar-btn danger" id="btnBanNonKR" title="전체 기간의 해외 IP와 국가 미확인 IP를 차단합니다">한국 제외 모든 나라 차단</button>
+                    <button class="toolbar-btn danger" id="btnResetIPTraffic">IP별 트래픽 초기화</button>
+                    <div class="data-table-wrap">
+                        <table class="data-table" id="ipTrafficTable">
+                            <thead><tr><th style="width:30px;"><input type="checkbox" id="ipSelectAll" title="이 페이지 IP 모두 선택"></th><th style="width:48px;">#</th><th>IP</th><th>요청</th><th>접속 시간</th><th>들어온 경로</th><th></th></tr></thead>
+                            <tbody id="ipTrafficTableBody"><tr><td colspan="7" style="text-align:center; padding:30px; color:var(--text-muted);">불러오는 중...</td></tr></tbody>
+                        </table>
+                    </div>
+                    <div class="pagination ip-pager" id="ipTrafficPagination"></div>
+                    <div class="geo-credit"><a href="https://db-ip.com" target="_blank" rel="noopener">IP Geolocation by DB-IP</a> (CC BY 4.0)</div>
+                </div>
+                <div class="card wide">
+                    <h2>
+                        <span><i class="fas fa-ban"></i> 차단된 IP 목록 <small style="font-size:12px;color:var(--text-muted)">한국 IP만 접속 허용</small></span>
+                        <span class="toolbar">
+                            <input type="text" id="ipBanInput" placeholder="차단할 IP" style="background:var(--bg-elevated); border:1px solid var(--border-line); color:var(--text-primary); padding:5px 10px; border-radius:6px; font-size:12px; font-family:inherit; width:140px;">
+                            <button class="toolbar-btn" id="btnUnbanNonBots">알려진 봇 제외 전체 차단 해제</button>
+                            <button class="toolbar-btn danger" id="btnIPBanAdd"><i class="fas fa-ban"></i> 차단 추가</button>
+                        </span>
+                    </h2>
+                    <div class="data-table-wrap">
+                        <table class="data-table" id="bannedIPTable">
+                            <thead><tr><th>IP</th><th>사유</th><th>차단 시각</th><th></th></tr></thead>
+                            <tbody id="bannedIPTableBody"><tr><td colspan="4" style="text-align:center; padding:30px; color:var(--text-muted);">불러오는 중...</td></tr></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="card wide">
+                    <h2>
+                        <span><i class="fas fa-shield-halved"></i> IP별 요청 속도 제한 현황 <span id="rlConfigChip" style="color:var(--text-faint); font-weight:normal;"></span></span>
+                    </h2>
+                    <div class="data-table-wrap">
+                        <table class="data-table" id="rateLimitTable">
+                            <thead><tr><th>IP</th><th>최근 윈도우 요청 수</th><th>상태</th><th>차단 해제 시각</th></tr></thead>
+                            <tbody id="rateLimitTableBody"><tr><td colspan="4" style="text-align:center; padding:30px; color:var(--text-muted);">불러오는 중...</td></tr></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <section class="tab-panel" id="tab-system">
+                <div style="display:flex;gap:10px;justify-content:flex-end;margin-bottom:16px;">
+                    <button class="btn" id="btnAdminSystemRefresh"><i class="fas fa-rotate"></i> 새로고침</button>
+                </div>
+                <div id="systemAlertBanner" class="card" style="display:none;border-color:#ef4444;color:#fecaca;margin-bottom:16px;"></div>
+                <div class="stat-row" id="systemMetricCards"></div>
+                <div class="card" style="margin-top:16px;">
+                    <h2>서비스 상태</h2>
+                    <div class="data-table-wrap"><table class="data-table"><thead><tr><th>서비스</th><th>상태</th><th>응답 시간</th><th>내용</th></tr></thead><tbody id="systemChecksBody"><tr><td colspan="4">불러오는 중...</td></tr></tbody></table></div>
+                    <div id="systemSampledAt" style="color:var(--text-muted);font-size:12px;margin-top:12px;"></div>
+                </div>
+            </section>
+
+            <section class="tab-panel" id="tab-serverlog">
+                <div class="card wide">
+                    <h2>
+                        <span><i class="fas fa-server"></i> service.log <span id="logLineCount" style="color:var(--text-faint); font-weight:normal;"></span></span>
+                        <button class="toolbar-btn" id="btnLogDownload"><i class="fas fa-download"></i> 다운로드</button>
+                    </h2>
+                    <div class="log-toolbar-row">
+                        <div class="log-stats" id="logStatsChips"></div>
+                        <span class="toolbar">
+                            <input type="text" id="logFilterInput" placeholder="필터 (예: ERROR, /api/...)" style="background:var(--bg-elevated); border:1px solid var(--border-line); color:var(--text-primary); padding:5px 10px; border-radius:6px; font-size:12px; font-family:inherit; width:180px;">
+                            <label class="switch-label"><input type="checkbox" id="logErrorsOnly"> 에러만</label>
+                            <label class="switch-label"><input type="checkbox" id="logAutoRefresh"> 자동 새로고침</label>
+                            <button class="toolbar-btn" id="btnLogRefresh"><i class="fas fa-rotate"></i> 새로고침</button>
+                            <button class="btn danger" id="btnResetLogs" style="padding:5px 10px; font-size:12px;"><i class="fas fa-trash"></i> 로그 초기화</button>
+                        </span>
+                    </div>
+                    <div class="log-viewer" id="serverLogView">불러오는 중...</div>
+                </div>
+            </section>
+
+            <section class="tab-panel" id="tab-auditlog">
+                <div class="card wide">
+                    <h2>
+                        <span><i class="fas fa-user-shield"></i> 관리자 활동 로그</span>
+                        <button class="toolbar-btn" id="btnAuditReset">활동 로그 초기화</button> <button class="toolbar-btn" id="btnAuditRefresh"><i class="fas fa-rotate"></i> 새로고침</button>
+                    </h2>
+                    <div class="data-table-wrap">
+                        <table class="data-table" id="auditTable">
+                            <thead><tr><th>시간</th><th>관리자</th><th>액션</th><th>대상</th><th>상세</th><th>IP</th></tr></thead>
+                            <tbody id="auditTableBody"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </section>
+
+            <section class="tab-panel" id="tab-reports">
+                <div class="controls-section">
+                    <div class="filter-tabs" id="reportFilterTabs">
+                        <button data-status="pending" class="active">대기중</button>
+                        <button data-status="resolved">처리됨</button>
+                        <button data-status="auto_deleted">자동삭제됨</button>
+                        <button data-status="all">전체</button>
+                    </div>
+                    <div class="report-count" id="reportCount"></div>
+                </div>
+                <div id="reportList">
+                    <div class="empty-message"><i class="fas fa-spinner fa-spin"></i> 불러오는 중...</div>
+                </div>
+            </section>
+
+
+            <section class="tab-panel" id="tab-comments">
+                <div class="controls-section">
+                    <label class="checkbox-label">
+                        <input type="checkbox" id="selectAllCheckbox" onchange="toggleAllCheckboxes()">
+                        전체 선택
+                    </label>
+                    <button class="btn danger" onclick="deleteSelectedComments()"><i class="fas fa-trash-alt"></i> 선택 삭제</button>
+                </div>
+                <div class="comment-list" id="commentList">
+                    <div class="empty-message"><i class="fas fa-spinner fa-spin"></i> 불러오는 중...</div>
+                </div>
+            </section>
+
+            <section class="tab-panel" id="tab-fanarts">
+                <div class="controls-section">
+                    <input type="text" id="fanartSearchInput" class="mini-input wide-input" placeholder="제목·설명·작성자 검색 (Enter)">
+                    <label class="checkbox-label"><input type="checkbox" id="fanartSelectAll"> 이 페이지 전체 선택</label>
+                    <button class="btn danger" id="btnFanartBulkDelete"><i class="fas fa-trash-alt"></i> 선택 삭제</button>
+                    <span class="report-count" id="fanartCount"></span>
+                </div>
+                <div class="content-grid" id="fanartAdminGrid"><div class="empty-message"><i class="fas fa-spinner fa-spin"></i> 불러오는 중...</div></div>
+                <div class="pagination ip-pager" id="fanartPagination"></div>
+            </section>
+
+            <section class="tab-panel" id="tab-posts">
+                <div class="controls-section">
+                    <input type="text" id="postSearchInput" class="mini-input wide-input" placeholder="제목·내용·작성자·멤버 검색 (Enter)">
+                    <label class="checkbox-label"><input type="checkbox" id="postSelectAll"> 이 페이지 전체 선택</label>
+                    <button class="btn danger" id="btnPostBulkDelete"><i class="fas fa-trash-alt"></i> 선택 삭제</button>
+                    <span class="report-count" id="postCount"></span>
+                </div>
+                <div class="post-admin-list" id="postAdminList"><div class="empty-message"><i class="fas fa-spinner fa-spin"></i> 불러오는 중...</div></div>
+                <div class="pagination ip-pager" id="postPagination"></div>
+            </section>
+
+            <section class="tab-panel" id="tab-notice">
+                <div class="notice-layout">
+                <div class="card settings-card">
+                    <h2><span><i class="fas fa-bullhorn"></i> 사이트 공지 배너</span><label class="switch"><input type="checkbox" id="noticeEnabled"><span></span></label></h2>
+                    <p class="settings-help">켜 두면 사이트 모든 페이지 맨 위에 띠 모양 공지가 떠요. 방문자가 닫으면 같은 공지는 다시 안 뜨고, 내용을 바꾸면 다시 떠요.</p>
+                    <label class="settings-label">공지 내용 (최대 300자)</label>
+                    <textarea id="noticeText" class="settings-input" rows="3" maxlength="300" placeholder="예: 10월 10일 새벽 2시~3시 서버 점검이 있어요."></textarea>
+                    <div class="settings-row2">
+                        <div><label class="settings-label">종류</label>
+                            <select id="noticeLevel" class="settings-input"><option value="info">안내 (파랑)</option><option value="warning">주의 (주황)</option><option value="event">이벤트 (무지개)</option><option value="success">성공 (초록)</option><option value="urgent">긴급 (빨강)</option><option value="purple">보라</option><option value="pink">분홍</option><option value="ocean">바다</option><option value="night">밤하늘</option><option value="gold">골드</option><option value="pastel">파스텔</option></select></div>
+                        <div><label class="settings-label">누르면 갈 링크 (선택)</label>
+                            <input id="noticeLink" class="settings-input" placeholder="/gallery 또는 https://..."></div>
+                    </div>
+                    <div class="settings-actions"><button class="btn btn-resolve" id="btnNoticeSave"><i class="fas fa-floppy-disk"></i> 저장</button></div>
+                </div>
+            <div class="card notice-preview-card"><h2>공지 미리보기</h2><div id="noticePreview" class="notice-preview"></div><p class="settings-help">선택한 색상과 내용이 즉시 반영됩니다. 긴 공지는 줄바꿈됩니다.</p></div></div>
+            </section>
+
+            <section class="tab-panel" id="tab-maintenance">
+                <div class="card settings-card">
+                    <h2><span><i class="fas fa-screwdriver-wrench"></i> 점검 모드</span><label class="switch danger"><input type="checkbox" id="maintEnabled"><span></span></label></h2>
+                    <p class="settings-help">켜면 관리자가 아닌 방문자는 모든 페이지에서 <b>"지금은 점검 중이에요"</b> 화면을 봐요. 관리자는 평소처럼 사이트를 쓸 수 있고, 로그인·관리자 화면은 막히지 않아요.</p>
+                    <div id="maintStatus" class="maint-status"></div>
+                    <label class="settings-label">점검 안내 문구 (최대 500자)</label>
+                    <textarea id="maintMessage" class="settings-input" rows="4" maxlength="500" placeholder="더 좋은 루미너스를 위해 잠시 점검하고 있어요. 조금 뒤에 다시 와 주세요."></textarea>
+                    <div class="settings-actions"><button class="btn btn-resolve" id="btnMaintSave"><i class="fas fa-floppy-disk"></i> 저장</button></div>
+                </div>
+            </section>
+
+            <section class="tab-panel" id="tab-bannedwords">
+                <div class="card settings-card">
+                    <h2><span><i class="fas fa-filter-circle-xmark"></i> 금지어</span><span class="report-count" id="bannedCount"></span></h2>
+                    <p class="settings-help">여기 있는 단어가 들어간 <b>댓글, 커뮤니티 글, 팬아트 제목·설명, 닉네임</b>은 올라가지 않아요. 띄어쓰기와 대소문자는 무시하고 찾아요.</p>
+                    <div class="path-block-form">
+                        <input type="text" id="bannedWordInput" class="settings-input" placeholder="추가할 단어 (쉼표로 여러 개)">
+                        <button class="btn danger" id="btnBannedAdd"><i class="fas fa-plus"></i> 추가</button>
+                    </div>
+                    <input type="text" id="bannedFilterInput" class="mini-input" placeholder="목록에서 찾기" style="margin:12px 0 8px;">
+                    <div id="bannedWordList" class="blocked-path-list"></div>
+                </div>
+            </section>
+            <section class="tab-panel" id="tab-lumi">
+                <style>
+                    #tab-lumi .ai-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px}
+                    #tab-lumi .ai-card{max-width:none;min-width:0;display:flex;flex-direction:column;gap:10px}
+                    #tab-lumi .settings-input{box-sizing:border-box;width:100%;font:inherit;line-height:1.6}
+                    #tab-lumi textarea{resize:vertical;min-height:80px}
+                    #tab-lumi .ai-metrics{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:0 0 20px}
+                    #tab-lumi .ai-metric{background:var(--bg-card,#101318);border:1px solid var(--border,#262a34);border-radius:14px;padding:18px}
+                    #tab-lumi .ai-metric strong{display:block;font-size:24px;margin-top:8px}
+                    #tab-lumi .ai-tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px}
+                    #tab-lumi .ai-tabs button.active{background:#123343;color:#38bdf8;border-color:#38bdf8}
+                    #tab-lumi .ai-pane[hidden]{display:none}
+                    #tab-lumi .ai-controls{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+                    #tab-lumi .ai-footer{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-top:20px;padding:16px;background:var(--bg-card,#101318);border:1px solid var(--border,#262a34);border-radius:12px}
+                    #tab-lumi .ai-list{max-height:320px;overflow:auto;border:1px solid var(--border,#262a34);border-radius:10px}
+                    #tab-lumi .ai-list article{padding:12px;border-bottom:1px solid var(--border,#262a34);line-height:1.65;overflow-wrap:anywhere}
+                    #tab-lumi .ai-test-output{min-height:130px;white-space:pre-wrap;padding:16px;background:#171b24;border-radius:12px;line-height:1.7}
+                    @media(max-width:1100px){ #tab-lumi .ai-grid{grid-template-columns:1fr}#tab-lumi .ai-metrics{grid-template-columns:repeat(2,1fr)}}
+                </style>
+                <div class="ai-metrics" id="lumiAdminMetrics"></div>
+                <div class="ai-tabs" role="tablist" aria-label="AI 관리 메뉴">
+                    <button class="btn active" data-ai-pane="settings" role="tab" aria-selected="true">기본 설정</button>
+                    <button class="btn" data-ai-pane="knowledge" role="tab" aria-selected="false">지식·인물</button>
+                    <button class="btn" data-ai-pane="policy" role="tab" aria-selected="false">고정 답변·필터</button>
+                    <button class="btn" data-ai-pane="test" role="tab" aria-selected="false">응답 테스트</button>
+                </div>
+                <div class="ai-pane ai-grid" data-ai-content="settings">
+                    <div class="card ai-card">
+                        <h2><i class="fas fa-sliders"></i> 대화 생성 설정</h2>
+                        <label><input type="checkbox" id="lumiAdminEnabled"> Ollama 대화 생성 사용</label>
+                        <label for="lumiAdminModel">모델 선택</label><input class="settings-input" id="lumiAdminModel" list="lumiInstalledModels" maxlength="100"><datalist id="lumiInstalledModels"></datalist>
+                        <p class="settings-help" id="lumiModelInfo">현재 PC에 설치된 모델을 선택하세요.</p>
+                        <div class="ai-controls">
+                            <div><label for="lumiTemperature">답변 다양성</label><input class="settings-input" id="lumiTemperature" type="number" min="0" max="1" step="0.1"></div>
+                            <div><label for="lumiReplyLength">최대 답변 길이</label><select class="settings-input" id="lumiReplyLength"><option value="128">짧게 (128)</option><option value="256">보통 (256)</option><option value="512">길게 (512)</option></select></div>
+                            <div><label for="lumiHistoryTurns">참고할 대화 수</label><input class="settings-input" id="lumiHistoryTurns" type="number" min="0" max="12" step="1"></div>
+                        </div>
+                        <p class="settings-help">답변 다양성은 0~1, 기억 참고 범위는 0~12회입니다. 전체 정상 대화는 파일에 계속 저장됩니다.</p>
+                    </div>
+                    <div class="card ai-card"><h2><i class="fas fa-comment"></i> 성격과 말투</h2><label for="lumiAdminPrompt">루미의 대화 지침</label><textarea class="settings-input" id="lumiAdminPrompt" rows="13" maxlength="12000"></textarea><p class="settings-help">자연스러운 반말, 사이트 안내 범위 등을 설정하세요. 아래 응답 테스트에서 저장 전 확인할 수 있습니다.</p></div>
+                </div>
+                <div class="ai-pane ai-grid" data-ai-content="knowledge" hidden>
+                    <div class="card ai-card"><h2><i class="fas fa-book"></i> 지식 편집</h2><label for="lumiAdminFacts">한 줄에 하나씩 입력</label><textarea class="settings-input" id="lumiAdminFacts" rows="18"></textarea><p class="settings-help" id="lumiFactCount"></p><div class="settings-actions"><button class="btn" id="lumiDeduplicate">중복 문장 정리</button><button class="btn" id="lumiExportKnowledge">지식 JSON 내보내기</button></div></div>
+                    <div class="card ai-card"><h2><i class="fas fa-magnifying-glass"></i> 지식·인물 검색</h2><input class="settings-input" id="lumiKnowledgeSearch" aria-label="지식 검색" placeholder="이름이나 단어로 찾기"><div class="ai-list" id="lumiKnowledgeResults"></div><h2>등록된 인물 <button class="btn" id="lumiEntityAdd">추가</button></h2><div class="ai-list" id="lumiEntityList"></div><div id="lumiEntityEditor" hidden><label for="lumiEntityName">이름</label><input class="settings-input" id="lumiEntityName" maxlength="80"><label for="lumiEntityAliases">별칭 (쉼표로 구분)</label><input class="settings-input" id="lumiEntityAliases"><label for="lumiEntitySummary">인물 소개</label><textarea class="settings-input" id="lumiEntitySummary" rows="4" maxlength="1000"></textarea><div class="settings-actions"><button class="btn" id="lumiEntityApply">편집 내용 반영</button><button class="btn danger" id="lumiEntityDelete">인물 삭제</button></div><p class="settings-help">편집 내용을 반영한 뒤 전체 설정을 저장하면 루미의 인물 소개에도 적용됩니다.</p></div></div>
+                </div>
+                <div class="ai-pane ai-grid" data-ai-content="policy" hidden>
+                    <div class="card ai-card"><h2><i class="fas fa-comment-dots"></i> 고정 답변</h2><label for="lumiWelcome">인사에 대한 답변</label><textarea class="settings-input" id="lumiWelcome" rows="2" maxlength="500"></textarea><label for="lumiPersona">루미의 나이·사는 곳</label><textarea class="settings-input" id="lumiPersona" rows="2" maxlength="500"></textarea><label for="lumiRestricted">민감한 정보·코딩 질문 안내</label><textarea class="settings-input" id="lumiRestricted" rows="3" maxlength="500"></textarea><label for="lumiFallback">AI 연결 실패 안내</label><textarea class="settings-input" id="lumiFallback" rows="2" maxlength="500"></textarea></div>
+                    <div class="card ai-card"><h2><i class="fas fa-shield"></i> 욕설 목록</h2><p class="settings-help">해당 표현은 “욕은 나빠”로 답하며 해당 발언을 대화 파일에 저장하지 않습니다.</p><label for="lumiFwords">한 줄에 한 단어</label><textarea class="settings-input" id="lumiFwords" rows="14"></textarea><p class="settings-help" id="lumiWordCount"></p><h2>이용 정책</h2><p class="settings-help">비로그인: 정상 대화 1회 후 로그인 필요<br>로그인: 사용자별 대화 저장<br>초기화: 이전 대화는 이후 답변에서 제외<br>사이트 검색: 검색 요청 시 가운데 화면에 결과 표시<br>성적인 요청과 금지 표현: 기존 차단 규칙 유지</p></div>
+                </div>
+                <div class="ai-pane ai-grid" data-ai-content="test" hidden>
+                    <div class="card ai-card"><h2><i class="fas fa-flask"></i> 저장 전 응답 테스트</h2><p class="settings-help">화면에 입력한 설정과 지식을 사용합니다. 테스트 대화는 저장하지 않으며 비로그인 이용 횟수에도 영향을 주지 않습니다.</p><div class="settings-actions" id="lumiTestExamples"><button class="btn" data-question="안녕">인사</button><button class="btn" data-question="루미는 몇살이고 어디에 살아?">나이</button><button class="btn" data-question="김블루는 누구야">인물 소개</button><button class="btn" data-question="발로란트 검색">검색 실행</button><button class="btn" data-question="이전에 어떤 대화를 했지?">기억 초기화</button></div><label for="lumiTestMessage">테스트 질문</label><textarea class="settings-input" id="lumiTestMessage" rows="4" maxlength="1000"></textarea><button class="btn btn-resolve" id="lumiTestRun">답변 테스트</button></div>
+                    <div class="card ai-card"><h2>테스트 결과</h2><p class="settings-help" id="lumiTestMeta">질문을 입력해 테스트하세요.</p><div class="ai-test-output" id="lumiTestOutput" role="status"></div></div>
+                </div>
+                <div class="ai-footer">
+                    <button class="btn btn-resolve" id="lumiAdminSave">전체 설정 저장</button><button class="btn" id="lumiAdminReload">저장본 불러오기</button><button class="btn" id="lumiAdminRestore">이전 저장본 복원</button><button class="btn" id="lumiExportConfig">설정 JSON 내보내기</button>
+                    <span class="settings-help" id="lumiAdminStatus" role="status">불러오는 중…</span>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+    <script src="{{ versioned_static('js/dialog.js') }}" defer></script>
+    <script>
+const COLORS = [ "#38bdf8", "#f472b6", "#a78bfa", "#34d399", "#fbbf24", "#fb7185", "#60a5fa", "#4ade80", "#f97316", "#c084fc" ];
+Chart.defaults.color = "#9a9ea8";
+Chart.defaults.borderColor = "#262a34";
+
+const PAGE_TITLES = { dashboard: "대시보드", users: "회원 관리", ratelimit: "트래픽", system: "서버 상태", serverlog: "서버 로그", auditlog: "활동 로그", reports: "신고 관리", comments: "댓글 관리", fanarts: "팬아트 관리", posts: "게시글 관리", notice: "공지 배너", maintenance: "점검 모드", bannedwords: "금지어" };
+const loadedTabs = new Set();
+
+let staffRoleLabels = {};
+fetch("/api/staff-roles").then(res => res.json()).then(data => {
+    if (data && typeof data === "object") staffRoleLabels = data;
+}).catch(() => {});
+
+function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+}
+
+function showToast(msg, icon) {
+    if (typeof Swal !== "undefined") {
+        Swal.fire({
+            toast: true, position: "top-end", icon: icon || "info",
+            html: String(msg == null ? "" : msg).replace(/\n/g, "<br>"),
+            showConfirmButton: false, timer: 3000, timerProgressBar: true,
+            background: "#1c1c1c", color: "#fff",
+        });
+    } else {
+        alert(msg);
+    }
+}
+function confirmDialog(msg, opts) {
+    opts = opts || {};
+    if (typeof Swal === "undefined") return Promise.resolve(confirm(msg));
+    return Swal.fire({
+        text: msg, icon: opts.icon || "warning", showCancelButton: true,
+        confirmButtonText: opts.confirmButtonText || "확인", cancelButtonText: opts.cancelButtonText || "취소",
+        confirmButtonColor: opts.dangerous ? "#dc2626" : "#38bdf8",
+        background: "#1c1c1c", color: "#fff",
+    }).then(r => r.isConfirmed);
+}
+
+function switchTab(tab) {
+    document.querySelectorAll(".nav-item").forEach(el => el.classList.toggle("active", el.dataset.tab === tab));
+    document.querySelectorAll(".tab-panel").forEach(el => el.classList.toggle("active", el.id === "tab-" + tab));
+    document.getElementById("pageTitle").textContent = PAGE_TITLES[tab] || "";
+    if (tab !== "serverlog" && typeof logAutoRefreshTimer !== "undefined" && logAutoRefreshTimer) {
+        clearInterval(logAutoRefreshTimer);
+        logAutoRefreshTimer = null;
+        const cb = document.getElementById("logAutoRefresh");
+        if (cb) cb.checked = false;
+    }
+    if (!loadedTabs.has(tab)) {
+        loadedTabs.add(tab);
+        if (tab === "dashboard") loadStats();
+        else if (tab === "users") loadUsers(1);
+        else if (tab === "serverlog") loadServerLog();
+        else if (tab === "ratelimit") loadTraffic();
+        else if (tab === "system") loadAdminSystem();
+        else if (tab === "lumi") loadLumiAdmin();
+        else if (tab === "auditlog") loadAuditLog();
+        else if (tab === "reports") loadReports();
+        else if (tab === "comments") loadComments();
+        else if (tab === "fanarts") loadAdminFanarts(1);
+        else if (tab === "posts") loadAdminPosts(1);
+        else if (tab === "notice" || tab === "maintenance" || tab === "bannedwords") loadSiteSettings();
+    }
+}
+document.querySelectorAll(".nav-item").forEach(el => el.addEventListener("click", () => switchTab(el.dataset.tab)));
+
+function systemBytes(value) {
+    const n = Number(value) || 0;
+    if (n < 1024) return `${n} B`;
+    const units = ["KB", "MB", "GB", "TB"]; let size = n / 1024, i = 0;
+    while (size >= 1024 && i < units.length - 1) { size /= 1024; i++; }
+    return `${size.toFixed(1)} ${units[i]}`;
+}
+async function loadAdminSystem() {
+    const checksBody = document.getElementById("systemChecksBody");
+    checksBody.innerHTML = '<tr><td colspan="4">불러오는 중...</td></tr>';
+    try {
+        const response = await fetch("/api/admin/system", { cache: "no-store" });
+        const data = await response.json();
+        if (!response.ok) throw new Error(data.error || "상태 정보를 가져오지 못했습니다.");
+        const metrics = [
+            ["현재 PC CPU 사용률", data.cpu_usage_percent == null ? "측정 불가" : `${Number(data.cpu_usage_percent).toFixed(1)}%`],
+            ["현재 PC 메모리", `${Number(data.memory_used_percent || 0).toFixed(1)}% · 전체 ${systemBytes(data.memory_total_bytes)} · ${systemBytes(data.memory_available_bytes)} 남음`],
+            ["디스크", `${Number(data.disk_used_percent || 0).toFixed(1)}% 사용 · ${systemBytes(data.disk_free_bytes)} 남음`],
+            ["최근 DB 백업", data.backup_age_hours < 0 ? "백업 없음" : `${Number(data.backup_age_hours).toFixed(1)}시간 전`],
+        ];
+        document.getElementById("systemMetricCards").innerHTML = metrics.map(([label,value]) => `<div class="stat-card"><div class="stat-label">${escapeHtml(label)}</div><div class="stat-value" style="font-size:20px;">${escapeHtml(value)}</div></div>`).join("");
+        const alerts = Array.isArray(data.alerts) ? data.alerts : [];
+        const banner = document.getElementById("systemAlertBanner");
+        banner.style.display = alerts.length ? "block" : "none";
+        banner.innerHTML = alerts.length ? `<strong><i class="fas fa-triangle-exclamation"></i> 확인이 필요한 항목</strong><ul style="margin:10px 0 0;padding-left:22px;">${alerts.map(x => `<li>${escapeHtml(x)}</li>`).join("")}</ul>` : "";
+        checksBody.innerHTML = (data.checks || []).map(item => `<tr><td>${escapeHtml(item.name)}</td><td style="color:${item.status === "up" ? "#34d399" : "#fb7185"}">${item.status === "up" ? "정상" : "장애"}</td><td>${item.latency_ms == null ? "-" : `${Number(item.latency_ms)} ms`}</td><td>${escapeHtml(item.detail || "")}</td></tr>`).join("") || '<tr><td colspan="4">표시할 서비스가 없습니다.</td></tr>';
+        document.getElementById("systemSampledAt").textContent = `현재 실행 PC: ${data.hardware?.cpu || "정보 없음"} · ${data.hardware?.gpu || "GPU 정보 없음"} · Rust 서버 제한: CPU ${data.cpu_limit_percent}% / 메모리 ${data.memory_limit_mb} MB · 마지막 확인: ${new Date(data.sampled_at).toLocaleString("ko-KR")}`;
+    } catch (error) {
+        checksBody.innerHTML = `<tr><td colspan="4">${escapeHtml(error.message || "서버 상태를 불러오지 못했습니다.")}</td></tr>`;
+    }
+}
+document.getElementById("btnAdminSystemRefresh").addEventListener("click", loadAdminSystem);
+PAGE_TITLES.lumi = "AI 관리";
+let lumiAdminData=null;
+function lumiAdminBody() {
+    const value=id=>document.getElementById(id).value;
+    return {ollama_enabled:document.getElementById('lumiAdminEnabled').checked,ollama_model:value('lumiAdminModel').trim(),system_prompt:value('lumiAdminPrompt'),facts:value('lumiAdminFacts').split('\n').map(s=>s.trim()).filter(Boolean),entities:lumiAdminData?.knowledge?.entities || [],fwords:value('lumiFwords'),temperature:Number(value('lumiTemperature')),num_predict:Number(value('lumiReplyLength')),history_turns:Number(value('lumiHistoryTurns')),welcome:value('lumiWelcome'),persona_reply:value('lumiPersona'),restricted_reply:value('lumiRestricted'),fallback_reply:value('lumiFallback')};
+}
+function renderLumiKnowledge() {
+    const facts=document.getElementById('lumiAdminFacts').value.split('\n').map(s=>s.trim()).filter(Boolean), words=document.getElementById('lumiFwords').value.split('\n').map(s=>s.trim()).filter(Boolean);
+    const library=lumiAdminData?.knowledge?.document_library;
+    document.getElementById('lumiFactCount').textContent=`기본 지식 ${facts.length}개 / 최대 200개 · 첨부 원문 ${library?.documents?.length || 0}개 · 참고 문단 ${library?.chunks?.length || 0}개. 원문은 별도 보관되며 질문에 맞춰 참고합니다.`;
+    document.getElementById('lumiWordCount').textContent=`${words.length}개 단어`;
+    const term=document.getElementById('lumiKnowledgeSearch').value.trim().toLowerCase();
+    const list=document.getElementById('lumiKnowledgeResults');list.replaceChildren();
+    for(const fact of facts.filter(s=>s.toLowerCase().includes(term))) {const row=document.createElement('article');row.textContent=fact;list.appendChild(row);}
+    if(term) for(const chunk of (library?.chunks || []).filter(c=>`${c.subject} ${c.section} ${c.text}`.toLowerCase().includes(term)).slice(0,25)) {const row=document.createElement('article');row.textContent=`[첨부 자료 · ${chunk.subject} / ${chunk.section}] ${chunk.text}`;list.appendChild(row);}
+    if(!list.childElementCount) list.textContent='일치하는 지식이 없습니다.';
+    const entities=document.getElementById('lumiEntityList');entities.replaceChildren();
+    for(const [index,e] of (lumiAdminData?.knowledge?.entities || []).entries()) {
+        if(term && !JSON.stringify([e.name,e.aliases,e.summary]).toLowerCase().includes(term)) continue;
+        const row=document.createElement('article'), name=document.createElement('strong'), description=document.createElement('div');
+        const edit=document.createElement('button');edit.type='button';edit.className='btn';edit.textContent='편집';edit.addEventListener('click',()=>editLumiEntity(index));
+        name.textContent=e.name;description.textContent=e.summary || '';row.append(name,description,edit);entities.appendChild(row);
+    }
+}
+async function lumiAdminRequest(path,body) {
+    const r=await fetch(path,{cache:'no-store',...(body?{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)}:{}),signal:AbortSignal.timeout(30000)});
+    if(!(r.headers.get('content-type')||'').includes('application/json')) throw Error('AI 관리 서버에 연결하지 못했습니다.');
+    const d=await r.json();if(!r.ok || !d.success) throw Error(d.message || '요청을 처리하지 못했습니다.');return d;
+}
+async function loadLumiAdmin() {
+    try {
+        const d=await lumiAdminRequest('/api/admin/lumi');lumiAdminData=d;
+        document.getElementById('lumiEntityEditor').hidden=true;
+        document.getElementById('lumiAdminEnabled').checked=!!d.config.ollama_enabled;
+        document.getElementById('lumiAdminModel').value=d.config.ollama_model || '';
+        document.getElementById('lumiAdminPrompt').value=d.config.system_prompt || '';
+        document.getElementById('lumiAdminFacts').value=(d.knowledge?.facts || []).join('\n');
+        document.getElementById('lumiTemperature').value=d.config.temperature ?? 0.5;
+        document.getElementById('lumiReplyLength').value=d.config.num_predict ?? 256;
+        document.getElementById('lumiHistoryTurns').value=d.config.history_turns ?? 12;
+        document.getElementById('lumiWelcome').value=d.config.welcome || '안녕! 난 루미야. 반가워!';
+        document.getElementById('lumiPersona').value=d.config.persona_reply || '나는 RTX5060TI살이며 AMD RYZEN 7 7800X3D에 살고 있어';
+        document.getElementById('lumiRestricted').value=d.config.restricted_reply || '나는 사이트 이용과 일상 대화를 함께하는 친구야! 주소나 민감한 정보, 코딩 대신 궁금한 메뉴나 오늘 이야기를 들려줘~';
+        document.getElementById('lumiFallback').value=d.config.fallback_reply || '지금은 잠깐 답하기 어려워. 잠시 후 다시 이야기해 줘!';
+        document.getElementById('lumiFwords').value=d.fwords || '';
+        document.getElementById('lumiInstalledModels').innerHTML=(d.models || []).map(m=>`<option value="${escapeHtml(m.name)}">${escapeHtml(systemBytes(m.size))}</option>`).join('');
+        document.getElementById('lumiModelInfo').textContent=`설치된 모델 ${(d.models || []).length}개 · ${d.ollama_online?'Ollama 연결됨':'Ollama 연결 안 됨'}`;
+        document.getElementById('lumiAdminMetrics').innerHTML=[['대화 생성',d.config.ollama_enabled?'사용 중':'중지'],['지식 문장',(d.knowledge?.facts || []).length+'개'],['등록 인물',(d.knowledge?.entities || []).length+'명'],['대화 저장',d.conversation_files+'개 · '+systemBytes(d.conversation_bytes)]].map(([label,value])=>`<div class="ai-metric"><span class="settings-help">${escapeHtml(label)}</span><strong>${escapeHtml(value)}</strong></div>`).join('');
+        document.getElementById('lumiAdminRestore').disabled=!d.backup_at;
+        document.getElementById('lumiAdminStatus').textContent=d.backup_at?`이전 저장본: ${new Date(d.backup_at).toLocaleString('ko-KR')}`:'설정과 지식을 불러왔습니다.';
+        renderLumiKnowledge();
+    } catch(e) {document.getElementById('lumiAdminStatus').textContent=e.message;}
+}
+document.getElementById('lumiAdminReload').addEventListener('click',async()=>{if(await confirmDialog('저장하지 않은 변경을 버리고 저장본을 불러올까요?')) await loadLumiAdmin();});
+document.getElementById('lumiAdminSave').addEventListener('click',async function() {
+    this.disabled=true;
+    try {
+        await lumiAdminRequest('/api/admin/lumi',lumiAdminBody());
+        await loadLumiAdmin();
+        document.getElementById('lumiAdminStatus').textContent='설정을 파일에 저장했습니다.';
+    } catch(e) {document.getElementById('lumiAdminStatus').textContent=e.message;} finally {this.disabled=false;}
+});
+document.querySelectorAll('[data-ai-pane]').forEach(button=>button.addEventListener('click',()=>{
+    document.querySelectorAll('[data-ai-pane]').forEach(b=>{const active=b===button;b.classList.toggle('active',active);b.setAttribute('aria-selected',String(active));});
+    document.querySelectorAll('[data-ai-content]').forEach(p=>p.hidden=p.dataset.aiContent!==button.dataset.aiPane);
+}));
+for(const id of ['lumiAdminFacts','lumiFwords','lumiKnowledgeSearch']) document.getElementById(id).addEventListener('input',renderLumiKnowledge);
+document.querySelectorAll('#tab-lumi .ai-pane input,#tab-lumi .ai-pane textarea,#tab-lumi .ai-pane select').forEach(el=>el.addEventListener('input',()=>{if(!['lumiKnowledgeSearch','lumiTestMessage'].includes(el.id))document.getElementById('lumiAdminStatus').textContent='저장하지 않은 변경이 있습니다.';}));
+document.getElementById('lumiDeduplicate').addEventListener('click',()=>{const el=document.getElementById('lumiAdminFacts');el.value=[...new Set(el.value.split('\n').map(s=>s.trim()).filter(Boolean))].join('\n');renderLumiKnowledge();document.getElementById('lumiAdminStatus').textContent='중복 문장을 정리했습니다. 저장하면 적용됩니다.';});
+function exportLumi(value,name) {const url=URL.createObjectURL(new Blob([JSON.stringify(value,null,2)],{type:'application/json'})),link=document.createElement('a');link.href=url;link.download=name;document.body.appendChild(link);link.click();link.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);}
+document.getElementById('lumiExportKnowledge').addEventListener('click',()=>exportLumi({...lumiAdminData?.knowledge,facts:lumiAdminBody().facts,entities:lumiAdminBody().entities},'lumi_data.json'));
+document.getElementById('lumiExportConfig').addEventListener('click',()=>exportLumi(lumiAdminBody(),'lumi-settings.json'));
+document.getElementById('lumiAdminRestore').addEventListener('click',async function(){
+    if(!await confirmDialog('설정·지식·욕설 목록을 이전 저장본으로 복원할까요?'))return;
+    this.disabled=true;try{await lumiAdminRequest('/api/admin/lumi/restore',{});await loadLumiAdmin();document.getElementById('lumiAdminStatus').textContent='이전 저장본으로 복원했습니다.';}catch(e){document.getElementById('lumiAdminStatus').textContent=e.message;}finally{this.disabled=false;}
+});
+document.getElementById('lumiTestExamples').addEventListener('click',e=>{const b=e.target.closest('[data-question]');if(b)document.getElementById('lumiTestMessage').value=b.dataset.question;});
+document.getElementById('lumiTestRun').addEventListener('click',async function(){
+    const message=document.getElementById('lumiTestMessage').value.trim();if(!message)return;
+    this.disabled=true;const start=performance.now();document.getElementById('lumiTestOutput').textContent='답변을 확인하는 중…';
+    try{
+        const d=await lumiAdminRequest('/api/admin/lumi/test',{...lumiAdminBody(),message});
+        const modes={ollama:'모델 생성',greeting:'고정 인사',persona:'캐릭터 설정',knowledge:'저장된 지식',restricted:'정보 보호',filtered:'욕설 필터',silent:'응답 차단',action:'사이트 검색',memory:'기록 기반 답변',unavailable:'AI 연결 안내'};
+        document.getElementById('lumiTestMeta').textContent=`${modes[d.mode]||d.mode} · ${((performance.now()-start)/1000).toFixed(2)}초 · 저장되지 않은 테스트`;
+        document.getElementById('lumiTestOutput').textContent=d.action?`가운데 화면에서 “${d.action.query}” 검색을 실행합니다.`:d.reply || '이 요청에는 답변하지 않습니다.';
+    }catch(e){document.getElementById('lumiTestOutput').textContent=e.message;document.getElementById('lumiTestMeta').textContent='테스트 실패';}finally{this.disabled=false;}
+});
+let lumiEntityIndex=-1;
+function editLumiEntity(index) {
+    lumiEntityIndex=index;const e=lumiAdminData?.knowledge?.entities?.[index] || {};
+    document.getElementById('lumiEntityName').value=e.name || '';
+    document.getElementById('lumiEntityAliases').value=(e.aliases || []).join(', ');
+    document.getElementById('lumiEntitySummary').value=e.summary || '';
+    document.getElementById('lumiEntityDelete').disabled=index<0;
+    document.getElementById('lumiEntityEditor').hidden=false;
+    document.getElementById('lumiEntityName').focus();
+}
+document.getElementById('lumiEntityAdd').addEventListener('click',()=>editLumiEntity(-1));
+document.getElementById('lumiEntityApply').addEventListener('click',()=>{
+    if(!lumiAdminData)return;
+    const name=document.getElementById('lumiEntityName').value.trim(),summary=document.getElementById('lumiEntitySummary').value.trim();
+    if(!name || !summary){document.getElementById('lumiAdminStatus').textContent='이름과 소개를 입력하세요.';return;}
+    const old=lumiEntityIndex>=0?lumiAdminData.knowledge.entities[lumiEntityIndex]:{};
+    const aliases=[...new Set([name,...document.getElementById('lumiEntityAliases').value.split(',').map(s=>s.trim()).filter(Boolean)])];
+    const entry={...old,name,aliases,summary};
+    if(lumiEntityIndex<0)lumiAdminData.knowledge.entities.push(entry);else lumiAdminData.knowledge.entities[lumiEntityIndex]=entry;
+    const facts=document.getElementById('lumiAdminFacts');facts.value=facts.value.split('\n').filter(s=>s.trim()!==old.summary).concat(summary).join('\n');
+    document.getElementById('lumiEntityEditor').hidden=true;renderLumiKnowledge();document.getElementById('lumiAdminStatus').textContent='인물 편집을 반영했습니다. 전체 설정을 저장하세요.';
+});
+document.getElementById('lumiEntityDelete').addEventListener('click',async()=>{
+    if(lumiEntityIndex<0 || !lumiAdminData || !await confirmDialog('이 인물 소개를 지식 목록에서 제거할까요?'))return;
+    const old=lumiAdminData.knowledge.entities[lumiEntityIndex];lumiAdminData.knowledge.entities.splice(lumiEntityIndex,1);
+    const facts=document.getElementById('lumiAdminFacts');facts.value=facts.value.split('\n').filter(s=>s.trim()!==old.summary && !s.startsWith(old.name+'의 공개 캐릭터')).join('\n');
+    document.getElementById('lumiEntityEditor').hidden=true;renderLumiKnowledge();document.getElementById('lumiAdminStatus').textContent='인물을 제거했습니다. 전체 설정을 저장하면 적용됩니다.';
+});
+
+async function loadStats() {
+    try {
+        const res = await fetch("/api/admin/stats");
+        const data = await res.json();
+        if (!data.success) throw new Error(data.message || data.error || "통계 조회 실패");
+        document.getElementById("loadingMsg").style.display = "none";
+        document.getElementById("statsGrid").style.display = "grid";
+
+        const t = data.totals || {};
+        const statRow = document.getElementById("statRow");
+        statRow.style.display = "grid";
+        statRow.innerHTML = [
+            { label: "총 회원 수", value: t.total_users ?? "-", sub: `최근 14일 신규 +${t.new_users_14d ?? 0}` },
+            { label: "총 팬아트", value: t.total_fanart ?? "-", sub: "누적" },
+            { label: "총 댓글", value: t.total_comments ?? "-", sub: "누적" },
+            { label: "대기중 신고", value: (data.reports_by_status.find(r => r.status === "pending") || {}).c ?? 0, sub: "처리 필요" },
+        ].map(s => `<div class="stat-pill"><div class="label">${s.label}</div><div class="value">${(s.value && s.value.toLocaleString) ? s.value.toLocaleString() : s.value}</div><div class="sub">${s.sub}</div></div>`).join("");
+
+        new Chart(document.getElementById("dailyChart"), {
+            type: "line",
+            data: {
+                labels: data.fanart_daily.map(r => r.date.slice(5)),
+                datasets: [ {
+                    label: "팬아트 업로드",
+                    data: data.fanart_daily.map(r => r.count),
+                    borderColor: "#38bdf8",
+                    backgroundColor: "rgba(56,189,248,0.15)",
+                    tension: .3,
+                    fill: true
+                }, {
+                    label: "댓글",
+                    data: data.comments_daily.map(r => r.count),
+                    borderColor: "#f472b6",
+                    backgroundColor: "rgba(244,114,182,0.15)",
+                    tension: .3,
+                    fill: true
+                } ]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { position: "top" } },
+                scales: { y: { beginAtZero: true, ticks: { precision: 0 } } }
+            }
+        });
+        const keywordCanvas = document.getElementById("keywordChart");
+        if (!data.top_keywords || data.top_keywords.length === 0) {
+            keywordCanvas.style.display = "none";
+            keywordCanvas.insertAdjacentHTML("afterend", '<div class="empty-message" style="padding:40px 0; font-size:13px;">아직 집계된 검색 데이터가 없습니다.</div>');
+        } else {
+            new Chart(keywordCanvas, {
+                type: "bar",
+                data: {
+                    labels: data.top_keywords.map(r => `${r.keyword} (${r.search_count}회)`),
+                    datasets: [ { label: "검색 횟수", data: data.top_keywords.map(r => r.search_count), backgroundColor: "#38bdf8", borderRadius: 4 } ]
+                },
+                options: {
+                    indexAxis: "y",
+                    responsive: true,
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: { callbacks: { label: ctx => `검색 ${ctx.parsed.x.toLocaleString()}회` } }
+                    },
+                    scales: { x: { beginAtZero: true, ticks: { precision: 0 } } }
+                }
+            });
+        }
+        new Chart(document.getElementById("reportsChart"), {
+            type: "doughnut",
+            data: {
+                labels: data.reports_by_status.map(r => ({ pending: "대기중", resolved: "처리됨", auto_deleted: "자동삭제됨" }[r.status] || r.status)),
+                datasets: [ { data: data.reports_by_status.map(r => r.c), backgroundColor: COLORS } ]
+            },
+            options: { responsive: true, plugins: { legend: { position: "bottom" } } }
+        });
+    } catch (e) {
+        document.getElementById("loadingMsg").innerHTML = '<i class="fas fa-circle-exclamation"></i> 통계를 불러오지 못했습니다: ' + e.message;
+    }
+}
+
+async function searchKeywordTrends(q) {
+    const body = document.getElementById("keywordSearchTableBody");
+    body.innerHTML = '<tr><td colspan="4" style="text-align:center; padding:16px; color:var(--text-muted); font-size:12px;"><i class="fas fa-spinner fa-spin"></i> 조회 중...</td></tr>';
+    try {
+        const params = new URLSearchParams({ q, limit: 50 });
+        const res = await fetch("/api/admin/search-trends?" + params.toString());
+        const data = await res.json();
+        if (!data.success) throw new Error(data.message || "조회 실패");
+        const trends = data.trends || [];
+        body.innerHTML = trends.length
+            ? trends.map(t => `<tr>
+                <td>${escapeHtml(t.keyword)}</td>
+                <td>${t.search_count}</td>
+                <td>${escapeHtml(t.last_searched || "")}</td>
+                <td><button class="toolbar-btn danger" style="padding:2px 6px; font-size:11px;" onclick="deleteKeywordTrend('${t.keyword.replace(/'/g, "\\'")}')"><i class="fas fa-trash"></i></button></td>
+            </tr>`).join("")
+            : '<tr><td colspan="4" style="text-align:center; padding:16px; color:var(--text-muted); font-size:12px;">결과가 없습니다.</td></tr>';
+    } catch (e) {
+        body.innerHTML = `<tr><td colspan="4" style="text-align:center; padding:16px; color:var(--text-muted); font-size:12px;">불러오지 못했습니다: ${escapeHtml(e.message)}</td></tr>`;
+    }
+}
+document.getElementById("btnKeywordSearch").addEventListener("click", () => searchKeywordTrends(document.getElementById("keywordSearchInput").value.trim()));
+document.getElementById("keywordSearchInput").addEventListener("keydown", e => {
+    if (e.key === "Enter") searchKeywordTrends(e.target.value.trim());
+});
+
+async function deleteKeywordTrend(keyword) {
+    const ok = await confirmDialog(`"${keyword}" 검색어 데이터를 삭제할까요?`, { dangerous: true, confirmButtonText: "삭제" });
+    if (!ok) return;
+    try {
+        const res = await fetch("/api/admin/search-trends/delete", {
+            method: "POST", headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ keyword }),
+        });
+        const data = await res.json();
+        if (!data.success) throw new Error(data.message || "삭제 실패");
+        showToast("삭제했습니다.", "success");
+        searchKeywordTrends(document.getElementById("keywordSearchInput").value.trim());
+    } catch (e) {
+        showToast("삭제 실패: " + e.message, "error");
+    }
+}
+document.getElementById("btnDeleteAllKeywords").addEventListener("click", async () => {
+    const ok = await confirmDialog("인기 검색어 데이터를 전부 삭제할까요? 되돌릴 수 없습니다.", { dangerous: true, confirmButtonText: "전체 삭제" });
+    if (!ok) return;
+    try {
+        const res = await fetch("/api/admin/search-trends/delete-all", { method: "POST" });
+        const data = await res.json();
+        if (!data.success) throw new Error(data.message || "삭제 실패");
+        showToast("인기 검색어 데이터를 전부 삭제했습니다. 새로고침합니다...", "success");
+        setTimeout(() => location.reload(), 800);
+    } catch (e) {
+        showToast("삭제 실패: " + e.message, "error");
+    }
+});
+
+const AVATAR_PALETTE = ["#ef4444", "#f97316", "#f59e0b", "#84cc16", "#10b981", "#06b6d4", "#3b82f6", "#8b5cf6", "#d946ef", "#ec4899"];
+function avatarColorFor(u) {
+    const seed = String(u.id || "");
+    let hash = 0;
+    for (let i = 0; i < seed.length; i++) hash = (hash * 31 + seed.charCodeAt(i)) >>> 0;
+    return AVATAR_PALETTE[hash % AVATAR_PALETTE.length];
+}
+function avatarLabelFor(u) {
+    return ((u.nickname || u.email || u.login_id || "?").trim().charAt(0) || "?").toUpperCase();
+}
+function avatarImgError(img, color, label) {
+    const div = document.createElement("div");
+    div.className = "user-avatar-fallback";
+    div.style.background = color;
+    div.textContent = label;
+    img.replaceWith(div);
+}
+function userAvatarHtml(u) {
+    const color = avatarColorFor(u), label = avatarLabelFor(u);
+    if (u.picture) {
+        return `<img src="${escapeHtml(u.picture)}" class="user-avatar-img" onerror="avatarImgError(this,'${color}','${label.replace(/'/g, "\\'")}')" alt="">`;
+    }
+    return `<div class="user-avatar-fallback" style="background:${color};">${escapeHtml(label)}</div>`;
+}
+let usersCurrentPage = 1, usersCurrentQuery = "", usersCurrentList = [];
+async function loadUsers(page) {
+    usersCurrentPage = page;
+    const body = document.getElementById("usersTableBody");
+    body.innerHTML = '<tr><td colspan="11" style="text-align:center; padding:30px; color:var(--text-muted);"><i class="fas fa-spinner fa-spin"></i> 불러오는 중...</td></tr>';
+    try {
+        const sort = document.getElementById("userSortSelect").value;
+        const filter = document.getElementById("userFilterSelect").value;
+        const params = new URLSearchParams({ page, per_page: 30, q: usersCurrentQuery, sort, filter });
+        const res = await fetch("/api/admin/users?" + params.toString());
+        const data = await res.json();
+        if (!data.success) throw new Error(data.message || data.error || "조회 실패");
+        usersCurrentList = data.users || [];
+        if (!data.users.length) {
+            body.innerHTML = '<tr><td colspan="11" style="text-align:center; padding:30px; color:var(--text-muted);">결과가 없습니다.</td></tr>';
+        } else {
+            body.innerHTML = data.users.map(u => `<tr>
+                <td>${userAvatarHtml(u)}</td>
+                <td>${u.id}</td>
+                <td title="${escapeHtml(u.email || "")}">${u.email ? escapeHtml(u.email) : '<span class="email-missing-badge"><i class="fas fa-triangle-exclamation"></i> 미등록</span>'}</td>
+                <td title="${escapeHtml(u.nickname || "")}">${escapeHtml(u.nickname || "없음")}</td>
+                <td>${escapeHtml(u.login_id || "없음")}</td>
+                <td>${escapeHtml(u.discord_username || "없음")}</td>
+                <td>${u.channel_id ? '<span class="channel-badge"><i class="fas fa-tv"></i> 보유</span>' : '<span style="color:var(--text-faint);">없음</span>'}</td>
+                <td>${u.last_ip ? `${escapeHtml(u.last_ip)} <button class="toolbar-btn" style="padding:2px 6px; font-size:11px;" title="접속 IP 이력" onclick="showUserIPHistory(${u.id}, '${escapeHtml(u.nickname || u.email || "").replace(/'/g, "\\'")}')"><i class="fas fa-clock-rotate-left"></i></button>` : "없음"}</td>
+                <td>${u.suspended ? '<span style="color:#f87171; font-weight:600;"><i class="fas fa-ban"></i> 정지됨</span>' : ""}${u.is_staff ? ` <span style="color:#38bdf8;"><i class="fas fa-shield"></i> ${escapeHtml(u.staff_role || "운영진")}</span>` : ""}${(!u.suspended && !u.is_staff) ? '<span style="color:var(--text-faint);">-</span>' : ""}</td>
+                <td title="${escapeHtml(u.created_at || "")}">${escapeHtml((u.created_at || "").slice(0, 10) || "없음")}</td>
+                <td title="${escapeHtml(u.updated_at || "")}">${escapeHtml((u.updated_at || "").slice(0, 10) || "없음")}</td>
+                <td style="white-space:nowrap;">
+                    <button class="toolbar-btn" title="상세/관리" onclick="showUserPanel(${u.id})"><i class="fas fa-user-gear"></i></button>
+                    <button class="toolbar-btn danger" title="회원 삭제" onclick="deleteUser(${u.id}, '${escapeHtml(u.nickname || u.email || "").replace(/'/g, "\\'")}')"><i class="fas fa-trash"></i></button>
+                </td>
+            </tr>`).join("");
+        }
+        const totalPages = Math.max(1, Math.ceil(data.total / data.per_page));
+        const pager = document.getElementById("usersPagination");
+        pager.innerHTML = `
+            <button class="toolbar-btn" ${page <= 1 ? "disabled" : ""} id="usersPrevBtn"><i class="fas fa-chevron-left"></i></button>
+            <span>${page} / ${totalPages} (총 ${data.total.toLocaleString()}명)</span>
+            <button class="toolbar-btn" ${page >= totalPages ? "disabled" : ""} id="usersNextBtn"><i class="fas fa-chevron-right"></i></button>
+        `;
+        const prevBtn = document.getElementById("usersPrevBtn");
+        const nextBtn = document.getElementById("usersNextBtn");
+        if (prevBtn) prevBtn.addEventListener("click", () => loadUsers(page - 1));
+        if (nextBtn) nextBtn.addEventListener("click", () => loadUsers(page + 1));
+    } catch (e) {
+        body.innerHTML = `<tr><td colspan="10" style="text-align:center; padding:30px; color:var(--text-muted);">불러오지 못했습니다: ${escapeHtml(e.message)}</td></tr>`;
+    }
+}
+async function deleteUser(userId, label) {
+    const ok = await confirmDialog(`"${label}" 회원을 삭제할까요? 시청 기록, 북마크, 재생목록, 댓글이 함께 삭제되며 되돌릴 수 없습니다.`, { dangerous: true, confirmButtonText: "삭제" });
+    if (!ok) return;
+    try {
+        const res = await fetch(`/api/admin/users/${userId}`, { method: 'DELETE' });
+        const data = await res.json();
+        if (!data.success) throw new Error(data.message || '삭제 실패');
+        showToast('회원을 삭제했습니다.', 'success');
+        loadUsers(usersCurrentPage);
+    } catch (e) {
+        showToast('삭제 실패: ' + e.message, 'error');
+    }
+}
+document.getElementById("userSortSelect").addEventListener("change", () => loadUsers(1));
+document.getElementById("userFilterSelect").addEventListener("change", () => loadUsers(1));
+
+async function showUserPanel(userId) {
+    const u = usersCurrentList.find(x => x.id === userId);
+    if (!u || typeof Swal === "undefined") return;
+    const label = u.nickname || u.email || String(userId);
+    const html = `
+        <div style="text-align:left; font-size:13px;">
+            <div id="userPanelSummary" style="margin-bottom:14px; color:var(--text-muted);"><i class="fas fa-spinner fa-spin"></i> 활동 요약 불러오는 중...</div>
+            <div style="border-top:1px solid #333; padding-top:12px; margin-bottom:12px;">
+                <label style="display:flex; align-items:center; gap:8px; margin-bottom:8px;">
+                    <input type="checkbox" id="panelIsStaff" ${u.is_staff ? "checked" : ""}> 운영진으로 표시
+                </label>
+                <input type="text" id="panelStaffRole" placeholder="역할 라벨 (예: 모더레이터)" value="${escapeHtml(u.staff_role || "")}" style="width:100%; background:var(--bg-elevated); border:1px solid var(--border-line); color:var(--text-primary); padding:6px 10px; border-radius:6px; font-size:12px; font-family:inherit; margin-bottom:8px;">
+                <button class="btn" id="panelSaveStaffBtn" style="width:100%;">저장</button>
+            </div>
+            <div style="border-top:1px solid #333; padding-top:12px;">
+                ${u.suspended
+                    ? `<div style="color:#f87171; margin-bottom:8px;">현재 정지됨${u.suspended_reason ? " - " + escapeHtml(u.suspended_reason) : ""}</div><button class="btn" id="panelUnsuspendBtn" style="width:100%;">정지 해제</button>`
+                    : `<input type="text" id="panelSuspendReason" placeholder="정지 사유 (선택)" style="width:100%; background:var(--bg-elevated); border:1px solid var(--border-line); color:var(--text-primary); padding:6px 10px; border-radius:6px; font-size:12px; font-family:inherit; margin-bottom:8px;"><button class="toolbar-btn danger" id="panelSuspendBtn" style="width:100%;">계정 정지</button>`}
+            </div>
+        </div>`;
+    Swal.fire({ title: `${label} 관리`, html, background: "#1c1c1c", color: "#fff", showConfirmButton: true, confirmButtonText: "닫기", width: 420, didOpen: () => {
+        fetch(`/api/admin/users/${userId}/summary`).then(r => r.json()).then(data => {
+            const el = document.getElementById("userPanelSummary");
+            if (!el) return;
+            if (!data.success) { el.textContent = "활동 요약을 불러오지 못했습니다."; return; }
+            const s = data.summary || {};
+            el.innerHTML = `
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:6px;">
+                    <div>팬아트 ${s.fanart_count ?? 0}개</div>
+                    <div>댓글 ${s.comment_count ?? 0}개</div>
+                    <div>게시글 ${s.post_count ?? 0}개</div>
+                    <div>신고당함 ${s.reported_count ?? 0}회</div>
+                    <div>출석 ${s.attendance_days ?? 0}일</div>
+                    <div>로그인 이력 ${s.login_count ?? 0}건</div>
+                </div>`;
+        }).catch(() => { const el = document.getElementById("userPanelSummary"); if (el) el.textContent = "활동 요약을 불러오지 못했습니다."; });
+
+        const staffBtn = document.getElementById("panelSaveStaffBtn");
+        if (staffBtn) staffBtn.addEventListener("click", async () => {
+            const isStaff = document.getElementById("panelIsStaff").checked;
+            const staffRole = document.getElementById("panelStaffRole").value.trim();
+            try {
+                const res = await fetch(`/api/admin/users/${userId}/staff`, {
+                    method: "POST", headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ is_staff: isStaff, staff_role: staffRole }),
+                });
+                const data = await res.json();
+                if (!data.success) throw new Error(data.message || "저장 실패");
+                showToast("저장했습니다.", "success");
+                Swal.close();
+                loadUsers(usersCurrentPage);
+            } catch (e) { showToast("저장 실패: " + e.message, "error"); }
+        });
+        const suspendBtn = document.getElementById("panelSuspendBtn");
+        if (suspendBtn) suspendBtn.addEventListener("click", async () => {
+            const reason = document.getElementById("panelSuspendReason").value.trim();
+            try {
+                const res = await fetch(`/api/admin/users/${userId}/suspend`, {
+                    method: "POST", headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ reason }),
+                });
+                const data = await res.json();
+                if (!data.success) throw new Error(data.message || "정지 실패");
+                showToast("계정을 정지했습니다.", "success");
+                Swal.close();
+                loadUsers(usersCurrentPage);
+            } catch (e) { showToast("정지 실패: " + e.message, "error"); }
+        });
+        const unsuspendBtn = document.getElementById("panelUnsuspendBtn");
+        if (unsuspendBtn) unsuspendBtn.addEventListener("click", async () => {
+            try {
+                const res = await fetch(`/api/admin/users/${userId}/unsuspend`, { method: "POST" });
+                const data = await res.json();
+                if (!data.success) throw new Error(data.message || "해제 실패");
+                showToast("정지를 해제했습니다.", "success");
+                Swal.close();
+                loadUsers(usersCurrentPage);
+            } catch (e) { showToast("해제 실패: " + e.message, "error"); }
+        });
+    } });
+}
+
+async function banIPPrompt(ip) {
+    if (typeof Swal === "undefined") {
+        const reason = prompt(`"${ip}" 를 차단할까요? 사유(선택):`);
+        if (reason === null) return;
+        await doBanIP(ip, reason);
+        return;
+    }
+    const { value: reason, isConfirmed } = await Swal.fire({
+        title: `"${ip}" 차단`,
+        input: "text",
+        inputLabel: "사유 (선택)",
+        showCancelButton: true,
+        confirmButtonText: "차단",
+        confirmButtonColor: "#dc2626",
+        background: "#1c1c1c", color: "#fff",
+    });
+    if (!isConfirmed) return;
+    await doBanIP(ip, reason || "");
+}
+async function doBanIP(ip, reason) {
+    try {
+        const res = await fetch("/api/admin/ip-ban", {
+            method: "POST", headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ ip, reason }),
+        });
+        const data = await res.json();
+        if (!res.ok || !data.success) throw new Error(data.message || "차단 실패");
+        applyConfirmedIPBan(data);
+        if (typeof loadTraffic === "function" && document.getElementById("tab-ratelimit").classList.contains("active")) loadTraffic();
+    } catch (e) {
+        showToast("차단 실패: " + e.message, "error");
+    }
+}
+function applyConfirmedIPBan(data) {
+    if (data.confirmed !== true) throw new Error("서버에서 IP 차단 적용을 확인하지 못했습니다.");
+    const banned = new Set(data.banned || []);
+    if (!banned.size) throw new Error("차단된 IP가 없습니다. 내 IP와 서버 주소는 차단할 수 없습니다.");
+    lastByIP = lastByIP.filter(row => !banned.has(row.ip));
+    banned.forEach(ip => ipSelected.delete(ip));
+    renderIPTrafficTable();
+    showToast(`서버에서 IP가 차단되었습니다. (${banned.size}개)` + ((data.skipped || []).length ? " 일부 주소는 건너뛰었습니다." : ""), "info");
+}
+// ----- 경로 차단 -----
+let blockedPathsCache = [];
+function renderBlockedPaths() {
+    const el = document.getElementById("blockedPathList");
+    if (!el) return;
+    const cnt = document.getElementById("peBlockedCount");
+    if (cnt) cnt.textContent = blockedPathsCache.length;
+    el.innerHTML = blockedPathsCache.length
+        ? blockedPathsCache.map(p => `<span class="blocked-path">${escapeHtml(p)}<button title="차단 해제" onclick="unblockPath(${JSON.stringify(p).replace(/"/g, "&quot;")})"><i class="fas fa-xmark"></i></button></span>`).join("")
+        : '<span class="ip-sub" style="display:inline;">차단한 경로가 없습니다.</span>';
+}
+async function blockPath(path) {
+    path = String(path || "").trim();
+    if (!path) { showToast("차단할 경로를 적어 주세요.", "warning"); return; }
+    const ok = await confirmDialog(`"${path}" 경로를 차단할까요? 이 경로로 들어오면 홈(/)으로 보내요.`, { dangerous: true, confirmButtonText: "차단" });
+    if (!ok) return;
+    try {
+        const res = await fetch("/api/admin/blocked-paths", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ path }) });
+        const data = await res.json();
+        if (!data.success) throw new Error(data.message || "차단 실패");
+        showToast(`"${data.path}" 경로를 차단했습니다.`, "success");
+        const input = document.getElementById("pathBlockInput");
+        if (input) input.value = "";
+        loadTraffic();
+    } catch (e) {
+        showToast(e.message, "error");
+    }
+}
+async function unblockPath(path) {
+    const ok = await confirmDialog(`"${path}" 경로 차단을 해제할까요?`);
+    if (!ok) return;
+    try {
+        const res = await fetch("/api/admin/blocked-paths/delete", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ path }) });
+        const data = await res.json();
+        if (!data.success) throw new Error(data.message || "해제 실패");
+        showToast(`"${path}" 경로 차단을 해제했습니다.`, "success");
+        loadTraffic();
+    } catch (e) {
+        showToast(e.message, "error");
+    }
+}
+document.getElementById("btnPathBlock").addEventListener("click", () => blockPath(document.getElementById("pathBlockInput").value));
+document.getElementById("pathBlockInput").addEventListener("keydown", e => { if (e.key === "Enter") blockPath(e.target.value); });
+
+async function unbanIP(ip) {
+    const ok = await confirmDialog(`"${ip}" 차단을 해제할까요?`);
+    if (!ok) return;
+    try {
+        const res = await fetch("/api/admin/ip-unban", {
+            method: "POST", headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ ip }),
+        });
+        const data = await res.json();
+        if (!data.success) throw new Error(data.message || "해제 실패");
+        showToast(`서버에서 IP 차단이 해제되었습니다. (${ip})`, "info");
+        if (typeof loadTraffic === "function" && document.getElementById("tab-ratelimit").classList.contains("active")) loadTraffic();
+    } catch (e) {
+        showToast("해제 실패: " + e.message, "error");
+    }
+}
+document.getElementById("btnUnbanNonBots").addEventListener("click", async () => {
+    if (!await confirmDialog("알려진 봇을 제외한 모든 IP의 차단을 해제할까요? 해외 IP는 한국 접속 제한이 계속 적용됩니다.")) return;
+    const btn=document.getElementById("btnUnbanNonBots");btn.disabled=true;
+    try {
+        const res=await fetch("/api/admin/ip-unban/non-bots",{method:"POST"});const data=await res.json();
+        if(!res.ok || !data.success)throw new Error(data.message || "차단 해제 실패");
+        await loadTraffic();showToast(`${data.released}개 IP 차단을 해제했습니다. 알려진 봇 ${data.protected}개는 유지됩니다.`,"info");
+    }catch(e){showToast(e.message,"error");}finally{btn.disabled=false;}
+});
+
+async function showUserIPHistory(userId, label) {
+    if (typeof Swal === "undefined") { alert("이력 보기는 이 화면에서 지원되지 않습니다."); return; }
+    Swal.fire({ title: `${label} 접속 IP 이력`, html: '<i class="fas fa-spinner fa-spin"></i> 불러오는 중...', background: "#1c1c1c", color: "#fff", showConfirmButton: true, confirmButtonText: "닫기" });
+    try {
+        const res = await fetch(`/api/admin/users/${userId}/ip-history`);
+        const data = await res.json();
+        if (!data.success) throw new Error(data.message || "조회 실패");
+        const history = data.history || [];
+        Object.assign(IP_COUNTRIES, data.ip_countries || {});
+        const html = history.length
+            ? `<div style="max-height:320px; overflow-y:auto; text-align:left;">${history.map(h => `
+                <div style="display:flex; justify-content:space-between; align-items:center; padding:6px 4px; border-bottom:1px solid #333; font-size:13px;">
+                    <span>${ipFlag(h.ip || "")}${escapeHtml(h.ip || "")}</span>
+                    <span style="color:var(--text-faint);">${escapeHtml(h.created_at || "")}</span>
+                    <button class="toolbar-btn danger" style="padding:2px 6px; font-size:11px;" onclick="banIPPrompt('${(h.ip || "").replace(/'/g, "\\'")}')"><i class="fas fa-ban"></i> 차단</button>
+                </div>`).join("")}</div>`
+            : '<div style="color:var(--text-muted); padding:20px 0;">접속 기록이 없습니다.</div>';
+        Swal.update({ html });
+    } catch (e) {
+        Swal.update({ html: `<div style="color:var(--text-muted);">불러오지 못했습니다: ${escapeHtml(e.message)}</div>` });
+    }
+}
+
+document.getElementById("btnUserSearch").addEventListener("click", () => {
+    usersCurrentQuery = document.getElementById("userSearchInput").value.trim();
+    loadUsers(1);
+});
+document.getElementById("userSearchInput").addEventListener("keydown", e => {
+    if (e.key === "Enter") { usersCurrentQuery = e.target.value.trim(); loadUsers(1); }
+});
+
+let serverLogLines = [];
+const LOG_LINE_RE = /^\[(\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}(?:,\d+)?)\]\s*\[([^\]]+)\]\s*(?:\[(\w+)\]\s*-\s*)?(.*)$/;
+const LOG_REQ_RE = /^(GET|POST|PUT|DELETE|PATCH|HEAD|OPTIONS)(\s+)(\d{3})/;
+
+function escapeRegExp(s) {
+    return s.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function styleLogMessage(msg) {
+    const esc = escapeHtml(msg);
+    const m = msg.match(LOG_REQ_RE);
+    if (!m) return esc;
+    const method = escapeHtml(m[1]), status = m[3];
+    const statusClass = status[0] === "2" ? "st-2xx" : status[0] === "3" ? "st-3xx" : status[0] === "4" ? "st-4xx" : status[0] === "5" ? "st-5xx" : "";
+    return esc.replace(
+        new RegExp("^" + escapeRegExp(method) + "(\\s+)" + status),
+        `<span class="log-method">${method}</span>$1<span class="log-status ${statusClass}">${status}</span>`
+    );
+}
+
+function renderLogLine(raw) {
+    const isErr = raw.includes("[ERROR]") || raw.includes("Traceback") || / Error/.test(raw) || raw.startsWith("Traceback");
+    const m = raw.match(LOG_LINE_RE);
+    if (!m) {
+        return `<div class="log-row raw-row${isErr ? " err-line" : ""}"><span class="log-msg">${escapeHtml(raw)}</span></div>`;
+    }
+    const [, time, comp, level, msg] = m;
+    const compKey = ["wsgi", "app", "service_loop"].includes(comp) ? comp : "default";
+    const timeShort = time.split(" ")[1] ? time.split(" ")[1].split(",")[0] : time;
+    const levelBadge = level ? `<span class="log-badge level-${level.toLowerCase()}">${escapeHtml(level)}</span>` : "";
+    return `<div class="log-row${isErr ? " err-line" : ""}">` +
+        `<span class="log-time">${escapeHtml(timeShort)}</span>` +
+        `<span class="log-badge comp-${compKey}">${escapeHtml(comp)}</span>` +
+        levelBadge +
+        `<span class="log-msg">${styleLogMessage(msg)}</span>` +
+        `</div>`;
+}
+
+function renderServerLog() {
+    const view = document.getElementById("serverLogView");
+    const filter = document.getElementById("logFilterInput").value.trim().toLowerCase();
+    const lines = filter ? serverLogLines.filter(ln => ln.toLowerCase().includes(filter)) : serverLogLines;
+    document.getElementById("logLineCount").textContent = lines.length ? `(${lines.length.toLocaleString()}줄)` : "";
+
+    let errCount = 0, warnCount = 0;
+    lines.forEach(ln => {
+        if (ln.includes("[ERROR]") || ln.includes("Traceback") || / Error/.test(ln)) errCount++;
+        else if (ln.includes("[WARNING]")) warnCount++;
+    });
+    const chips = document.getElementById("logStatsChips");
+    chips.innerHTML = `<span class="log-stat-chip">총 ${lines.length.toLocaleString()}줄</span>` +
+        (errCount ? `<span class="log-stat-chip err"><i class="fas fa-circle-exclamation"></i> 에러 ${errCount}</span>` : "") +
+        (warnCount ? `<span class="log-stat-chip warn"><i class="fas fa-triangle-exclamation"></i> 경고 ${warnCount}</span>` : "");
+
+    if (!lines.length) {
+        view.innerHTML = `<div class="log-empty">${filter ? "필터에 맞는 줄이 없습니다." : "로그가 없습니다."}</div>`;
+        return;
+    }
+    view.innerHTML = lines.map(renderLogLine).join("");
+    view.scrollTop = view.scrollHeight;
+}
+let serverLogLoading = false;
+async function loadServerLog() {
+    if (serverLogLoading) return;
+    serverLogLoading = true;
+    const view = document.getElementById("serverLogView");
+    try {
+        const errorsOnly = document.getElementById("logErrorsOnly").checked;
+        const res = await fetch("/api/admin/server-log?errors_only=" + (errorsOnly ? "1" : "0"));
+        const data = await res.json();
+        if (!data.success) throw new Error(data.message || data.error || "로그 조회 실패");
+        serverLogLines = data.lines || [];
+        renderServerLog();
+    } catch (e) {
+        view.innerHTML = `<div class="log-empty">로그를 불러오지 못했습니다: ${escapeHtml(e.message)}</div>`;
+    } finally {
+        serverLogLoading = false;
+    }
+}
+document.getElementById("btnLogRefresh").addEventListener("click", loadServerLog);
+document.getElementById("logErrorsOnly").addEventListener("change", loadServerLog);
+document.getElementById("logFilterInput").addEventListener("input", renderServerLog);
+document.getElementById("btnLogDownload").addEventListener("click", () => {
+    if (!serverLogLines.length) return;
+    const blob = new Blob([serverLogLines.join("\n")], { type: "text/plain;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "service_log_" + new Date().toISOString().slice(0, 19).replace(/[:T]/g, "-") + ".txt";
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    URL.revokeObjectURL(url);
+});
+let logAutoRefreshTimer = null;
+document.getElementById("logAutoRefresh").addEventListener("change", e => {
+    if (logAutoRefreshTimer) { clearInterval(logAutoRefreshTimer); logAutoRefreshTimer = null; }
+    if (e.target.checked) {
+        logAutoRefreshTimer = setInterval(() => {
+            if (document.getElementById("tab-serverlog").classList.contains("active")) loadServerLog();
+        }, 8000);
+    }
+});
+
+async function resetLogs() {
+    const ok = await confirmDialog("logs 폴더의 로그를 모두 초기화할까요?", { dangerous: true, confirmButtonText: "초기화" });
+    if (!ok) return;
+    const btn = document.getElementById("btnResetLogs");
+    btn.disabled = true;
+    try {
+        const res = await fetch("/api/admin/logs/reset", { method: "POST" });
+        const data = await res.json();
+        if (!data.success) throw new Error(data.message || data.error || "초기화 실패");
+        showToast("로그가 초기화되었습니다.", "success");
+        loadServerLog();
+    } catch (e) {
+        showToast("로그 초기화 실패: " + e.message, "error");
+    } finally {
+        btn.disabled = false;
+    }
+}
+document.getElementById("btnResetLogs").addEventListener("click", resetLogs);
+
+async function loadAuditLog() {
+    const body = document.getElementById("auditTableBody");
+    try {
+        const res = await fetch("/api/admin/audit-log");
+        const data = await res.json();
+        if (!data.success) throw new Error(data.message || data.error || "조회 실패");
+        if (!data.logs.length) {
+            body.innerHTML = '<tr><td colspan="6" style="color:var(--text-muted); text-align:center; padding:20px;">기록이 없습니다.</td></tr>';
+            return;
+        }
+        body.innerHTML = data.logs.map(r => `<tr>
+            <td>${escapeHtml(r.date || "")}</td>
+            <td>${escapeHtml(r.admin_nickname || r.admin_email || "")}</td>
+            <td>${escapeHtml(r.action || "")}</td>
+            <td>${escapeHtml((r.target_type || "") + (r.target_id ? " #" + r.target_id : ""))}</td>
+            <td title="${escapeHtml(r.detail || "")}">${escapeHtml(r.detail || "")}</td>
+            <td>${escapeHtml(r.ip_address || "")}</td>
+        </tr>`).join("");
+    } catch (e) {
+        body.innerHTML = `<tr><td colspan="6" style="color:var(--text-muted); text-align:center; padding:20px;">불러오지 못했습니다: ${escapeHtml(e.message)}</td></tr>`;
+    }
+}
+document.getElementById("btnAuditRefresh").addEventListener("click", loadAuditLog);
+document.getElementById("btnAuditReset").addEventListener("click", async () => {
+    if (!await confirmDialog("관리자 활동 로그를 모두 삭제할까요? 초기화한 기록은 남습니다.", {dangerous:true,confirmButtonText:"초기화"})) return;
+    const btn = document.getElementById("btnAuditReset"); btn.disabled = true;
+    try { const res = await fetch("/api/admin/audit-log/reset", {method:"POST"}); const data = await res.json();
+        if (!res.ok || !data.success) throw new Error(data.message || "초기화 실패"); await loadAuditLog();
+    } catch(e) { showToast(e.message,"error"); } finally { btn.disabled = false; }
+});
+
+let dailyTrafficChartInstance = null;
+let hourlyTrafficChartInstance = null;
+
+async function loadTraffic() {
+    const rlBody = document.getElementById("rateLimitTableBody");
+    const chip = document.getElementById("rlConfigChip");
+    const statRow = document.getElementById("trafficStatRow");
+    try {
+        const res = await fetch("/api/admin/traffic" + (document.getElementById("ipTrafficDate").value ? "?date=" + encodeURIComponent(document.getElementById("ipTrafficDate").value) : ""));
+        const data = await res.json();
+        if (!data.success) throw new Error(data.message || data.error || "트래픽 조회 실패");
+
+        const daily = data.daily || [];
+        const todayViews = daily.length ? daily[daily.length - 1].views : 0;
+        const todayVisitors = daily.length ? daily[daily.length - 1].visitors : 0;
+        statRow.innerHTML = [
+            { label: "실시간 접속자 수", value: data.online_now ?? 0, sub: "최근 5분 이내 (IP 기준)" },
+            { label: "오늘 페이지뷰", value: todayViews, sub: "자정부터 누적" },
+            { label: "오늘 방문자(순)", value: todayVisitors, sub: "IP 기준" },
+        ].map(s => `<div class="stat-pill"><div class="label">${s.label}</div><div class="value">${Number(s.value).toLocaleString()}</div><div class="sub">${s.sub}</div></div>`).join("");
+
+        if (dailyTrafficChartInstance) dailyTrafficChartInstance.destroy();
+        dailyTrafficChartInstance = new Chart(document.getElementById("dailyTrafficChart"), {
+            type: "line",
+            data: {
+                labels: daily.map(r => r.date.slice(5)),
+                datasets: [ {
+                    label: "페이지뷰",
+                    data: daily.map(r => r.views),
+                    borderColor: "#38bdf8",
+                    backgroundColor: "rgba(56,189,248,0.15)",
+                    tension: .3,
+                    fill: true
+                }, {
+                    label: "방문자(순, IP 기준)",
+                    data: daily.map(r => r.visitors),
+                    borderColor: "#34d399",
+                    backgroundColor: "rgba(52,211,153,0.15)",
+                    tension: .3,
+                    fill: true
+                } ]
+            },
+            options: { responsive: true, plugins: { legend: { labels: { color: "#9a9ea8" } } } }
+        });
+
+        const hourly = data.hourly || [];
+        if (hourlyTrafficChartInstance) hourlyTrafficChartInstance.destroy();
+        hourlyTrafficChartInstance = new Chart(document.getElementById("hourlyTrafficChart"), {
+            type: "bar",
+            data: {
+                labels: hourly.map(r => r.hour + "시"),
+                datasets: [ { label: "페이지뷰", data: hourly.map(r => r.views), backgroundColor: "#a78bfa" } ]
+            },
+            options: { responsive: true, plugins: { legend: { display: false } } }
+        });
+
+        const topPaths = data.top_paths || [];
+        blockedPathsCache = (data.blocked_paths || []).map(b => b.path);
+        lastTopPaths = topPaths;
+        renderTopPaths();
+        renderBlockedPaths();
+
+        Object.assign(IP_COUNTRIES, data.ip_countries || {});
+        lastByIP = data.by_ip || [];
+        const datesEl = document.getElementById("ipTrafficDate"), selectedDate = datesEl.value;
+        datesEl.innerHTML = '<option value="">전체 기간</option>' + (data.dates || []).map(r => '<option value="' + escapeHtml(r.date) + '">' + escapeHtml(r.date) + ' (' + ['일','월','화','수','목','금','토'][new Date(r.date + 'T12:00:00').getDay()] + ')</option>').join('');
+        datesEl.value = selectedDate;
+        renderIPTrafficTable();
+
+        const bannedIPs = data.banned_ips || [];
+        const bannedBody = document.getElementById("bannedIPTableBody");
+        bannedBody.innerHTML = bannedIPs.length
+            ? bannedIPs.map(b => `<tr>
+                <td>${ipFlag(b.ip)}${escapeHtml(b.ip)}</td>
+                <td>${escapeHtml(b.reason || "-")}</td>
+                <td>${escapeHtml(b.banned_at || "")}</td>
+                <td>${b.known_bot ? '<span style="color:var(--text-muted)">알려진 봇 · 해제 불가</span>' : `<button class="toolbar-btn" onclick="unbanIP('${b.ip.replace(/'/g, "\\'")}')"><i class="fas fa-rotate-left"></i> 해제</button>`}</td>
+            </tr>`).join("")
+            : '<tr><td colspan="4" style="text-align:center; padding:20px; color:var(--text-muted);">차단된 IP가 없습니다.</td></tr>';
+
+        if (!data.rate_limit_enabled) {
+            chip.textContent = "(요청 속도 제한 비활성화됨)";
+            rlBody.innerHTML = '<tr><td colspan="4" style="color:var(--text-muted); text-align:center; padding:20px;">요청 속도 제한이 꺼져 있습니다 (RATE_LIMIT_ENABLED=false).</td></tr>';
+            return;
+        }
+        chip.textContent = `(윈도우 ${data.rate_limit_window_sec}초 / 최대 ${data.rate_limit_max_requests}건, 초과 시 ${data.rate_limit_ban_minutes}분 차단)`;
+        const ips = data.rate_limit_ips || [];
+        if (!ips.length) {
+            rlBody.innerHTML = '<tr><td colspan="4" style="color:var(--text-muted); text-align:center; padding:20px;">최근 활동 중이거나 차단된 IP가 없습니다.</td></tr>';
+            return;
+        }
+        ips.sort((a, b) => (b.banned - a.banned) || (b.requests_in_window - a.requests_in_window));
+        rlBody.innerHTML = ips.map(s => `<tr>
+            <td>${ipFlag(s.ip || "")}${escapeHtml(s.ip || "")}</td>
+            <td>${s.requests_in_window ?? 0}</td>
+            <td>${s.banned ? '<span style="color:var(--danger,#e5484d); font-weight:600;">차단됨</span>' : '<span style="color:var(--text-muted);">정상</span>'}</td>
+            <td>${s.banned_until ? escapeHtml(new Date(s.banned_until).toLocaleString()) : "-"}</td>
+        </tr>`).join("");
+    } catch (e) {
+        rlBody.innerHTML = `<tr><td colspan="4" style="color:var(--text-muted); text-align:center; padding:20px;">불러오지 못했습니다: ${escapeHtml(e.message)}</td></tr>`;
+    }
+}
+document.getElementById("btnTrafficRefresh").addEventListener("click", loadTraffic);
+
+let lastByIP = [];
+// IP -> 국가 코드 (서버의 DB-IP 국가 데이터로 찾음, VPN 이면 그 VPN 서버가 있는 나라)
+const IP_COUNTRIES = {};
+const _regionNames = (() => { try { return new Intl.DisplayNames(["ko"], { type: "region" }); } catch (e) { return null; } })();
+function ipFlag(ip) {
+    const code = IP_COUNTRIES[ip];
+    if (!code || !/^[A-Z]{2}$/.test(code)) return '<span class="ip-geo"><span class="ip-flag unknown">🌐</span><span class="ip-cc">알 수 없음</span></span>';
+    let name = code;
+    try { if (_regionNames) name = _regionNames.of(code) || code; } catch (e) {}
+    return `<span class="ip-geo" title="${escapeHtml(name)} (${code})"><span class="fi fi-${code.toLowerCase()} ip-flag"></span><span class="ip-cc">${escapeHtml(name)}</span></span>`;
+}
+const IP_TRAFFIC_PER_PAGE = 50;
+// ----- 여러 개 골라서 차단 -----
+const ipSelected = new Set();
+let ipCurrentPageIPs = [];
+function updateIPBulkBar() {
+    const bar = document.getElementById("ipBulkBar");
+    bar.hidden = ipSelected.size === 0;
+    document.getElementById("ipBulkCount").textContent = `${ipSelected.size}개 선택`;
+    const all = document.getElementById("ipSelectAll");
+    all.checked = ipCurrentPageIPs.length > 0 && ipCurrentPageIPs.every(ip => ipSelected.has(ip));
+}
+document.getElementById("ipTrafficTableBody").addEventListener("change", e => {
+    const cb = e.target.closest(".ip-check");
+    if (!cb) return;
+    if (cb.checked) ipSelected.add(cb.dataset.ip); else ipSelected.delete(cb.dataset.ip);
+    cb.closest("tr").classList.toggle("row-selected", cb.checked);
+    updateIPBulkBar();
+});
+document.getElementById("ipSelectAll").addEventListener("change", e => {
+    ipCurrentPageIPs.forEach(ip => e.target.checked ? ipSelected.add(ip) : ipSelected.delete(ip));
+    renderIPTrafficTable();
+});
+document.getElementById("btnIPBulkClear").addEventListener("click", () => { ipSelected.clear(); renderIPTrafficTable(); });
+document.getElementById("btnIPBulkBan").addEventListener("click", async () => {
+    const ips = [...ipSelected];
+    if (!ips.length) return;
+    const { value: reason, isConfirmed } = await Swal.fire({
+        title: `IP ${ips.length}개 차단`,
+        html: `<div style="max-height:120px; overflow:auto; font-size:12px; text-align:left;">${ips.map(escapeHtml).join("<br>")}</div>`,
+        input: "text", inputLabel: "사유 (선택)", showCancelButton: true, confirmButtonText: "모두 차단", confirmButtonColor: "#dc2626",
+    });
+    if (!isConfirmed) return;
+    try {
+        const res = await fetch("/api/admin/ip-ban", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ips, reason: reason || "" }) });
+        const data = await res.json();
+        if (!res.ok || !data.success) throw new Error(data.message || "차단 실패");
+        applyConfirmedIPBan(data);
+        ipSelected.clear();
+        loadTraffic();
+    } catch (e) {
+        showToast("차단 실패: " + e.message, "error");
+    }
+});
+
+for (const [id, endpoint, title, text] of [
+    ["btnResetTodayPaths", "/api/admin/traffic/reset-today", "오늘 본 경로 초기화", "오늘의 방문 기록을 삭제합니다. 오늘의 조회 수와 IP별 트래픽에도 반영됩니다. 이전 날짜 기록과 차단 설정은 유지됩니다."],
+    ["btnResetIPTraffic", "/api/admin/traffic/reset-ips", "IP별 트래픽 초기화", "전체 기간의 방문 기록을 삭제합니다. 오늘 본 경로와 트래픽 통계도 함께 초기화됩니다. IP 및 경로 차단 설정은 유지됩니다."],
+    ["btnResetBlockedPaths", "/api/admin/blocked-paths/reset", "차단 중인 경로 초기화", "경로 차단 목록을 모두 삭제하고 해당 경로의 차단을 해제합니다. 방문 기록과 IP 차단은 유지됩니다."],
+]) {
+    document.getElementById(id).addEventListener("click", async (event) => {
+        const button = event.currentTarget;
+        const { isConfirmed } = await Swal.fire({ title, text, showCancelButton: true, confirmButtonText: "초기화", cancelButtonText: "취소", confirmButtonColor: "#ef4444", allowOutsideClick: false });
+        if (!isConfirmed) return;
+        button.disabled = true;
+        try {
+            const response = await fetch(endpoint, { method: "POST" });
+            const data = await response.json();
+            if (!response.ok || !data.success) throw new Error(data.message || "초기화 실패");
+            ipSelected.clear(); pathSelected.clear(); ipTrafficPage = 1;
+            await loadTraffic();
+            showToast(title + "가 완료되었습니다.", "info");
+        } catch (error) { showToast(error.message, "error"); }
+        finally { button.disabled = false; }
+    });
+}
+
+document.getElementById("btnBanNonKR").addEventListener("click", async (event) => {
+    const { isConfirmed } = await Swal.fire({
+        title: "해외 IP 일괄 차단",
+        html: '<div style="padding:14px 16px;border:1px solid #ef444440;border-radius:12px;background:#ef444410;color:var(--text-primary);line-height:1.7">전체 기간에 기록된 <strong>한국 외 국가 및 국가 미확인 IP</strong>를 차단합니다.</div><p style="margin:14px 0 0;color:var(--text-muted);font-size:13px">한국 IP와 현재 관리자 IP는 제외됩니다.<br>차단된 IP는 트래픽 목록에서 사라집니다.</p>',
+        showCancelButton: true,
+        confirmButtonText: "해외 IP 차단",
+        cancelButtonText: "취소",
+        confirmButtonColor: "#ef4444",
+        allowOutsideClick: false,
+        width: 460,
+    });
+    if (!isConfirmed) return;
+    const button = event.currentTarget;
+    button.disabled = true;
+    try {
+        const res = await fetch("/api/admin/ip-ban/non-kr", { method: "POST" });
+        const data = await res.json();
+        if (!res.ok || !data.success || !data.confirmed) throw new Error(data.message || "서버 차단 확인 실패");
+        if (data.banned.length) applyConfirmedIPBan(data);
+        else showToast("새로 차단할 해외 IP가 없습니다.", "info");
+        await loadTraffic();
+    } catch (e) {
+        showToast("해외 IP 차단 실패: " + e.message, "error");
+    } finally { button.disabled = false; }
+});
+
+let lastTopPaths = [];
+const pathSelected = new Set();
+const PE_PAGE = 60;
+let peShown = PE_PAGE, peTab = "all";
+const PE_CATS = [
+    { key: "all", label: "전체", icon: "fa-layer-group" },
+    { key: "page", label: "페이지", icon: "fa-file-lines" },
+    { key: "video", label: "영상", icon: "fa-circle-play" },
+    { key: "community", label: "커뮤니티", icon: "fa-comments" },
+    { key: "channel", label: "채널", icon: "fa-tv" },
+    { key: "share", label: "공유 링크", icon: "fa-share-nodes" },
+    { key: "etc", label: "기타", icon: "fa-ellipsis" },
+];
+function peCat(path) {
+    if (path === "/") return "page";
+    if (path.startsWith("/watch/")) return "video";
+    if (path.startsWith("/channel/")) return "channel";
+    if (path.startsWith("/share/")) return "share";
+    if (/^\/[^/]+\/community$/.test(path)) return "community";
+    if (/^\/(gallery|profile|credits|terms|privacy|highlights|playlists|bookmarks|member)$/.test(path)) return "page";
+    return "etc";
+}
+function peIcon(cat) { return (PE_CATS.find(c => c.key === cat) || PE_CATS[6]).icon; }
+function peFiltered() {
+    const q = (document.getElementById("topPathsFilterInput").value || "").trim().toLowerCase();
+    let rows = lastTopPaths.filter(p => (peTab === "all" || peCat(p.path) === peTab) && (!q || p.path.toLowerCase().includes(q) || ipPathLabel(p.path).toLowerCase().includes(q)));
+    const sort = document.getElementById("peSort").value;
+    if (sort === "views_asc") rows = rows.slice().sort((a, b) => a.views - b.views);
+    else if (sort === "name") rows = rows.slice().sort((a, b) => a.path.localeCompare(b.path));
+    return rows;
+}
+function renderTopPaths() {
+    const total = lastTopPaths.reduce((n, p) => n + p.views, 0);
+    const maxViews = lastTopPaths.reduce((m, p) => Math.max(m, p.views), 1);
+    document.getElementById("peSummary").innerHTML =
+        `<span><b>${lastTopPaths.length.toLocaleString()}</b>개 경로</span><span><b>${total.toLocaleString()}</b>번 조회</span><span class="pe-sum-red"><b>${blockedPathsCache.length}</b>개 차단 중</span>`;
+    // 종류별 탭
+    const counts = { all: lastTopPaths.length };
+    lastTopPaths.forEach(p => { const c = peCat(p.path); counts[c] = (counts[c] || 0) + 1; });
+    document.getElementById("peTabs").innerHTML = PE_CATS.filter(c => c.key === "all" || counts[c.key])
+        .map(c => `<button type="button" class="pe-tab${peTab === c.key ? " on" : ""}" data-tab="${c.key}"><i class="fas ${c.icon}"></i> ${c.label} <em>${(counts[c.key] || 0).toLocaleString()}</em></button>`).join("");
+
+    const rows = peFiltered();
+    const shown = rows.slice(0, peShown);
+    const list = document.getElementById("peList");
+    list.innerHTML = shown.length ? shown.map(p => {
+        const blocked = blockedPathsCache.includes(p.path);
+        const selectable = p.path !== "/" && !blocked;
+        const sel = pathSelected.has(p.path);
+        const pct = total ? (p.views / total * 100) : 0;
+        const label = ipPathLabel(p.path);
+        const arg = JSON.stringify(p.path).replace(/"/g, "&quot;");
+        const action = p.path === "/" ? '<span class="pe-lock" title="홈은 막을 수 없어요"><i class="fas fa-lock"></i></span>'
+            : blocked ? `<button class="pe-act undo" onclick="unblockPath(${arg})" title="차단 해제"><i class="fas fa-rotate-left"></i><span>해제</span></button>`
+            : `<button class="pe-act" onclick="blockPath(${arg})" title="이 경로 차단"><i class="fas fa-ban"></i><span>차단</span></button>`;
+        return `<div class="pe-row${blocked ? " blocked" : ""}${sel ? " selected" : ""}">
+            <span class="pe-cb">${selectable ? `<input type="checkbox" class="path-check" data-path="${escapeHtml(p.path)}" ${sel ? "checked" : ""}>` : ""}</span>
+            <span class="pe-ic"><i class="fas ${peIcon(peCat(p.path))}"></i></span>
+            <span class="pe-name"><b>${escapeHtml(label)}${blocked ? ' <span class="path-blocked-tag">차단됨</span>' : ""}</b>${label !== p.path ? `<small>${escapeHtml(p.path)}</small>` : ""}
+                <span class="pe-bar"><i style="width:${Math.max(2, p.views / maxViews * 100).toFixed(1)}%"></i></span></span>
+            <span class="pe-num"><b>${p.views.toLocaleString()}</b><small>${pct >= 0.1 ? pct.toFixed(1) : "<0.1"}%</small></span>
+            <span class="pe-action">${action}</span>
+        </div>`;
+    }).join("") : `<div class="pe-empty">${lastTopPaths.length ? "조건에 맞는 경로가 없어요." : "오늘 기록된 방문이 없어요."}</div>`;
+
+    const more = document.getElementById("peMore");
+    more.hidden = rows.length <= peShown;
+    more.textContent = `더 보기 (${(rows.length - shown.length).toLocaleString()}개 남음)`;
+    updatePathBulkBar(rows);
+}
+function updatePathBulkBar(rows) {
+    for (const p of [...pathSelected]) if (blockedPathsCache.includes(p)) pathSelected.delete(p);
+    document.getElementById("pathBulkBar").hidden = pathSelected.size === 0;
+    document.getElementById("pathBulkCount").textContent = `${pathSelected.size}개 선택됨`;
+    const selectable = (rows || []).slice(0, peShown).filter(p => p.path !== "/" && !blockedPathsCache.includes(p.path));
+    document.getElementById("pathSelectAll").checked = selectable.length > 0 && selectable.every(p => pathSelected.has(p.path));
+}
+document.getElementById("peTabs").addEventListener("click", e => {
+    const b = e.target.closest(".pe-tab");
+    if (!b) return;
+    peTab = b.dataset.tab; peShown = PE_PAGE; renderTopPaths();
+});
+document.getElementById("peSort").addEventListener("change", () => { peShown = PE_PAGE; renderTopPaths(); });
+document.getElementById("topPathsFilterInput").addEventListener("input", () => { peShown = PE_PAGE; renderTopPaths(); });
+document.getElementById("peMore").addEventListener("click", () => { peShown += PE_PAGE; renderTopPaths(); });
+document.getElementById("peList").addEventListener("change", e => {
+    const cb = e.target.closest(".path-check");
+    if (!cb) return;
+    if (cb.checked) pathSelected.add(cb.dataset.path); else pathSelected.delete(cb.dataset.path);
+    cb.closest(".pe-row").classList.toggle("selected", cb.checked);
+    updatePathBulkBar(peFiltered());
+});
+document.getElementById("pathSelectAll").addEventListener("change", e => {
+    peFiltered().slice(0, peShown).filter(p => p.path !== "/" && !blockedPathsCache.includes(p.path))
+        .forEach(p => e.target.checked ? pathSelected.add(p.path) : pathSelected.delete(p.path));
+    renderTopPaths();
+});
+document.getElementById("btnPathBulkClear").addEventListener("click", () => { pathSelected.clear(); renderTopPaths(); });
+document.getElementById("btnPathBulkBlock").addEventListener("click", async () => {
+    const paths = [...pathSelected];
+    if (!paths.length) return;
+    const ok = await confirmDialog(`경로 ${paths.length}개를 차단할까요? 이 경로들로 들어오면 홈(/)으로 보내요.`, { dangerous: true, confirmButtonText: "모두 차단" });
+    if (!ok) return;
+    try {
+        const res = await fetch("/api/admin/blocked-paths", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ paths }) });
+        const data = await res.json();
+        if (!data.success) throw new Error(data.message || "차단 실패");
+        const sk = (data.skipped || []).length;
+        showToast(`경로 ${(data.blocked || []).length}개를 차단했습니다.` + (sk ? ` (막을 수 없는 경로 ${sk}개는 건너뜀)` : ""), "success");
+        pathSelected.clear();
+        loadTraffic();
+    } catch (e) {
+        showToast(e.message, "error");
+    }
+});
+// "2026-10-08 09:30:12" -> "09:30"
+function ipShortTime(v) {
+    const m = String(v || "").match(/(\d{1,2}):(\d{2})/);
+    return m ? m[1].padStart(2, "0") + ":" + m[2] : "-";
+}
+function ipTimeRange(first, last) {
+    const a = ipShortTime(first), b = ipShortTime(last);
+    return a === b ? a : `${a} <span class="ip-sub" style="display:inline;">~</span> ${b}`;
+}
+// 경로를 알아보기 쉬운 이름으로
+function ipPathLabel(path) {
+    const p = String(path || "");
+    if (p === "/") return "홈";
+    if (p.startsWith("/watch/")) return "영상 " + p.slice(7, 18);
+    if (p === "/gallery") return "팬 갤러리";
+    if (p === "/profile") return "프로필";
+    if (p === "/credits") return "크레딧";
+    if (p === "/terms") return "이용약관";
+    if (p === "/privacy") return "개인정보처리방침";
+    if (p.startsWith("/channel/")) return "채널";
+    if (p.startsWith("/share/")) return "공유 링크";
+    if (/^\/[^/]+\/community$/.test(p)) return decodeURIComponent(p.split("/")[1]) + " 커뮤니티";
+    return p;
+}
+function ipPathChips(s) {
+    const tops = s.top_paths || [];
+    if (!tops.length) return '<span class="ip-sub" style="display:inline;">-</span>';
+    let html = tops.map(t => `<span class="ip-path" title="${escapeHtml(t.path)}">${escapeHtml(ipPathLabel(t.path))}${t.views > 1 ? `<em>×${t.views}</em>` : ""}</span>`).join("");
+    const more = (s.paths || 0) - tops.length;
+    if (more > 0) html += `<span class="ip-path more" onclick="showIPDetail('${s.ip.replace(/'/g, "\\'")}')">+${more}개 더</span>`;
+    return `<div class="ip-paths">${html}</div>`;
+}
+let ipTrafficPage = 1;
+document.getElementById("ipTrafficDate").addEventListener("change", () => { ipTrafficPage = 1; ipSelected.clear(); loadTraffic(); });
+function renderIPTrafficTable() {
+    const body = document.getElementById("ipTrafficTableBody");
+    const pager = document.getElementById("ipTrafficPagination");
+    const filter = (document.getElementById("ipTrafficFilterInput").value || "").trim();
+    const all = lastByIP.map((s, i) => Object.assign({ rank: i + 1 }, s));
+    const rows = filter ? all.filter(s => s.ip.includes(filter)) : all;
+    const totalPages = Math.max(1, Math.ceil(rows.length / IP_TRAFFIC_PER_PAGE));
+    if (ipTrafficPage > totalPages) ipTrafficPage = totalPages;
+    const pageRows = rows.slice((ipTrafficPage - 1) * IP_TRAFFIC_PER_PAGE, ipTrafficPage * IP_TRAFFIC_PER_PAGE);
+    const totalEl = document.getElementById("ipTrafficTotal");
+    if (totalEl) totalEl.textContent = `· 총 ${all.length.toLocaleString()}개 IP`;
+    body.innerHTML = pageRows.length
+        ? pageRows.map(s => `<tr${ipSelected.has(s.ip) ? ' class="row-selected"' : ""}>
+            <td><input type="checkbox" class="ip-check" data-ip="${escapeHtml(s.ip)}" ${ipSelected.has(s.ip) ? "checked" : ""}></td>
+            <td style="color:var(--text-muted); font-variant-numeric:tabular-nums;">${s.rank}</td>
+            <td style="cursor:pointer; text-decoration:underline dotted;" onclick="showIPDetail('${s.ip.replace(/'/g, "\\'")}')">${ipFlag(s.ip)}${escapeHtml(s.ip)}</td>
+            <td style="white-space:nowrap;"><b>${s.views}</b><span class="ip-sub">경로 ${s.paths}개</span></td>
+            <td style="white-space:nowrap;" title="${escapeHtml((s.first_seen || "") + " ~ " + (s.last_seen || ""))}">${ipTimeRange(s.first_seen, s.last_seen)}</td>
+            <td>${ipPathChips(s)}</td>
+            <td><button class="toolbar-btn danger" style="padding:2px 6px; font-size:11px;" onclick="banIPPrompt('${s.ip.replace(/'/g, "\\'")}')"><i class="fas fa-ban"></i></button></td>
+        </tr>`).join("")
+        : `<tr><td colspan="7" style="text-align:center; padding:30px; color:var(--text-muted);">${filter ? "조건에 맞는 IP가 없습니다." : "오늘 기록된 접속이 없습니다."}</td></tr>`;
+    ipCurrentPageIPs = pageRows.map(r => r.ip);
+    updateIPBulkBar();
+    // 페이지 번호: 1 … (현재-2 ~ 현재+2) … 마지막
+    if (totalPages <= 1) { pager.innerHTML = ""; return; }
+    const nums = new Set([1, totalPages]);
+    for (let n = ipTrafficPage - 2; n <= ipTrafficPage + 2; n++) if (n >= 1 && n <= totalPages) nums.add(n);
+    const sorted = [...nums].sort((a, b) => a - b);
+    let html = `<button class="toolbar-btn" data-p="${ipTrafficPage - 1}" ${ipTrafficPage <= 1 ? "disabled" : ""}><i class="fas fa-chevron-left"></i></button>`;
+    let prev = 0;
+    for (const n of sorted) {
+        if (n - prev > 1) html += '<span class="ip-pager-gap">…</span>';
+        html += `<button class="toolbar-btn ip-pager-num${n === ipTrafficPage ? " active" : ""}" data-p="${n}">${n}</button>`;
+        prev = n;
+    }
+    html += `<button class="toolbar-btn" data-p="${ipTrafficPage + 1}" ${ipTrafficPage >= totalPages ? "disabled" : ""}><i class="fas fa-chevron-right"></i></button>`;
+    pager.innerHTML = html;
+}
+document.getElementById("ipTrafficPagination").addEventListener("click", e => {
+    const btn = e.target.closest("button[data-p]");
+    if (!btn || btn.disabled) return;
+    ipTrafficPage = parseInt(btn.dataset.p, 10) || 1;
+    renderIPTrafficTable();
+});
+document.getElementById("ipTrafficFilterInput").addEventListener("input", () => { ipTrafficPage = 1; renderIPTrafficTable(); });
+
+async function showIPDetail(ip) {
+    if (typeof Swal === "undefined") { alert("상세 보기는 이 화면에서 지원되지 않습니다."); return; }
+    Swal.fire({ title: `${ip} 접속 상세`, html: '<i class="fas fa-spinner fa-spin"></i> 불러오는 중...', background: "#1c1c1c", color: "#fff", confirmButtonText: "닫기", width: 560 });
+    try {
+        const res = await fetch(`/api/admin/traffic/ip/${encodeURIComponent(ip)}`);
+        const data = await res.json();
+        if (!data.success) throw new Error(data.message || "조회 실패");
+        const views = data.views || [];
+        if (data.country) IP_COUNTRIES[ip] = data.country;
+        const html = `
+            <div style="margin-bottom:10px; font-size:14px;">${ipFlag(ip)}${escapeHtml(ip)}</div>
+            ${data.banned ? '<div style="color:#f87171; margin-bottom:8px;"><i class="fas fa-ban"></i> 현재 차단된 IP입니다.</div>' : ""}
+            <div style="max-height:340px; overflow-y:auto; text-align:left;">${views.length ? views.map(v => `
+                <div style="display:flex; justify-content:space-between; gap:10px; padding:5px 4px; border-bottom:1px solid #333; font-size:12px;">
+                    <span style="word-break:break-all;">${escapeHtml(v.path)}</span>
+                    <span style="color:var(--text-faint); white-space:nowrap;">${escapeHtml(v.viewed_at || "")}</span>
+                </div>`).join("") : '<div style="color:var(--text-muted); padding:20px 0;">기록이 없습니다.</div>'}</div>`;
+        Swal.update({ html });
+    } catch (e) {
+        Swal.update({ html: `<div style="color:var(--text-muted);">불러오지 못했습니다: ${escapeHtml(e.message)}</div>` });
+    }
+}
+
+document.getElementById("btnIPBanAdd").addEventListener("click", async () => {
+    const input = document.getElementById("ipBanInput");
+    const ip = input.value.trim();
+    if (!ip) return;
+    await banIPPrompt(ip);
+    input.value = "";
+    loadTraffic();
+});
+
+let currentReportStatus = "pending";
+function loadReports() {
+    const listEl = document.getElementById("reportList");
+    const countEl = document.getElementById("reportCount");
+    listEl.innerHTML = '<div class="empty-message"><i class="fas fa-spinner fa-spin"></i> 불러오는 중...</div>';
+    fetch("/api/reports?status=" + encodeURIComponent(currentReportStatus)).then(res => res.json()).then(data => {
+        if (!data.success) {
+            listEl.innerHTML = `<div class="denied-box"><i class="fas fa-lock" style="font-size:30px; margin-bottom:10px;"></i><br>${escapeHtml(data.message || "권한이 없습니다.")}</div>`;
+            countEl.innerText = "";
+            return;
+        }
+        countEl.innerText = `총 ${data.reports.length}건`;
+        if (data.reports.length === 0) {
+            listEl.innerHTML = '<div class="empty-message">해당 조건의 신고 내역이 없습니다.</div>';
+            return;
+        }
+        const statusLabel = { pending: "대기중", resolved: "처리됨", auto_deleted: "자동삭제됨" };
+        listEl.innerHTML = data.reports.map(r => {
+            const thumbHtml = r.fanart_image_url ? `<img src="${escapeHtml(r.fanart_image_url)}" class="report-thumb" alt="신고된 사진">` : `<div class="report-thumb-missing">이미지 없음</div>`;
+            const actions = [];
+            if (r.fanart_alive) actions.push(`<a href="/?image=${r.fanart_id}" target="_blank" class="btn-view"><i class="fas fa-eye"></i> 사진 보기</a>`);
+            if (r.status === "pending") actions.push(`<button class="btn-resolve" onclick="resolveReport(${r.id})"><i class="fas fa-check"></i> 처리 완료</button>`);
+            if (r.fanart_alive) actions.push(`<button class="btn-delete" onclick="deleteFanart(${r.fanart_id}, ${r.id})"><i class="fas fa-trash-alt"></i> 사진 영구 삭제</button>`);
+            return `<div class="report-card">
+                ${thumbHtml}
+                <div class="report-info">
+                    <div class="report-top-row">
+                        <span class="report-title">${escapeHtml(r.fanart_title || "무제")} ${r.fanart_alive ? "" : '<span style="color:var(--text-faint); font-size:12px;">(이미 삭제된 사진)</span>'}</span>
+                        <span class="report-status ${r.status}">${statusLabel[r.status] || r.status}</span>
+                    </div>
+                    <div class="report-meta">작성자: ${escapeHtml(r.fanart_author || "알 수 없음")} · 신고자: ${escapeHtml(r.reporter_nickname || "알 수 없음")} · ${escapeHtml(r.date || "")}</div>
+                    <div class="report-reason"><i class="fas fa-exclamation-circle"></i> ${escapeHtml(r.reason || "사유 없음")}</div>
+                    <div class="report-actions">${actions.join("")}</div>
+                </div>
+            </div>`;
+        }).join("");
+    }).catch(() => {
+        listEl.innerHTML = '<div class="empty-message">데이터를 불러오지 못했습니다.</div>';
+    });
+}
+function resolveReport(reportId) {
+    confirmDialog("이 신고를 처리 완료로 표시하시겠습니까?").then(ok => {
+        if (!ok) return;
+        fetch(`/api/reports/${reportId}/resolve`, { method: "POST" }).then(res => res.json()).then(data => {
+            if (data.success) loadReports(); else showToast(data.message || "처리에 실패했습니다.", "error");
+        }).catch(() => showToast("오류가 발생했습니다.", "error"));
+    });
+}
+function deleteFanart(fanartId, reportId) {
+    confirmDialog("이 사진을 서버에서 영구적으로 삭제하시겠습니까? 되돌릴 수 없습니다.", { dangerous: true, confirmButtonText: "삭제" }).then(ok => {
+        if (!ok) return;
+        fetch(`/api/fanart/${fanartId}/react`, {
+            method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ reaction: "delete" })
+        }).then(res => res.json()).then(data => {
+            if (data.success) resolveReportSilently(reportId); else showToast(data.message || "삭제에 실패했습니다.", "error");
+        }).catch(() => showToast("오류가 발생했습니다.", "error"));
+    });
+}
+function resolveReportSilently(reportId) {
+    fetch(`/api/reports/${reportId}/resolve`, { method: "POST" }).finally(() => loadReports());
+}
+document.getElementById("reportFilterTabs").addEventListener("click", e => {
+    const btn = e.target.closest("button[data-status]");
+    if (!btn) return;
+    document.querySelectorAll("#reportFilterTabs button").forEach(b => b.classList.remove("active"));
+    btn.classList.add("active");
+    currentReportStatus = btn.dataset.status;
+    loadReports();
+});
+
+// ===== 팬아트 관리 / 게시글 관리 =====
+function renderPager(el, page, totalPages, onGo) {
+    if (totalPages <= 1) { el.innerHTML = ""; return; }
+    const nums = new Set([1, totalPages]);
+    for (let n = page - 2; n <= page + 2; n++) if (n >= 1 && n <= totalPages) nums.add(n);
+    let html = `<button class="toolbar-btn" data-p="${page - 1}" ${page <= 1 ? "disabled" : ""}><i class="fas fa-chevron-left"></i></button>`;
+    let prev = 0;
+    for (const n of [...nums].sort((a, b) => a - b)) {
+        if (n - prev > 1) html += '<span class="ip-pager-gap">…</span>';
+        html += `<button class="toolbar-btn ip-pager-num${n === page ? " active" : ""}" data-p="${n}">${n}</button>`;
+        prev = n;
+    }
+    html += `<button class="toolbar-btn" data-p="${page + 1}" ${page >= totalPages ? "disabled" : ""}><i class="fas fa-chevron-right"></i></button>`;
+    el.innerHTML = html;
+    el.onclick = e => {
+        const b = e.target.closest("button[data-p]");
+        if (b && !b.disabled) onGo(parseInt(b.dataset.p, 10) || 1);
+    };
+}
+
+let fanartAdminPage = 1, fanartAdminQuery = "";
+const fanartSelected = new Set();
+async function loadAdminFanarts(page) {
+    fanartAdminPage = page || 1;
+    const grid = document.getElementById("fanartAdminGrid");
+    grid.innerHTML = '<div class="empty-message"><i class="fas fa-spinner fa-spin"></i> 불러오는 중...</div>';
+    try {
+        const res = await fetch(`/api/admin/fanarts?page=${fanartAdminPage}&q=${encodeURIComponent(fanartAdminQuery)}`);
+        const data = await res.json();
+        if (!data.success) throw new Error(data.message || "조회 실패");
+        document.getElementById("fanartCount").textContent = `총 ${data.total.toLocaleString()}개` + (fanartSelected.size ? ` · ${fanartSelected.size}개 선택` : "");
+        const list = data.fanarts || [];
+        grid.innerHTML = list.length ? list.map(f => `
+            <label class="fa-admin-card${fanartSelected.has(f.id) ? " selected" : ""}">
+                <input type="checkbox" class="fa-admin-check" data-id="${f.id}" ${fanartSelected.has(f.id) ? "checked" : ""}>
+                <img src="${escapeHtml(f.thumbnail_url || f.image_url)}" alt="" loading="lazy">
+                <div class="fa-admin-info">
+                    <b>${escapeHtml(f.title || "무제")}</b>
+                    <span>${escapeHtml(f.nickname)} · ${escapeHtml(String(f.created_at).slice(0, 16))}</span>
+                    <span class="fa-admin-stats"><i class="fas fa-thumbs-up"></i> ${f.likes} <i class="fas fa-thumbs-down"></i> ${f.dislikes} <i class="fas fa-comment"></i> ${f.comments}${f.reports ? ` <em><i class="fas fa-flag"></i> 신고 ${f.reports}</em>` : ""}</span>
+                </div>
+                <a class="fa-admin-open" href="https://pastellive.co.kr/?image=${f.id}" target="_blank" rel="noopener" title="사이트에서 보기"><i class="fas fa-arrow-up-right-from-square"></i></a>
+            </label>`).join("") : '<div class="empty-message">팬아트가 없습니다.</div>';
+        document.getElementById("fanartSelectAll").checked = list.length > 0 && list.every(f => fanartSelected.has(f.id));
+        renderPager(document.getElementById("fanartPagination"), fanartAdminPage, Math.max(1, Math.ceil(data.total / data.per_page)), loadAdminFanarts);
+    } catch (e) {
+        grid.innerHTML = `<div class="empty-message">불러오지 못했습니다: ${escapeHtml(e.message)}</div>`;
+    }
+}
+document.getElementById("fanartAdminGrid").addEventListener("change", e => {
+    const cb = e.target.closest(".fa-admin-check");
+    if (!cb) return;
+    const id = parseInt(cb.dataset.id, 10);
+    if (cb.checked) fanartSelected.add(id); else fanartSelected.delete(id);
+    cb.closest(".fa-admin-card").classList.toggle("selected", cb.checked);
+    document.getElementById("fanartCount").textContent = document.getElementById("fanartCount").textContent.replace(/ · \d+개 선택$/, "") + (fanartSelected.size ? ` · ${fanartSelected.size}개 선택` : "");
+});
+document.getElementById("fanartSelectAll").addEventListener("change", e => {
+    document.querySelectorAll("#fanartAdminGrid .fa-admin-check").forEach(cb => {
+        const id = parseInt(cb.dataset.id, 10);
+        cb.checked = e.target.checked;
+        if (e.target.checked) fanartSelected.add(id); else fanartSelected.delete(id);
+        cb.closest(".fa-admin-card").classList.toggle("selected", e.target.checked);
+    });
+});
+document.getElementById("fanartSearchInput").addEventListener("keydown", e => {
+    if (e.key === "Enter") { fanartAdminQuery = e.target.value.trim(); loadAdminFanarts(1); }
+});
+document.getElementById("btnFanartBulkDelete").addEventListener("click", async () => {
+    const ids = [...fanartSelected];
+    if (!ids.length) { showToast("삭제할 팬아트를 골라 주세요.", "warning"); return; }
+    const ok = await confirmDialog(`팬아트 ${ids.length}개를 영구 삭제할까요? 이미지 파일과 댓글·반응까지 모두 지워지고 되돌릴 수 없어요.`, { dangerous: true, confirmButtonText: "삭제" });
+    if (!ok) return;
+    try {
+        const res = await fetch("/api/admin/fanarts/delete", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ids }) });
+        const data = await res.json();
+        if (!data.success) throw new Error(data.message || "삭제 실패");
+        showToast(`팬아트 ${data.deleted}개를 삭제했습니다.`, "success");
+        fanartSelected.clear();
+        loadAdminFanarts(fanartAdminPage);
+    } catch (e) { showToast(e.message, "error"); }
+});
+
+let postAdminPage = 1, postAdminQuery = "";
+const postSelected = new Set();
+async function loadAdminPosts(page) {
+    postAdminPage = page || 1;
+    const listEl = document.getElementById("postAdminList");
+    listEl.innerHTML = '<div class="empty-message"><i class="fas fa-spinner fa-spin"></i> 불러오는 중...</div>';
+    try {
+        const res = await fetch(`/api/admin/posts?page=${postAdminPage}&q=${encodeURIComponent(postAdminQuery)}`);
+        const data = await res.json();
+        if (!data.success) throw new Error(data.message || "조회 실패");
+        document.getElementById("postCount").textContent = `총 ${data.total.toLocaleString()}개`;
+        const list = data.posts || [];
+        listEl.innerHTML = list.length ? list.map(p => `
+            <label class="post-admin-item${postSelected.has(p.id) ? " selected" : ""}">
+                <input type="checkbox" class="post-admin-check" data-id="${p.id}" ${postSelected.has(p.id) ? "checked" : ""}>
+                <div class="post-admin-body">
+                    <div class="post-admin-head"><span class="post-admin-member">${escapeHtml(p.member_name)}</span><b>${escapeHtml(p.nickname)}</b><span>${escapeHtml(String(p.created_at).slice(0, 16))}</span>
+                        ${p.has_image ? '<i class="fas fa-image" title="이미지"></i>' : ""}${p.has_video ? '<i class="fas fa-video" title="영상"></i>' : ""}</div>
+                    ${p.title ? `<div class="post-admin-title">${escapeHtml(p.title)}</div>` : ""}
+                    <div class="post-admin-content">${escapeHtml(p.content)}</div>
+                    <div class="post-admin-foot"><i class="fas fa-heart"></i> ${p.likes} · <i class="fas fa-comment"></i> ${p.comments}
+                        <a href="https://pastellive.co.kr/${encodeURIComponent(p.member_name)}/community" target="_blank" rel="noopener">커뮤니티에서 보기</a></div>
+                </div>
+            </label>`).join("") : '<div class="empty-message">게시글이 없습니다.</div>';
+        document.getElementById("postSelectAll").checked = list.length > 0 && list.every(p => postSelected.has(p.id));
+        renderPager(document.getElementById("postPagination"), postAdminPage, Math.max(1, Math.ceil(data.total / data.per_page)), loadAdminPosts);
+    } catch (e) {
+        listEl.innerHTML = `<div class="empty-message">불러오지 못했습니다: ${escapeHtml(e.message)}</div>`;
+    }
+}
+document.getElementById("postAdminList").addEventListener("change", e => {
+    const cb = e.target.closest(".post-admin-check");
+    if (!cb) return;
+    const id = parseInt(cb.dataset.id, 10);
+    if (cb.checked) postSelected.add(id); else postSelected.delete(id);
+    cb.closest(".post-admin-item").classList.toggle("selected", cb.checked);
+});
+document.getElementById("postSelectAll").addEventListener("change", e => {
+    document.querySelectorAll("#postAdminList .post-admin-check").forEach(cb => {
+        const id = parseInt(cb.dataset.id, 10);
+        cb.checked = e.target.checked;
+        if (e.target.checked) postSelected.add(id); else postSelected.delete(id);
+        cb.closest(".post-admin-item").classList.toggle("selected", e.target.checked);
+    });
+});
+document.getElementById("postSearchInput").addEventListener("keydown", e => {
+    if (e.key === "Enter") { postAdminQuery = e.target.value.trim(); loadAdminPosts(1); }
+});
+document.getElementById("btnPostBulkDelete").addEventListener("click", async () => {
+    const ids = [...postSelected];
+    if (!ids.length) { showToast("삭제할 게시글을 골라 주세요.", "warning"); return; }
+    const ok = await confirmDialog(`게시글 ${ids.length}개를 삭제할까요? 댓글과 좋아요, 첨부 이미지까지 지워지고 되돌릴 수 없어요.`, { dangerous: true, confirmButtonText: "삭제" });
+    if (!ok) return;
+    try {
+        const res = await fetch("/api/admin/posts/delete", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ids }) });
+        const data = await res.json();
+        if (!data.success) throw new Error(data.message || "삭제 실패");
+        showToast(`게시글 ${data.deleted}개를 삭제했습니다.`, "success");
+        postSelected.clear();
+        loadAdminPosts(postAdminPage);
+    } catch (e) { showToast(e.message, "error"); }
+});
+
+// ===== 사이트 운영: 공지 배너 / 점검 모드 / 금지어 =====
+let siteSettings = null;
+async function loadSiteSettings() {
+    try {
+        const res = await fetch("/api/admin/site-settings");
+        const data = await res.json();
+        if (!data.success) throw new Error(data.message || "조회 실패");
+        applySiteSettings(data.settings);
+    } catch (e) { showToast("설정을 불러오지 못했습니다: " + e.message, "error"); }
+}
+function applySiteSettings(st) {
+    if (!st || typeof st !== "object" || Array.isArray(st)) {
+        throw new Error("설정 응답이 올바르지 않습니다. 새로고침 후 다시 시도해 주세요.");
+    }
+    siteSettings = st;
+    document.getElementById("noticeEnabled").checked = !!st.notice_enabled;
+    document.getElementById("noticeText").value = st.notice_text || "";
+    document.getElementById("noticeLevel").value = st.notice_level || "info";
+    document.getElementById("noticeLink").value = st.notice_link || "";
+    renderNoticePreview();
+    document.getElementById("maintEnabled").checked = !!st.maintenance_enabled;
+    document.getElementById("maintMessage").value = st.maintenance_message || "";
+    renderMaintStatus();
+    renderBannedWords();
+}
+async function saveSiteSettings(patch, okMsg) {
+    try {
+        const res = await fetch("/api/admin/site-settings", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(patch) });
+        const data = await res.json();
+        if (!res.ok || !data.success) throw new Error(data.message || "저장 실패");
+        let settings = data.settings;
+        if (!settings) {
+            const reload = await fetch("/api/admin/site-settings", { cache: "no-store" });
+            const refreshed = await reload.json();
+            if (!reload.ok || !refreshed.success) throw new Error(refreshed.message || "저장 후 설정 조회 실패");
+            settings = refreshed.settings;
+        }
+        applySiteSettings(settings);
+        showToast(okMsg || "저장했습니다.", "success");
+        return true;
+    } catch (e) { showToast(e.message, "error"); return false; }
+}
+const NOTICE_BG = {"info":"linear-gradient(90deg,#0ea5e9,#6366f1)","warning":"linear-gradient(90deg,#b45309,#b91c1c)","event":"linear-gradient(90deg,#dc2626,#ea580c,#ca8a04,#16a34a,#0284c7,#4f46e5,#9333ea)","success":"linear-gradient(90deg,#047857,#0f766e)","urgent":"linear-gradient(90deg,#991b1b,#be123c)","purple":"linear-gradient(90deg,#7e22ce,#4338ca)","pink":"linear-gradient(90deg,#be185d,#9d174d)","ocean":"linear-gradient(90deg,#0369a1,#0f766e)","night":"linear-gradient(90deg,#0f172a,#334155)","gold":"linear-gradient(90deg,#854d0e,#a16207)","pastel":"linear-gradient(90deg,#9d4177,#7052ae,#376eac)"};
+function renderNoticePreview() {
+    const el = document.getElementById("noticePreview");
+    const text = document.getElementById("noticeText").value.trim();
+    const level = document.getElementById("noticeLevel").value;
+    el.style.background = NOTICE_BG[level] || NOTICE_BG.info;
+    el.textContent = text || "공지 내용을 적으면 여기에 보여요.";
+    el.style.opacity = document.getElementById("noticeEnabled").checked ? "1" : ".45";
+}
+["noticeText", "noticeLevel", "noticeEnabled"].forEach(id => document.getElementById(id).addEventListener("input", renderNoticePreview));
+document.getElementById("btnNoticeSave").addEventListener("click", () => {
+    const enabled = document.getElementById("noticeEnabled").checked;
+    const text = document.getElementById("noticeText").value.trim();
+    if (enabled && !text) { showToast("공지 내용을 적어 주세요.", "warning"); return; }
+    saveSiteSettings({ notice_enabled: enabled, notice_text: text, notice_level: document.getElementById("noticeLevel").value, notice_link: document.getElementById("noticeLink").value.trim() },
+        enabled ? "공지 배너를 저장했어요. 사이트에 바로 보여요." : "공지 배너를 껐어요.");
+});
+function renderMaintStatus() {
+    const on = !!(siteSettings && siteSettings.maintenance_enabled);
+    const el = document.getElementById("maintStatus");
+    el.className = "maint-status " + (on ? "on" : "off");
+    el.innerHTML = on ? '<i class="fas fa-circle"></i> 지금 점검 모드가 <b>켜져 있어요</b>. 방문자는 점검 화면을 보고 있어요.' : '<i class="fas fa-circle"></i> 사이트가 평소처럼 열려 있어요.';
+}
+document.getElementById("maintEnabled").addEventListener("change", async e => {
+    const turnOn = e.target.checked;
+    const ok = await confirmDialog(turnOn ? "점검 모드를 켤까요? 관리자가 아닌 방문자는 바로 점검 화면을 보게 돼요." : "점검 모드를 끌까요? 사이트가 다시 열려요.", { dangerous: turnOn, confirmButtonText: turnOn ? "점검 시작" : "다시 열기" });
+    if (!ok) { e.target.checked = !turnOn; return; }
+    const saved = await saveSiteSettings({ maintenance_enabled: turnOn, maintenance_message: document.getElementById("maintMessage").value.trim() }, turnOn ? "점검 모드를 켰어요." : "점검 모드를 껐어요.");
+    if (!saved) e.target.checked = !turnOn;
+});
+document.getElementById("btnMaintSave").addEventListener("click", () => saveSiteSettings({ maintenance_message: document.getElementById("maintMessage").value.trim() }, "점검 안내 문구를 저장했어요."));
+
+function renderBannedWords() {
+    const words = (siteSettings && siteSettings.banned_words) || [];
+    const filter = (document.getElementById("bannedFilterInput").value || "").trim().toLowerCase();
+    const shown = filter ? words.filter(w => w.toLowerCase().includes(filter)) : words;
+    document.getElementById("bannedCount").textContent = `${words.length}개`;
+    document.getElementById("bannedWordList").innerHTML = shown.length
+        ? shown.map(w => `<span class="blocked-path">${escapeHtml(w)}<button title="빼기" data-word="${escapeHtml(w)}"><i class="fas fa-xmark"></i></button></span>`).join("")
+        : `<span class="ip-sub" style="display:inline;">${words.length ? "찾는 단어가 없습니다." : "등록된 금지어가 없습니다."}</span>`;
+}
+document.getElementById("bannedFilterInput").addEventListener("input", renderBannedWords);
+document.getElementById("bannedWordList").addEventListener("click", e => {
+    const b = e.target.closest("button[data-word]");
+    if (!b) return;
+    const word = b.dataset.word;
+    const words = ((siteSettings && siteSettings.banned_words) || []).filter(w => w !== word);
+    saveSiteSettings({ banned_words: words }, `"${word}" 을(를) 금지어에서 뺐어요.`);
+});
+function addBannedWords() {
+    const input = document.getElementById("bannedWordInput");
+    const add = input.value.split(/[,\n]/).map(w => w.trim()).filter(Boolean);
+    if (!add.length) { showToast("추가할 단어를 적어 주세요.", "warning"); return; }
+    const words = ((siteSettings && siteSettings.banned_words) || []).concat(add);
+    saveSiteSettings({ banned_words: words }, `금지어 ${add.length}개를 추가했어요.`).then(ok => { if (ok) input.value = ""; });
+}
+document.getElementById("btnBannedAdd").addEventListener("click", addBannedWords);
+document.getElementById("bannedWordInput").addEventListener("keydown", e => { if (e.key === "Enter") addBannedWords(); });
+
+function loadComments() {
+    fetch("/api/all_comments").then(res => res.json()).then(data => {
+        const listDiv = document.getElementById("commentList");
+        listDiv.innerHTML = "";
+        document.getElementById("selectAllCheckbox").checked = false;
+        if (data.success && data.comments && data.comments.length > 0) {
+            data.comments.forEach(comment => {
+                const card = document.createElement("div");
+                card.className = "comment-card";
+                card.id = "comment-" + comment.id;
+                let authorHtml = `<span class="comment-author">${escapeHtml(comment.nickname)}</span>`;
+                const staffRole = staffRoleLabels[comment.nickname];
+                if (staffRole) {
+                    authorHtml = `<span class="comment-author admin-author"><i class="fas fa-crown"></i> ${escapeHtml(comment.nickname)}</span>`;
+                }
+                card.innerHTML = `
+                    <div class="checkbox-wrapper">
+                        <input type="checkbox" class="comment-checkbox" value="${comment.id}" onchange="updateCardStyle(this)">
+                    </div>
+                    <div class="comment-content-wrapper">
+                        <div class="comment-header">
+                            ${authorHtml}
+                            <span><i class="far fa-clock"></i> ${escapeHtml(comment.date || "")}</span>
+                        </div>
+                        <div class="comment-body">${escapeHtml(comment.content).replace(/\n/g, "<br>")}</div>
+                        <div class="comment-footer">
+                            <a href="/watch/${comment.video_id}" class="btn-watch"><i class="fas fa-play"></i> 영상 보러가기</a>
+                        </div>
+                    </div>`;
+                listDiv.appendChild(card);
+            });
+        } else {
+            listDiv.innerHTML = `<div class="empty-message">등록된 댓글이 없습니다.</div>`;
+        }
+    }).catch(() => {
+        document.getElementById("commentList").innerHTML = `<div class="empty-message">데이터를 불러오는 데 실패했습니다.</div>`;
+    });
+}
+function toggleAllCheckboxes() {
+    const selectAll = document.getElementById("selectAllCheckbox").checked;
+    document.querySelectorAll(".comment-checkbox").forEach(cb => {
+        cb.checked = selectAll;
+        updateCardStyle(cb);
+    });
+}
+function updateCardStyle(checkbox) {
+    document.getElementById("comment-" + checkbox.value).classList.toggle("selected", checkbox.checked);
+}
+function deleteSelectedComments() {
+    const selectedIds = Array.from(document.querySelectorAll(".comment-checkbox:checked")).map(cb => cb.value);
+    if (selectedIds.length === 0) {
+        showToast("삭제할 댓글을 선택해주세요.", "warning");
+        return;
+    }
+    confirmDialog(`선택한 ${selectedIds.length}개의 댓글을 정말 삭제하시겠습니까?`, { dangerous: true, confirmButtonText: "삭제" }).then(ok => {
+        if (!ok) return;
+        fetch("/api/delete_comments", {
+            method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ ids: selectedIds })
+        }).then(res => res.json()).then(data => {
+            if (data.success) { showToast("삭제되었습니다.", "success"); loadComments(); }
+            else showToast("삭제 중 오류가 발생했습니다.", "error");
+        }).catch(() => showToast("서버 통신 오류가 발생했습니다.", "error"));
+    });
+}
+
+loadStats();
+loadedTabs.add("dashboard");
+    </script>
+</body>
+</html>
