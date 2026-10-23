@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="icon" href="{{ url_for('static', filename='logo/logo.webp') }}" type="image/webp">
+    <title>크레딧 - 루미너스</title>
+    <meta name="description" content="루미너스에서 쓰는 그림, 글꼴의 출처예요. 각 그림의 미리보기 버튼을 누르면 사이트에서 실제로 어떻게 보이는지 볼 수 있어요.">
+    <link rel="canonical" href="https://pastellive.co.kr{{ request.path }}">
+    <link rel="stylesheet" href="{{ versioned_static('vendor/fontawesome/css/all.min.css') }}">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/variable/pretendardvariable-dynamic-subset.min.css">
+    <link rel="stylesheet" href="{{ versioned_static('css/policy.css') }}">
+    <style>
+        .cr-tools { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin: 4px 0 14px; }
+        .cr-btn {
+            display: inline-flex; align-items: center; gap: 7px; padding: 8px 14px; border-radius: 999px; cursor: pointer;
+            font: inherit; font-size: 13.5px; font-weight: 700; border: 1px solid var(--pc-line); color: var(--pc-text); background: var(--pc-surface-2);
+        }
+        .cr-btn:hover { border-color: var(--pc-accent); color: var(--pc-accent); }
+        .cr-btn.primary { background: var(--pc-accent); color: #0b0d12; border-color: var(--pc-accent); }
+        .cr-btn.primary:hover { filter: brightness(1.08); color: #0b0d12; }
+        .cr-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr)); gap: 12px; }
+        .cr-card { background: var(--pc-surface-2); border: 1px solid var(--pc-line); border-radius: 16px; padding: 16px; display: flex; flex-direction: column; gap: 10px; }
+        .cr-top { display: flex; gap: 12px; align-items: center; }
+        .cr-top img { width: 64px; height: 64px; object-fit: contain; flex: none; filter: drop-shadow(0 4px 8px rgba(0,0,0,.4)); }
+        .cr-what { margin: 0; color: var(--pc-text); font-size: 13.5px; font-weight: 600; line-height: 1.5; }
+        .cr-src { margin: 2px 0 0; font-size: 12px; color: var(--pc-faint); }
+        .cr-card .cr-btn { align-self: flex-start; padding: 6px 12px; font-size: 12.5px; }
+        .cr-demo { border-radius: 12px; background: #0f1218; border: 1px dashed #2c3346; padding: 14px; min-height: 60px; display: grid; place-items: center; }
+        .cr-demo[hidden] { display: none; }
+        /* 미리보기 재현 요소 (사이트 실제 모양과 비슷하게) */
+        .d-attend { display: inline-flex; align-items: center; gap: 10px; background: linear-gradient(135deg, #0ea5e9, #38bdf8); color: #fff;
+            border: none; padding: 12px 20px; border-radius: 30px; font-weight: 900; font-size: 14px; box-shadow: 0 8px 25px rgba(14,165,233,.45); }
+        .d-attend img { width: 30px; margin: -6px 0; }
+        .d-cal { display: grid; grid-template-columns: repeat(5, 40px); gap: 4px; }
+        .d-cal div { aspect-ratio: 1; border-radius: 8px; background: #1f2430; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: #cbd5e1; gap: 1px; }
+        .d-cal div.on { background: linear-gradient(135deg, #0ea5e9, #38bdf8); color: #fff; }
+        .d-cal img { width: 15px; }
+        .d-badge { background: #fff; border-radius: 8px; width: 116px; padding: 12px; text-align: center; }
+        .d-badge .box { border-radius: 8px 8px 30px 30px; padding: 12px 8px 24px; position: relative; }
+        .d-badge img { width: 44px; height: 44px; object-fit: contain; }
+        .d-badge .num { position: absolute; bottom: 5px; left: 0; right: 0; color: #fff; font-weight: 900; font-size: 13px; }
+        .d-badge p { margin: 8px 0 0; color: #000; font-size: 11.5px; font-weight: 700; line-height: 1.3; }
+        .d-empty { text-align: center; color: #9aa3b5; font-size: 13.5px; }
+        .d-empty img { display: block; width: 78px; margin: 0 auto 8px; }
+        .d-pop { position: relative; height: 90px; width: 100%; display: grid; place-items: center; }
+        .d-pop img { width: 86px; animation: dPop .5s cubic-bezier(.175,.885,.32,1.275); }
+        .d-page { text-align: center; font-size: 12.5px; color: #9aa3b5; }
+        .d-page img { width: 92px; display: block; margin: 0 auto 6px; }
+        .d-page a { display: inline-block; margin-top: 8px; font-weight: 700; }
+        @keyframes dPop { from { transform: scale(.3) rotate(-15deg); opacity: 0; } to { transform: none; opacity: 1; } }
+        @media (prefers-reduced-motion: reduce) { .d-pop img { animation: none; } }
+    </style>
+</head>
+<body>
+    <header class="pc-top">
+        <div class="pc-top-inner">
+            <a class="pc-brand" href="/"><img src="{{ url_for('static', filename='logo/logo.webp') }}" alt=""><span>루미너스</span></a>
+            <nav class="pc-tabs" aria-label="안내 문서"><a href="/terms" class="">이용약관</a><a href="/privacy" class="">개인정보처리방침</a><a href="/credits" class="on" aria-current="page">크레딧</a></nav>
+        </div>
+    </header>
+
+    <div class="pc-hero">
+        <p class="pc-kicker"><i class="fas fa-images"></i> 크레딧</p>
+        <h1>함께 만든 것들</h1>
+        <p class="pc-lead">루미너스에서 쓰는 그림, 글꼴의 출처예요. 각 그림의 미리보기 버튼을 누르면 사이트에서 실제로 어떻게 보이는지 볼 수 있어요.</p>
+        <div class="pc-meta"><span class="pc-chip">최근 업데이트 2026년 10월 1일</span></div>
+    </div>
+
+    <div class="pc-layout">
+        <nav class="pc-toc" aria-label="목차"><p>목차</p><ol><li><a href="#images">그림 - PNGimg</a></li><li><a href="#fonts">글꼴과 아이콘</a></li><li><a href="#code">루미너스 코드</a></li><li><a href="#fanart">팬 갤러리</a></li></ol></nav>
+        <main class="pc-doc"><section class="pc-sec" id="images"><h2>그림 - PNGimg</h2><p>아래 그림은 <a href="https://pngimg.com/" target="_blank" rel="noopener">pngimg.com</a>에서 가져왔고
+<a href="https://creativecommons.org/licenses/by-nc/4.0/deed.ko" target="_blank" rel="noopener">CC BY-NC 4.0</a>(저작자 표시-비영리) 라이선스를 따라요.
+원본에서 여백 잘라내기, 크기 줄이기, webp 변환만 했고, 루미너스는 이 그림들을 돈 버는 데 쓰지 않아요.</p>
+<div class="cr-tools">
+    <button type="button" class="cr-btn primary" id="crAll"><i class="fas fa-play"></i> 모두 미리보기</button>
+    <button type="button" class="cr-btn" id="crHide"><i class="fas fa-eye-slash"></i> 모두 접기</button>
+</div>
+<div class="cr-grid">
+{% for c in credits %}
+    <div class="cr-card" data-file="{{ c.file }}">
+        <div class="cr-top">
+            <img src="/static/images/pngimg/{{ c.file }}" alt="" loading="lazy">
+            <div>
+                <p class="cr-what">{{ c.used_for }}</p>
+                <p class="cr-src"><a href="{{ c.source }}" target="_blank" rel="noopener">원본 보기</a> · {{ c.license }}</p>
+            </div>
+        </div>
+        <button type="button" class="cr-btn"><i class="fas fa-play"></i> 미리보기</button>
+        <div class="cr-demo" hidden></div>
+    </div>
+{% endfor %}
+</div></section><section class="pc-sec" id="fonts"><h2>글꼴과 아이콘</h2><ul><li><a href="https://github.com/orioncactus/pretendard" target="_blank" rel="noopener">Pretendard</a> - 길형진, SIL Open Font License 1.1</li><li><a href="https://fontawesome.com/" target="_blank" rel="noopener">Font Awesome Free</a> - 아이콘 CC BY 4.0, 글꼴 SIL OFL 1.1</li></ul></section><section class="pc-sec" id="code"><h2>루미너스 코드</h2><p>루미너스 자체의 소스 코드는 <a href="https://github.com/Valley658/luminous" target="_blank" rel="noopener">GitHub</a>에 MIT 라이선스로 공개돼 있어요.</p></section><section class="pc-sec" id="fanart"><h2>팬 갤러리</h2><p>팬 갤러리의 그림은 각 작가에게 권리가 있고, 이 페이지의 라이선스와는 관계가 없어요.</p></section></main>
+    </div>
+    <script>
+    (function () {
+        var IMG = '/static/images/pngimg/';
+        var DEMOS = {
+            'gift.webp': function () { return '<span class="d-attend"><img src="' + IMG + 'gift.webp" alt=""> 출석체크 하고 뱃지 받기</span>'; },
+            'coin.webp': function () {
+                var c = ''; for (var d = 1; d <= 5; d++) c += '<div class="' + (d !== 3 ? 'on' : '') + '">' + d + (d !== 3 ? '<img src="' + IMG + 'coin.webp" alt="">' : '') + '</div>';
+                return '<div class="d-cal">' + c + '</div>';
+            },
+            'trophy.webp': function () { return '<div class="d-badge"><div class="box" style="background:linear-gradient(135deg,#7c3aed,#4f46e5)"><img src="' + IMG + 'trophy.webp" alt=""><div class="num">60</div></div><p>60일 연속 출석<br>체크</p></div>'; },
+            'medal.webp': function () { return '<div class="d-badge"><div class="box" style="background:linear-gradient(135deg,#10b981,#059669)"><img src="' + IMG + 'medal.webp" alt=""><div class="num">7</div></div><p>7일 연속 출석<br>진행 중!</p></div>'; },
+            'party_popper.webp': function () { return '<div class="d-pop"><img src="' + IMG + 'party_popper.webp" alt=""></div>'; },
+            'loupe.webp': function () { return '<div class="d-empty"><img src="' + IMG + 'loupe.webp" alt="">"없는검색어"에 대한 검색 결과가 없습니다.</div>'; },
+            'octopus_lost.webp': function () { return '<div class="d-page"><img src="' + IMG + 'octopus_lost.webp" alt="">여긴 아무것도 없어!<br><a href="/credits-test-404" target="_blank" rel="noopener">실제 404 화면 열기</a></div>'; },
+            'octopus_busy.webp': function () { return '<div class="d-page"><img src="' + IMG + 'octopus_busy.webp" alt="">잠시 후 다시 시도해주세요<br><a href="/50x.html" target="_blank" rel="noopener">실제 점검 화면 열기</a></div>'; }
+        };
+        function show(card, on) {
+            var box = card.querySelector('.cr-demo'), btn = card.querySelector('.cr-btn'), key = card.getAttribute('data-file');
+            if (on) {
+                box.innerHTML = DEMOS[key] ? DEMOS[key]() : '<span class="d-empty">미리보기가 없어요.</span>';
+                box.hidden = false; btn.innerHTML = '<i class="fas fa-rotate-right"></i> 다시 보기';
+            } else {
+                box.hidden = true; box.innerHTML = ''; btn.innerHTML = '<i class="fas fa-play"></i> 미리보기';
+            }
+        }
+        document.querySelectorAll('.cr-card').forEach(function (card) {
+            card.querySelector('.cr-btn').addEventListener('click', function () { show(card, true); });
+        });
+        var all = document.getElementById('crAll'), hide = document.getElementById('crHide');
+        if (all) all.addEventListener('click', function () { document.querySelectorAll('.cr-card').forEach(function (c) { show(c, true); }); });
+        if (hide) hide.addEventListener('click', function () { document.querySelectorAll('.cr-card').forEach(function (c) { show(c, false); }); });
+    })();
+    </script>
+
+    <footer class="pc-foot">
+        <div class="pc-foot-inner">
+            <span>루미너스 · 스텔라이브 비공식 팬 사이트</span>
+            <a href="/">홈</a><a href="/updates">업데이트 로그</a><a href="/terms">이용약관</a><a href="/privacy">개인정보처리방침</a><a href="/credits">크레딧</a>
+            <a href="https://github.com/Valley658/luminus" target="_blank" rel="noopener noreferrer"><i class="fab fa-github"></i> GitHub</a>
+        </div>
+    </footer>
+    <script>
+    // 지금 읽고 있는 조항을 목차에 표시
+    (function () {
+        var links = Array.prototype.slice.call(document.querySelectorAll('.pc-toc a'));
+        if (!('IntersectionObserver' in window) || !links.length) return;
+        var map = {};
+        links.forEach(function (a) { map[a.getAttribute('href').slice(1)] = a; });
+        var io = new IntersectionObserver(function (entries) {
+            entries.forEach(function (e) {
+                if (!e.isIntersecting) return;
+                links.forEach(function (a) { a.classList.remove('on'); });
+                var a = map[e.target.id]; if (a) a.classList.add('on');
+            });
+        }, { rootMargin: '-30% 0px -60% 0px' });
+        document.querySelectorAll('.pc-sec').forEach(function (s) { io.observe(s); });
+    })();
+    </script>
+</body>
+</html>

@@ -26,6 +26,9 @@ def prepare():
     for source in frontend.iterdir():
         if source.is_file():
             shutil.copy2(frontend / source.name, static / 'assets' / source.name)
+    imported = ROOT / 'frontend/luminus/imported'
+    if imported.exists():
+        shutil.copytree(imported, static / 'imported', dirs_exist_ok=True)
     for source in (ROOT / 'drafts/profiles').iterdir():
         if source.is_file():
             shutil.copy2(source, static / 'profiles' / source.name)

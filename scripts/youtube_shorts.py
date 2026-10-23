@@ -212,7 +212,7 @@ def is_song(video):
     return bool(video['isSong']) if 'isSong' in video else strong_music_title(video['title'])
 
 
-def video_feed(seed, offset=0, channel='', query='', tab='videos', include_songs=False):
+def video_feed(seed, offset=0, channel='', query='', tab='videos', include_songs=False, sort='random'):
     if str(channel)=='2':tab='videos';include_songs=True
     if query.strip():
         import search_engine
@@ -235,7 +235,7 @@ def video_feed(seed, offset=0, channel='', query='', tab='videos', include_songs
     if tab=='songs':items=[v for v in items if is_song(v)]
     elif tab=='live':items=[v for v in items if re.search(r'라이브|생방송|다시보기|\blive\b',v['title'],re.I)]
     elif not include_songs:items=[v for v in items if not is_song(v)]
-    ordered = sorted(items, key=lambda v: hashlib.sha256((seed[:64] + v['id']).encode()).digest())
+    ordered = sorted(items, key=lambda v: v.get('publishedAt',''), reverse=sort!='oldest') if sort in ('latest','oldest') else sorted(items, key=lambda v: hashlib.sha256((seed[:64] + v['id']).encode()).digest())
     offset = max(0, min(offset, 10000))
     page = ordered[offset:offset+18]
     return dict(items=page, nextOffset=offset+len(page), hasMore=offset+len(page)<len(ordered),

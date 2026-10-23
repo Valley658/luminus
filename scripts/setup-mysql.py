@@ -13,8 +13,9 @@ def setup():
         if '=' in line and not line.lstrip().startswith('#'):
             key, value = line.split('=', 1)
             values[key.strip()] = value.strip().strip('"\'')
-    if values.get('LISTEN_ADDR') != '127.0.0.1:8081':
-        raise RuntimeError('Run this setup on the Windows VM only.')
+    address=values.get('LISTEN_ADDR')
+    if address != '127.0.0.1:8081' and not (address == '127.0.0.1:80' and (ROOT/'runtime/production-server').is_file()):
+        raise RuntimeError('Run this setup on the Windows VM or explicitly marked production server.')
     name = values.get('DB_NAME', '')
     if not re.fullmatch(r'[A-Za-z0-9_]+', name):
         raise RuntimeError('Invalid database name.')

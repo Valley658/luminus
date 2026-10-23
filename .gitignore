@@ -68,3 +68,6 @@ __pycache__/
 Thumbs.db
 .DS_Store
 scripts/install-nginx.py
+
+# Preserved upstream reference material (not part of the Python deployment)
+/reference/

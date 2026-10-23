@@ -1,0 +1,82 @@
+[
+ {
+  "file": "gift.webp",
+  "used_for": "선물상자 - 출석체크 버튼",
+  "source": "https://pngimg.com/image/100431",
+  "original": "https://pngimg.com/uploads/gift/gift_PNG100431.png",
+  "license": "CC BY-NC 4.0",
+  "license_url": "https://creativecommons.org/licenses/by-nc/4.0/",
+  "author": "pngimg.com",
+  "modified": "잘라내기, 크기 줄임, webp 변환"
+ },
+ {
+  "file": "coin.webp",
+  "used_for": "금화 - 출석한 날 표시",
+  "source": "https://pngimg.com/image/36935",
+  "original": "https://pngimg.com/uploads/coin/coin_PNG36935.png",
+  "license": "CC BY-NC 4.0",
+  "license_url": "https://creativecommons.org/licenses/by-nc/4.0/",
+  "author": "pngimg.com",
+  "modified": "잘라내기, 크기 줄임, webp 변환"
+ },
+ {
+  "file": "trophy.webp",
+  "used_for": "트로피 - 60일 연속 출석 뱃지",
+  "source": "https://pngimg.com/image/94628",
+  "original": "https://pngimg.com/uploads/golden_cup/golden_cup_PNG94628.png",
+  "license": "CC BY-NC 4.0",
+  "license_url": "https://creativecommons.org/licenses/by-nc/4.0/",
+  "author": "pngimg.com",
+  "modified": "잘라내기, 크기 줄임, webp 변환"
+ },
+ {
+  "file": "medal.webp",
+  "used_for": "메달 - 연속 출석 진행 중 뱃지",
+  "source": "https://pngimg.com/image/14515",
+  "original": "https://pngimg.com/uploads/medal/medal_PNG14515.png",
+  "license": "CC BY-NC 4.0",
+  "license_url": "https://creativecommons.org/licenses/by-nc/4.0/",
+  "author": "pngimg.com",
+  "modified": "잘라내기, 크기 줄임, webp 변환"
+ },
+ {
+  "file": "party_popper.webp",
+  "used_for": "폭죽 - 출석 완료, 축하 스티커",
+  "source": "https://pngimg.com/image/6",
+  "original": "https://pngimg.com/uploads/party_popper/party_popper_PNG6.png",
+  "license": "CC BY-NC 4.0",
+  "license_url": "https://creativecommons.org/licenses/by-nc/4.0/",
+  "author": "pngimg.com",
+  "modified": "잘라내기, 크기 줄임, webp 변환"
+ },
+ {
+  "file": "loupe.webp",
+  "used_for": "돋보기 - 검색 결과 없음, 빈 목록",
+  "source": "https://pngimg.com/image/103256",
+  "original": "https://pngimg.com/uploads/loupe/loupe_PNG103256.png",
+  "license": "CC BY-NC 4.0",
+  "license_url": "https://creativecommons.org/licenses/by-nc/4.0/",
+  "author": "pngimg.com",
+  "modified": "잘라내기, 크기 줄임, webp 변환"
+ },
+ {
+  "file": "octopus_lost.webp",
+  "used_for": "문어 - 404(없는 페이지) 화면",
+  "source": "https://pngimg.com/image/25",
+  "original": "https://pngimg.com/uploads/octopus/octopus_PNG25.png",
+  "license": "CC BY-NC 4.0",
+  "license_url": "https://creativecommons.org/licenses/by-nc/4.0/",
+  "author": "pngimg.com",
+  "modified": "잘라내기, 크기 줄임, webp 변환"
+ },
+ {
+  "file": "octopus_busy.webp",
+  "used_for": "문어 - 사이트 점검 중 화면",
+  "source": "https://pngimg.com/image/34",
+  "original": "https://pngimg.com/uploads/octopus/octopus_PNG34.png",
+  "license": "CC BY-NC 4.0",
+  "license_url": "https://creativecommons.org/licenses/by-nc/4.0/",
+  "author": "pngimg.com",
+  "modified": "잘라내기, 크기 줄임, webp 변환"
+ }
+]

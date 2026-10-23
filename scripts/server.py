@@ -21,6 +21,7 @@ import pages
 import channel_details
 import comments
 import library
+import luminous_port
 from channel_catalog import GROUPS
 
 ROOT = Path(__file__).resolve().parent.parent
@@ -57,7 +58,7 @@ class Handler(BaseHTTPRequestHandler):
 
     def log_request(self, code='-', size='-'):
         # OAuth callback URLs contain one-use authorization codes.
-        path=urlsplit(self.path).path if self.path.startswith('/auth/') else self.path
+        path=urlsplit(self.path).path if self.path.startswith(('/auth/','/login/discord','/account/verify-email','/reset-password')) else self.path
         self.log_message('"%s %s %s" %s %s',self.command,path,self.request_version,str(code),str(size))
     def send_error(self, code, message=None, explain=None):
         if code != 404:
@@ -93,6 +94,7 @@ class Handler(BaseHTTPRequestHandler):
         return True
 
     def do_POST(self):
+        if luminous_port.handle(self):return
         if self.admin_request():return admin.post(self,urlsplit(self.path).path)
         if not admin_operations.observe(self,urlsplit(self.path).path):return
         if urlsplit(self.path).path=='/api/library':
@@ -108,6 +110,7 @@ class Handler(BaseHTTPRequestHandler):
         return accounts.post(self,urlsplit(self.path).path)
 
     def do_GET(self):
+        if luminous_port.handle(self):return
         path = urlsplit(self.path).path
         if self.admin_request():return admin.get(self,path)
         if not admin_operations.observe(self,path):return
@@ -173,6 +176,12 @@ class Handler(BaseHTTPRequestHandler):
         if not accounts.site_enabled(self):
             return self.send_error(404)
         return self.serve_draft('/index2.html')
+
+    def do_PUT(self):
+        if not luminous_port.handle(self):self.send_error(404)
+
+    def do_DELETE(self):
+        if not luminous_port.handle(self):self.send_error(404)
 
     def serve_draft(self, path, view='', video_id=''):
         folder = ROOT / 'static/luminus/profiles'
@@ -358,12 +367,15 @@ def main():
             return 0
         STOP.unlink(missing_ok=True)
         try:
+            luminous_port.init()
             with ThreadingHTTPServer(('127.0.0.1', 8081 if (RUNTIME/'nginx-enabled').exists() else 80), Handler) as server:
                 server.timeout = 0.3
                 youtube_shorts.feed()
                 search_engine.start()
                 admin_operations.start()
                 channel_details.start()
+                import image_cache
+                image_cache.start()
                 print('Running locally: http://127.0.0.1/index2.html', flush=True)
                 while not STOP.exists():
                     server.handle_request()
@@ -371,6 +383,7 @@ def main():
             search_engine.close()
             admin_operations.close()
             channel_details.close()
+            if 'image_cache' in locals():image_cache.stopped.set()
             STOP.unlink(missing_ok=True)
     return 0
 

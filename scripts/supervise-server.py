@@ -14,7 +14,7 @@ STOP = STATE / '.supervisor-stop'
 
 
 def signature():
-    files = [p for p in (ROOT / 'scripts').glob('*.py') if p.name in ('server.py', 'pages.py', 'comments.py', 'library.py', 'legacy_ui.py', 'channel_details.py', 'admin.py', 'admin_operations.py', 'youtube_shorts.py', 'database.py', 'mysql_backend.py', 'search_engine.py', 'accounts.py', 'channel_catalog.py','music_catalog.py','nginx_runtime.py')]
+    files = [p for p in (ROOT / 'scripts').glob('*.py') if p.name.startswith('luminous_') or p.name in ('server.py', 'image_cache.py', 'pages.py', 'comments.py', 'library.py', 'legacy_ui.py', 'channel_details.py', 'admin.py', 'admin_operations.py', 'youtube_shorts.py', 'database.py', 'mysql_backend.py', 'search_engine.py', 'accounts.py', 'channel_catalog.py','music_catalog.py','nginx_runtime.py')]
     for file in files:
         compile(file.read_text(encoding='utf-8-sig'), str(file), 'exec')
     return tuple((p.name, hashlib.sha256(p.read_bytes()).hexdigest()) for p in files)

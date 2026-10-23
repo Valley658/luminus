@@ -340,7 +340,10 @@ def avatar_get(handler):
 
 def oauth_start(handler):
     if not discord_ready():return redirect(handler,landing(handler)+'?auth_error=discord_setup')
-    c=config();state=secrets.token_urlsafe(32);binding=secrets.token_urlsafe(32);user=current(handler)
+    c=config();state=secrets.token_urlsafe(32);binding=secrets.token_urlsafe(32)
+    intent=urllib.parse.parse_qs(urllib.parse.urlsplit(handler.path).query).get('intent',['login'])[0]
+    user=current(handler) if intent=='link' else None
+    if intent=='link' and not user:return redirect(handler,landing(handler)+'?auth_error=login_required')
     with database.connect() as db:
         db.execute('DELETE FROM oauth_states WHERE expires<?',(time.time(),))
         db.execute('INSERT INTO oauth_states(token,binding,user_id,expires,redirect_uri) VALUES(?,?,?,?,?)',(digest(state),digest(binding),user['id'] if user else None,time.time()+600,redirect_uri(handler)))

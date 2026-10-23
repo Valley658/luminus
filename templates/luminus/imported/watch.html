@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <script>try{if(localStorage.getItem("theme")==="light")document.documentElement.setAttribute("data-theme","light")}catch(e){}</script>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ page_title }}</title>
+    <meta name="description" content="{{ video_description }}">
+    <link rel="icon" href="{{ url_for('static', filename='logo/logo.webp') }}" type="image/webp">
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+    <meta name="theme-color" content="#0f0f0f">
+    <link rel="canonical" href="https://pastellive.co.kr{{ request.path }}">
+    <link rel="alternate" media="only screen and (max-width: 640px)" href="https://m.pastellive.co.kr{{ request.path }}">
+
+
+    <link rel="preconnect" href="https://www.youtube.com">
+    <link rel="preconnect" href="https://i.ytimg.com">
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" crossorigin>
+    <link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+
+
+    <link rel="stylesheet" href="{{ versioned_static('vendor/fontawesome/css/all.min.css') }}" media="print" onload="this.media='all'">
+    <noscript><link rel="stylesheet" href="{{ versioned_static('vendor/fontawesome/css/all.min.css') }}"></noscript>
+
+    <link rel="stylesheet" href="{{ versioned_static('css/watch.css') }}">
+
+
+
+    <style>
+
+        .fan-notice-bar {
+            position: fixed; top: 0; left: 0; right: 0; height: 32px; z-index: 10050;
+            background:linear-gradient(90deg, #1a1a2e, #16213e);
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+            font-size: 12px; color:#cbd5e1; border-bottom:1px solid var(--border);
+            padding: 0 12px; box-sizing: border-box; text-align: center;
+        }
+        .fan-notice-bar b { color:var(--accent); }
+        .fan-notice-link {
+            background: none; border:1px solid var(--accent); color:var(--accent); font-size: 11px;
+            padding: 2px 8px; border-radius: 10px; cursor: pointer; white-space: nowrap; flex-shrink: 0;
+        }
+        .fan-notice-link:hover { background:var(--accent); color:var(--accent-contrast); }
+
+        .video-description-box {
+            background:var(--bg-surface-alt); border-radius: 10px; padding: 14px 16px; margin: 10px 0 4px;
+            color:var(--text-secondary); font-size: 14px; line-height: 1.6; white-space: pre-wrap; word-break: break-word;
+        }
+        .video-description-box a { color:var(--accent); text-decoration: none; }
+        .video-description-box a:hover { text-decoration: underline; }
+        .video-tags-row { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 10px; }
+        .video-tags-row .video-tag-chip {
+            background:var(--border-soft); color:var(--text-muted); font-size: 12px; padding: 4px 10px; border-radius: 12px;
+        }
+        .fan-notice-modal-overlay {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.75); z-index: 20150; align-items: center; justify-content: center;
+        }
+        .fan-notice-modal-overlay.open { display: flex; }
+        .fan-notice-modal-box {
+            background:var(--bg-surface-alt); border:1px solid var(--accent); border-radius: 14px; padding: 28px;
+            width: 90%; max-width: 420px; color:var(--text-primary); box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+        }
+        .fan-notice-modal-box h3 { margin: 0 0 14px; font-size: 18px; color:var(--accent); }
+        .fan-notice-modal-box p { margin: 0 0 12px; font-size: 14px; line-height: 1.6; color:var(--text-secondary); }
+        .fan-notice-modal-close {
+            margin-top: 6px; width: 100%; background:var(--accent); color:var(--accent-contrast); border: none;
+            padding: 10px; border-radius: 8px; font-weight: bold; cursor: pointer;
+        }
+
+        .comment-section { background:var(--bg-surface-2); border:1px solid var(--bg-elevated); border-radius: 14px; padding: 24px; margin-top: 20px; box-sizing: border-box; width: 100%; }
+        .comment-title-area { display: flex; justify-content: space-between; align-items: center; margin-bottom: 18px; border-bottom:1px solid var(--border); padding-bottom: 12px; }
+        .comment-section h3 { margin: 0; font-size: 19px; font-weight: 700; color:var(--text-primary); }
+        .comment-tab-group { display: flex; gap: 8px; }
+        .btn-tab-toggle { background:var(--bg-elevated); border:1px solid var(--border); color:var(--text-muted); padding: 6px 14px; border-radius: 15px; font-size: 13px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; }
+        .btn-tab-toggle.active { background:var(--accent); border-color:var(--accent); color:var(--accent-contrast); }
+        .comment-form { display: flex; flex-direction: column; gap: 12px; margin-bottom: 28px; }
+        .comment-inputs-row { display: flex; gap: 12px; align-items: flex-start; }
+        .input-nick { width: 160px; background:var(--bg-elevated); border:1px solid var(--border); color:var(--text-primary); padding: 12px 16px; border-radius: 8px; font-size: 14px; box-sizing: border-box; height: 45px; transition: border-color 0.2s ease; }
+        .input-content { flex: 1; background:var(--bg-elevated); border:1px solid var(--border); color:var(--text-primary); padding: 12px 16px; border-radius: 8px; font-size: 14px; height: 45px; line-height: 20px; box-sizing: border-box; font-family: inherit; transition: border-color 0.2s ease; overflow: hidden !important; resize: none !important; }
+        .input-nick:focus, .input-content:focus { border-color:var(--accent); outline: none; }
+        .btn-submit { align-self: flex-end; background:var(--accent); color:var(--accent-contrast); border: none; padding: 10px 24px; border-radius: 8px; font-weight: 700; font-size: 14px; cursor: pointer; transition: background-color 0.2s ease, transform 0.1s ease; }
+        .btn-submit:hover { background-color:#7dd3fc; }
+        .btn-submit:disabled { background-color:var(--border-strong) !important; color:var(--text-faint) !important; cursor: not-allowed; }
+        .comment-list { display: flex; flex-direction: column; gap: 18px; padding-right: 6px; }
+        .comment-item { display: flex; flex-direction: column; gap: 6px; border-bottom:1px solid var(--bg-elevated); padding-bottom: 14px; }
+        .comment-header { display: flex; justify-content: space-between; font-size: 13px; color:var(--text-muted); align-items: center; }
+        .comment-author-wrapper { display: flex; align-items: center; gap: 8px; }
+        .comment-profile-img { width: 28px; height: 28px; border-radius: 50%; object-fit: cover; border:1px solid var(--border-strong); }
+        .comment-author { font-weight: 700; color:var(--accent); }
+        .comment-author.admin-author { color:#facc15 !important; background:#2e280a; padding: 2px 8px; border-radius: 4px; border:1px solid #856404; font-weight: 800; font-size: 12px; display: inline-flex; align-items: center; gap: 4px; }
+        .comment-body { font-size: 14px; color:var(--text-secondary); line-height: 1.6; word-break: break-all; margin-left: 36px; }
+        .timeline-link { color:var(--accent); font-weight: 700; cursor: pointer; text-decoration: underline; margin-right: 3px; }
+        .comment-list::-webkit-scrollbar { width: 5px; }
+        .comment-list::-webkit-scrollbar-track { background:var(--bg-surface-2); }
+        .comment-list::-webkit-scrollbar-thumb { background:var(--border); border-radius: 10px; }
+
+        .yt-comment-style .comment-author,
+        .yt-comment-style .comment-body,
+        .yt-comment-style span { font-family: 'Malgun Gothic', '맑은 고딕', sans-serif !important; }
+        .yt-comment-style .comment-body { margin-left: 0; }
+        .comments-loading-row { text-align: center; padding: 14px 0; color:var(--text-faint2); font-size: 13px; }
+        .comments-loading-row i { margin-right: 6px; }
+
+        .comment-reaction-row { display: flex; align-items: center; gap: 14px; margin-left: 36px; margin-top: 4px; }
+        .reaction-btn { display: inline-flex; align-items: center; gap: 6px; background: none; border: none; cursor: pointer; color:var(--text-faint); font-size: 13px; font-weight: 600; padding: 4px 8px; border-radius: 6px; transition: color 0.15s ease, background 0.15s ease, transform 0.1s ease; }
+        .reaction-btn:hover { background:var(--bg-elevated); color:var(--text-secondary2); }
+        .reaction-btn:active { transform: scale(0.92); }
+        .reaction-btn i { font-size: 14px; pointer-events: none; }
+        .reaction-btn.like-btn.active { color:var(--accent); }
+        .reaction-btn.dislike-btn.active { color:var(--danger-soft); }
+        .reaction-btn .reaction-count { min-width: 12px; text-align: left; }
+        .reaction-btn:disabled { cursor: not-allowed; opacity: 0.5; }
+
+        .video-reaction-group { display: flex; align-items: stretch; background:var(--bg-elevated); border:1px solid var(--border-strong); border-radius: 20px; height: 38px; overflow: hidden; }
+        .video-reaction-btn { display: flex; align-items: center; gap: 6px; background: none; border: none; color:var(--text-primary); font-size: 14px; font-weight: 600; cursor: pointer; padding: 0 14px; transition: background 0.2s, color 0.2s; }
+        .video-reaction-btn:hover { background:var(--border); }
+        .video-reaction-btn:disabled { cursor: not-allowed; opacity: 0.5; }
+        .video-reaction-btn.like.active { color:var(--accent); }
+        .video-reaction-btn.dislike.active { color:var(--danger-soft); }
+        .video-reaction-divider { width: 1px; background:var(--border-strong); margin: 8px 0; }
+
+        .header .user-section { display: flex; align-items: center; justify-content: flex-end; flex-shrink: 0; }
+        .user-profile-area { position: relative; }
+        .user-profile-trigger { display: flex; align-items: center; gap: 12px; background: none; border: none; color:var(--text-primary); cursor: pointer; padding: 5px 10px; font-weight: 800; font-size: 16px; white-space: nowrap; }
+        .user-profile-trigger img { width: 44px; height: 44px; border-radius: 50%; object-fit: cover; border:2px solid var(--text-disabled); flex-shrink: 0; }
+
+        .user-dropdown-menu { display: none; position: absolute; right: 0; top: 100%; background:var(--bg-elevated); border:1px solid var(--border-strong); border-radius: 8px; flex-direction: column; width: 160px; z-index: 1000; overflow: hidden; box-shadow: 0 4px 12px rgba(0,0,0,0.5); }
+        .user-dropdown-menu.open { display: flex; }
+        .user-dropdown-item { padding: 12px 15px; background: none; border: none; color:var(--text-secondary3); text-align: left; cursor: pointer; display: flex; align-items: center; gap: 10px; font-size: 13px; transition: background 0.2s; }
+        .user-dropdown-item:hover { background:var(--border); }
+        .user-dropdown-item.danger { color:var(--danger-soft); border-top:1px solid var(--border); }
+
+        .nickname-edit-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); align-items: center; justify-content: center; z-index: 2000; }
+        .nickname-edit-overlay.open { display: flex; }
+        .nickname-edit-box { background:var(--bg-surface-alt); padding: 25px; border-radius: 12px; width: 300px; border:1px solid var(--border-strong); color: white; box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
+        .nickname-edit-box h3 { margin: 0 0 15px 0; }
+        .nickname-edit-actions { display: flex; justify-content: space-between; gap: 10px; margin-top: 20px; }
+        .btn-cancel { flex: 1; padding: 10px; border-radius: 6px; border:1px solid var(--border-strong); background: transparent; color:var(--text-secondary2); cursor: pointer; }
+        .btn-save { flex: 1; padding: 10px; border-radius: 6px; border: none; background:var(--accent); color:var(--accent-contrast); font-weight: bold; cursor: pointer; }
+
+
+
+        .video-title-area { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: flex-end; margin-bottom: 15px; border-bottom:1px solid var(--bg-elevated); padding-bottom: 10px; min-width: 0; max-width: 100%; box-sizing: border-box; flex-wrap: wrap; }
+        .video-title-text { font-size: 32px; font-weight: 800; color:var(--text-primary); margin: 0; line-height: 1.2; word-break: keep-all; overflow-wrap: break-word; flex: 1; min-width: 0; max-width: 100%; }
+
+        @media (max-width: 600px) {
+            .video-title-text { font-size: 20px; }
+        }
+        .btn-save-video { background:var(--bg-elevated); color:var(--text-primary); border:1px solid var(--border-strong); border-radius: 20px; padding: 8px 16px; font-size: 14px; font-weight: 600; cursor: pointer; transition: background 0.2s; display: flex; align-items: center; gap: 6px; margin-left: 15px; white-space: nowrap; height: 38px; }
+        .btn-save-video:hover { background:var(--border); }
+
+        .playlist-modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.7); align-items: center; justify-content: center; z-index: 3000; }
+        .playlist-modal-overlay.open { display: flex; }
+        .playlist-modal-box { background:var(--bg-elevated); width: 320px; border-radius: 12px; border:1px solid var(--border-strong); padding: 20px; color:var(--text-primary); box-shadow: 0 10px 30px rgba(0,0,0,0.8); }
+        .playlist-modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .playlist-modal-header h3 { margin: 0; font-size: 16px; }
+        .playlist-modal-close { background: none; border: none; color:var(--text-muted); cursor: pointer; font-size: 18px; }
+        .playlist-list { max-height: 200px; overflow-y: auto; margin-bottom: 15px; }
+        .playlist-item { display: flex; align-items: center; justify-content: space-between; padding: 10px 0; border-bottom:1px solid var(--border); cursor: pointer; }
+        .playlist-item-left { display: flex; align-items: center; gap: 12px; }
+        .playlist-item-left img { width: 36px; height: 36px; border-radius: 6px; object-fit: cover; }
+        .playlist-item-info p { margin: 0; font-size: 14px; }
+        .playlist-item-info span { font-size: 12px; color:var(--text-muted); }
+        .btn-new-playlist { width: 100%; background: transparent; border: none; color:var(--text-primary); text-align: left; padding: 10px 0; cursor: pointer; font-size: 14px; display: flex; align-items: center; gap: 10px; }
+        .btn-new-playlist i { font-size: 16px; }
+
+        .modal-input-group { margin-bottom: 15px; }
+        .modal-input-group label { display: block; font-size: 12px; color:var(--text-muted); margin-bottom: 6px; }
+        .modal-input-group input, .modal-input-group select { width: 100%; background: transparent; border: none; border-bottom:1px solid var(--text-primary); color:var(--text-primary); padding: 8px 0; font-size: 14px; outline: none; }
+        .modal-input-group select { background:var(--bg-elevated); }
+        .modal-actions-right { display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px; }
+    </style>
+</head>
+<body>
+    <div class="fan-notice-bar">
+        <span>본 사이트는 스텔라이브 공식이 아닌 <b>팬 사이트</b>입니다(사이트 운영진은 개인주의입니다. 이상한 기능이 추가될 수 있음을 알고 계세요)</span>
+        <button class="fan-notice-link" onclick="document.getElementById('fanNoticeModal').classList.add('open')">루미너스란?</button>
+    </div>
+    <div class="fan-notice-modal-overlay" id="fanNoticeModal" onclick="if(event.target===this) this.classList.remove('open')">
+        <div class="fan-notice-modal-box">
+            <h3>'루미너스(Luminous)'란?</h3>
+            <p>파스텔라이브는 스텔라이브(StelLive) 소속사의 공식 사이트가 아닌, 팬이 자율적으로 운영하는 비공식 2차 창작 팬 사이트입니다.</p>
+            <p>'루미너스(Luminous)'는 '은은하게 빛나는'이라는 뜻으로, 스텔라이브 멤버들을 향한 팬심을 조용히 빛내며 응원한다는 의미를 담은 팬덤 애칭입니다. 소속사와는 무관한 이름입니다.</p>
+            <p>본 사이트는 스텔라이브 2차 창작 가이드라인을 준수하며 비영리로 운영됩니다.</p>
+            <button class="fan-notice-modal-close" onclick="document.getElementById('fanNoticeModal').classList.remove('open')">닫기</button>
+        </div>
+    </div>
+
+    <header class="header pl-header-style">
+        <div class="logo-section" onclick="location.href='/'">
+            <div class="logo-wrapper">
+                <img src="{{ url_for('static', filename='logo/logo.webp') }}" alt="Logo" class="circle-logo">
+            </div>
+            <span class="site-name">루미너스</span>
+        </div>
+
+        <div class="watch-search-container">
+            <div class="watch-search-box">
+                <input type="text" id="watchSearchInput" placeholder="검색" autocomplete="off"
+                       onkeydown="if(event.key==='Enter'){goWatchSearch();}">
+                <button type="button" class="watch-search-btn" onclick="goWatchSearch()" aria-label="검색"><i class="fas fa-search"></i></button>
+            </div>
+        </div>
+
+        <div class="watch-header-actions">
+
+
+            <button class="pl-create-btn" onclick="location.href='/?view=create'" title="만들기"><i class="fas fa-plus"></i><span>만들기</span></button>
+            <button class="pl-updates-btn" onclick="location.href='/updates'" title="업데이트로그" aria-label="업데이트로그"><i class="fas fa-bullhorn"></i></button>
+        </div>
+
+        <style>
+            .header.pl-header-style { gap: 16px; padding: 0 24px 0 16px; }
+            .watch-search-container { flex: 1 1 720px; display: flex; align-items: center; justify-content: center; min-width: 0; margin: 0 16px; }
+            .watch-search-box {
+                display: flex; align-items: center; width: 100%; max-width: 600px; height: 44px;
+                background-color:var(--bg-input); border:1px solid var(--border-strong2); border-radius: 44px; overflow: hidden;
+            }
+            .watch-search-box input {
+                flex: 1; min-width: 0; background: transparent; border: none; color:var(--text-primary); font-size: 16px; padding: 0 16px; outline: none;
+            }
+            .watch-search-btn {
+                width: 56px; height: 100%; background-color:var(--bg-elevated); border: none; border-left:1px solid var(--border-strong2); color:var(--text-secondary2);
+                cursor: pointer; font-size: 15px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+            }
+            .watch-search-btn:hover { background-color:var(--border-strong2); color:var(--text-primary); }
+            .watch-header-actions { display: flex; align-items: center; gap: 10px; flex-shrink: 0; }
+            .watch-header-actions .pl-kirinuki-btn, .watch-header-actions .pl-create-btn {
+                display: flex; align-items: center; gap: 8px; background-color:var(--border-soft2); color:var(--text-primary); border: none;
+                border-radius: 18px; padding: 8px 16px 8px 12px; font-size: 14px; font-weight: bold; cursor: pointer; white-space: nowrap;
+            }
+            .watch-header-actions .pl-kirinuki-btn i { color:#ff9f43; }
+            .watch-header-actions .pl-kirinuki-btn:hover, .watch-header-actions .pl-create-btn:hover { background-color:var(--border-strong3); }
+            .watch-header-actions .pl-updates-btn {
+                display: flex; align-items: center; justify-content: center; width: 40px; height: 40px;
+                background-color:var(--border-soft2); color:var(--text-primary); border: none; border-radius: 50%; font-size: 15px; cursor: pointer;
+            }
+            .watch-header-actions .pl-updates-btn:hover { background-color:var(--border-strong3); }
+            @media (max-width: 900px) { .watch-header-actions span { display: none; } .watch-header-actions button { padding: 8px 12px; } }
+            @media (max-width: 700px) { .watch-search-container { margin: 0 10px; } }
+
+            @media (max-width: 480px) {
+                .header.pl-header-style { gap: 6px; padding: 0 10px; }
+
+                .watch-search-container { flex: 1 1 90px; min-width: 70px; margin: 0 4px; }
+                .watch-search-box { height: 38px; }
+                .watch-search-box input { font-size: 14px; padding: 0 10px; }
+                .watch-search-btn { width: 38px; }
+                .logo-section .site-name { display: none; }
+                .watch-header-actions { gap: 4px; }
+            }
+        </style>
+        <script>function goWatchSearch() {
+    const q = (document.getElementById("watchSearchInput").value || "").trim();
+    if (q) window.location.href = "/?q=" + encodeURIComponent(q);
+}</script>
+        <div class="user-section" id="headerRight"></div>
+    </header>
+
+    <style>
+        #miniPlayerBox {
+            position: fixed; right: 20px; bottom: 20px; width: 320px; max-width: calc(100vw - 40px);
+            z-index: 20500; display: none; border-radius: 12px; overflow: hidden; box-shadow: 0 12px 36px rgba(0,0,0,.6);
+            background: #000; animation: plScaleUp .22s cubic-bezier(.34,1.56,.64,1) both;
+        }
+        #miniPlayerBox.open { display: block; }
+        #miniPlayerBox .video-wrapper { margin-bottom: 0; border-radius: 0; box-shadow: none; }
+        #miniPlayerBox .mini-player-controls {
+            position: absolute; top: 0; right: 0; z-index: 5; display: flex; gap: 4px; padding: 6px;
+            background: linear-gradient(180deg, rgba(0,0,0,.65), transparent);
+            opacity: 0; transition: opacity .15s ease;
+        }
+        #miniPlayerBox:hover .mini-player-controls { opacity: 1; }
+        #miniPlayerBox .mini-player-controls button {
+            width: 26px; height: 26px; border-radius: 6px; border: none; background: rgba(0,0,0,.55); color: #fff;
+            cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 12px;
+        }
+        #miniPlayerBox .mini-player-controls button:hover { background: rgba(0,0,0,.8); }
+        @keyframes plScaleUp { from { opacity: 0; transform: scale(.86); } to { opacity: 1; transform: scale(1); } }
+        @media (prefers-reduced-motion: reduce) { #miniPlayerBox { animation: none !important; } }
+        @media (max-width: 700px) { #miniPlayerBox { width: 220px; right: 12px; bottom: 12px; } }
+    </style>
+    <div id="miniPlayerBox">
+        <div class="mini-player-controls">
+            <button type="button" id="miniPlayerRestoreBtn" title="플레이어로 돌아가기"><i class="fas fa-up-right-and-down-left-from-center"></i></button>
+            <button type="button" id="miniPlayerCloseBtn" title="닫기"><i class="fas fa-xmark"></i></button>
+        </div>
+    </div>
+
+    <div class="watch-container">
+        <div class="main-player-section" id="playerSection">
+            <div class="video-wrapper" id="videoWrapperMain">
+                <div id="yt-player"></div>
+            </div>
+
+            <div class="video-title-area">
+                <h1 class="video-title-text" id="watchVideoTitle">{{ video_title|default('영상 제목') }}</h1>{% if channel_info %}<div class="python-channel-meta" style="display:flex;gap:12px;align-items:center;flex-basis:100%;margin-top:12px">{% if channel_info.photo %}<img src="{{ channel_info.photo }}" alt="" width="48" height="48" style="border-radius:50%">{% endif %}<div><strong>{{ channel_info.name }}</strong><div style="font-size:13px;opacity:.7">{{ subscriber_label }}</div></div></div>{% endif %}
+                <div style="display: flex; gap: 0; align-items: center;">
+                    <div class="video-reaction-group" id="videoReactionGroup">
+                        <button class="video-reaction-btn like" id="videoLikeBtn" onclick="reactToVideo('like')" title="좋아요" aria-label="좋아요">
+                            <i class="fas fa-thumbs-up"></i><span id="videoLikeCount">0</span>
+                        </button>
+                        <div class="video-reaction-divider"></div>
+                        <button class="video-reaction-btn dislike" id="videoDislikeBtn" onclick="reactToVideo('dislike')" title="싫어요" aria-label="싫어요">
+                            <i class="fas fa-thumbs-down"></i><span id="videoDislikeCount">0</span>
+                        </button>
+                    </div>
+                    <button class="btn-save-video" onclick="shareCurrentVideo()">
+                        <i class="fas fa-share-alt"></i> 공유
+                    </button>
+                    <button class="btn-save-video" onclick="openSavePlaylistModal()">
+                        <i class="fas fa-plus"></i> 저장
+                    </button>
+                    <button class="btn-save-video" id="btnOpenHighlightTag" onclick="openHighlightTagForm()">
+                        <i class="fas fa-scissors"></i> 하이라이트 태그
+                    </button>
+                </div>
+
+            </div>
+
+
+            <div id="highlightTagOverlay" style="display:none; background:var(--bg-surface-alt); border:1px solid var(--border); border-radius:16px; padding:22px; margin-bottom:20px;">
+                <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:6px;">
+                    <h3 style="margin:0; font-size:17px; color:var(--text-primary);"><i class="fas fa-scissors" style="color:#f472b6;"></i> 하이라이트 클립 만들기</h3>
+                    <button onclick="closeHighlightTagForm()" style="background:none; border:none; color:var(--text-muted); font-size:18px; cursor:pointer;"><i class="fas fa-xmark"></i></button>
+                </div>
+                <p style="margin:0 0 16px; color:var(--text-faint); font-size:12.5px;">영상 전체 길이(<span id="highlightTotalLabel">00:00</span>) 안에서 자를 구간(5~30초)을 골라주세요. 핸들을 드래그하거나 시간을 입력하면 <b style="color:var(--accent);">위 재생 화면</b>이 바로 그 지점으로 이동해요.</p>
+
+                <div id="highlightRangeTrack" style="position:relative; height:36px; background:var(--bg-input); border:1px solid var(--border); border-radius:8px; margin-bottom:14px; touch-action:none;">
+                    <div id="highlightRangeFill" style="position:absolute; top:0; bottom:0; background:rgba(56,189,248,.35); border-radius:8px;"></div>
+                    <div id="highlightHandleStart" class="highlight-range-handle" style="position:absolute; top:50%; width:20px; height:20px; margin-left:-10px; margin-top:-10px; background:var(--accent); border-radius:50%; cursor:grab; box-shadow:0 2px 6px rgba(0,0,0,.5); z-index:2;"></div>
+                    <div id="highlightHandleEnd" class="highlight-range-handle" style="position:absolute; top:50%; width:20px; height:20px; margin-left:-10px; margin-top:-10px; background:var(--accent); border-radius:50%; cursor:grab; box-shadow:0 2px 6px rgba(0,0,0,.5); z-index:2;"></div>
+                </div>
+
+                <div style="display:flex; align-items:center; gap:8px; margin-bottom:16px;">
+                    <label style="font-size:12px; color:var(--text-faint);">시작</label>
+                    <input type="text" id="highlightStartInput" value="00:00" placeholder="mm:ss" style="width:70px; padding:8px 10px; border-radius:8px; border:1px solid var(--border); background:var(--bg-input); color:var(--accent); font-weight:700; text-align:center;">
+                    <span style="color:var(--text-disabled);">→</span>
+                    <label style="font-size:12px; color:var(--text-faint);">끝</label>
+                    <input type="text" id="highlightEndInput" value="00:15" placeholder="mm:ss" style="width:70px; padding:8px 10px; border-radius:8px; border:1px solid var(--border); background:var(--bg-input); color:var(--accent); font-weight:700; text-align:center;">
+                    <span id="highlightDurationLabel" style="margin-left:auto; font-size:12.5px; color:var(--text-muted);">15초 구간</span>
+                    <button type="button" class="btn-save-video" onclick="previewHighlightRange()" style="padding:8px 12px;" title="선택한 구간 미리보기"><i class="fas fa-play"></i> 미리보기</button>
+                </div>
+
+                <input type="text" id="highlightTagText" maxlength="200" placeholder="예: 여기 레전드 ㅋㅋㅋ" style="width:100%; box-sizing:border-box; padding:12px 14px; border-radius:8px; border:1px solid var(--border); background:var(--bg-input); color:var(--text-primary); margin-bottom:14px;">
+
+                <div style="display:flex; gap:8px; justify-content:flex-end;">
+                    <button class="btn-save-video" onclick="closeHighlightTagForm()" style="background:var(--border);">취소</button>
+                    <button class="btn-save-video" onclick="submitHighlightTag()">클립 만들기</button>
+                </div>
+            </div>
+
+            <div class="video-description-box" id="videoDescriptionBox" style="display:none;">
+                <div id="videoDescriptionText"></div>
+                <div id="videoTagsRow" class="video-tags-row"></div>
+            </div>
+
+            <div class="button-area">
+                <button class="back-button" id="btnGoHome">홈으로 돌아가기</button>
+            </div>
+
+            <div class="comment-section">
+                <div class="comment-title-area">
+                    <h3>댓글</h3>
+                    <div class="comment-tab-group">
+                        <button class="btn-tab-toggle active" id="tabSiteComments" onclick="changeCommentTab('site')">내 사이트 댓글</button>
+                        <button class="btn-tab-toggle" id="tabYoutubeComments" onclick="changeCommentTab('youtube')"><i class="fab fa-youtube"></i> 유튜브 댓글 가져오기</button>
+                    </div>
+                </div>
+
+                <div class="comment-form" id="siteCommentForm" style="display:none;">
+                    <div class="comment-inputs-row">
+                        <input type="text" id="commentNick" class="input-nick" placeholder="닉네임 (기본: 스텔리언)" maxlength="15" style="display:none;">
+                        <textarea id="commentContent" class="input-content" placeholder="댓글을 입력해 주세요... (시간 입력 시 타임라인 연동 ex. 02:15)" maxlength="500"></textarea>
+                    </div>
+                    <div class="comment-image-row" style="display:flex; align-items:center; gap:10px;">
+                        <label for="commentImageInput" style="cursor:pointer; color:var(--text-muted); font-size:13px; display:flex; align-items:center; gap:6px;"><i class="far fa-image"></i> 사진 첨부</label>
+                        <input type="file" id="commentImageInput" accept="image/*" style="display:none;">
+                        <img id="commentImagePreview" style="display:none; max-height:60px; border-radius:6px;">
+                        <button type="button" id="commentImageRemoveBtn" style="display:none; background:none; border:none; color:var(--text-muted); cursor:pointer; font-size:14px;"><i class="fas fa-times"></i></button>
+                    </div>
+                    <button class="btn-submit" id="btnSubmitComment">댓글 등록</button>
+                </div>
+                <div class="comment-login-gate" id="commentLoginGate" style="display:none; text-align:center; padding:20px; color:var(--text-muted); font-size:14px; background:var(--bg-elevated); border-radius:8px; margin-bottom:28px;">
+                    댓글을 작성하려면 로그인이 필요해요.
+                    <button onclick="openLoginModal()" style="margin-left:8px; background:var(--accent); color:var(--accent-contrast); border:none; border-radius:20px; padding:8px 18px; font-weight:bold; cursor:pointer;">로그인 / 회원가입</button>
+                </div>
+
+                <div class="comment-list" id="commentContainer">
+                    <div id="commentsSentinel" style="height: 1px;"></div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+        (function() {
+            var videoId = window.PAGE_CONFIG ? window.PAGE_CONFIG.videoId : "";
+            if (!videoId) return;
+            fetch("/api/comments/" + encodeURIComponent(videoId))
+                .then(function(r) { return r.json(); })
+                .then(function(data) {
+                    if (data && data.success && (!data.comments || data.comments.length === 0)) {
+                        var ytBtn = document.getElementById("tabYoutubeComments");
+                        if (ytBtn) ytBtn.click();
+                    }
+                })
+                .catch(function() {});
+        })();
+        </script>
+
+        <!-- [2026-09-27] "유튜브 댓글 가져오기" 탭에서 할당량 초과로 실패해도
+             watch.js(직접 수정 불가)는 그냥 "불러올 유튜브 댓글이 없습니다."라는
+             일반 문구만 보여줘서 유저가 원인을 알 수 없었음. fetch 응답을 관찰해서
+             할당량 초과가 맞으면 그 문구를 원인이 드러나는 문구로 바꿔치기함. -->
+        <script>
+        (function () {
+            if (typeof window.fetch !== "function") return;
+            var originalFetch = window.fetch;
+            window.fetch = function (input, init) {
+                return originalFetch.apply(this, arguments).then(function (response) {
+                    try {
+                        var url = typeof input === "string" ? input : (input && input.url) || "";
+                        if (url.indexOf("/api/youtube_comments/") !== -1 && response.ok) {
+                            response.clone().json().then(function (data) {
+                                if (!data || !data.quota_exceeded) return;
+                                setTimeout(function () {
+                                    var container = document.getElementById("commentContainer");
+                                    if (!container) return;
+                                    container.querySelectorAll("div").forEach(function (el) {
+                                        if (el.textContent && el.textContent.indexOf("불러올 유튜브 댓글이 없습니다") !== -1) {
+                                            el.textContent = "⚠️ 유튜브 서버 할당량이 초과되어 댓글을 일시적으로 불러올 수 없습니다." +
+                                                (data.quota_reset_kst_label ? " (한국시간 " + data.quota_reset_kst_label + "경 자동 해결)" : "");
+                                        }
+                                    });
+                                }, 200);
+                            }).catch(function () {});
+                        }
+                    } catch (e) {}
+                    return response;
+                });
+            };
+        })();
+        </script>
+
+        <div class="recommend-sidebar">
+            <div>
+                <p class="section-title">추천 Shorts</p>
+                <div class="shorts-slider-wrapper">
+                    <button class="slider-btn left" onclick="slideShorts('left')"><i class="fas fa-chevron-left"></i></button>
+                    <div class="shorts-scroll-area" id="shortsSidebarGrid"></div>
+                    <button class="slider-btn right" onclick="slideShorts('right')"><i class="fas fa-chevron-right"></i></button>
+                </div>
+            </div>
+
+            <div>
+                <p class="section-title">다음 동영상</p>
+                <div class="sidebar-grid" id="videoSidebarGrid"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="nickname-edit-overlay" id="nicknameEditOverlay">
+        <div class="nickname-edit-box">
+            <h3>닉네임 변경</h3>
+            <input type="text" id="nicknameInput" maxlength="20" placeholder="새 닉네임 입력" style="width: 100%; padding: 8px; box-sizing: border-box; border:1px solid var(--border-strong); border-radius: 4px; background:var(--bg-elevated); color:var(--text-primary);">
+            <div class="nickname-edit-actions">
+                <button class="btn-cancel" id="nicknameCancelBtn">취소</button>
+                <button class="btn-save" id="nicknameSaveBtn">저장</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="nickname-edit-overlay" id="profileEditOverlay" style="display: none;">
+        <div class="nickname-edit-box" style="text-align: center;">
+            <h3>프로필 설정</h3>
+            <p style="font-size: 13px; color:var(--text-muted); margin-bottom: 15px;">파스텔라이브에서 사용할 프로필을 설정해주세요!</p>
+
+            <div style="margin-bottom: 15px; cursor: pointer; display: inline-block; position: relative;" id="profileImageContainer" title="이미지 변경하기">
+                <img id="profilePreviewImg" src="" alt="프로필 미리보기" style="width: 80px; height: 80px; border-radius: 50%; object-fit: cover; border:2px solid var(--text-disabled);">
+                <div style="position: absolute; bottom: 0; right: 0; background:var(--border); border-radius: 50%; width: 24px; height: 24px; display: flex; align-items: center; justify-content: center; border:1px solid var(--text-faint2);">
+                    <i class="fas fa-camera" style="font-size: 12px; color:var(--text-primary);"></i>
+                </div>
+            </div>
+            <input type="file" id="profileImageUpload" accept="image/*" style="display: none;">
+            <input type="text" id="newProfileNicknameInput" placeholder="닉네임을 입력하세요" maxlength="20" style="width: 100%; padding: 8px; box-sizing: border-box; border:1px solid var(--border-strong); border-radius: 4px; background:var(--bg-elevated); color:var(--text-primary); margin-top: 15px; margin-bottom: 15px;">
+            <div class="nickname-edit-actions" style="justify-content: center;">
+                <button class="btn-cancel" id="profileCancelBtn">취소</button>
+                <button class="btn-save" id="profileSaveBtn">저장하기</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="playlist-modal-overlay" id="savePlaylistOverlay">
+        <div class="playlist-modal-box">
+            <div class="playlist-modal-header">
+                <h3>재생목록에 저장</h3>
+                <button class="playlist-modal-close" onclick="closeSavePlaylistModal()"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="playlist-list" id="modalPlaylistContainer"></div>
+            <button class="btn-new-playlist" onclick="openCreatePlaylistModal()"><i class="fas fa-plus"></i> 새 재생목록 만들기</button>
+        </div>
+    </div>
+
+    <div class="playlist-modal-overlay" id="createPlaylistOverlay">
+        <div class="playlist-modal-box">
+            <div class="playlist-modal-header">
+                <h3>새 재생목록</h3>
+                <button class="playlist-modal-close" onclick="closeCreatePlaylistModal()"><i class="fas fa-times"></i></button>
+            </div>
+            <div class="modal-input-group">
+                <label>제목</label>
+                <input type="text" id="newPlaylistTitleInput" placeholder="재생목록 제목" maxlength="50">
+            </div>
+            <div class="modal-input-group">
+                <label>공개 설정</label>
+                <select id="newPlaylistPrivacySelect">
+                    <option value="private">비공개</option>
+                    <option value="public">공개</option>
+                </select>
+            </div>
+            <div class="modal-actions-right">
+                <button class="btn-cancel" onclick="closeCreatePlaylistModal()">취소</button>
+                <button class="btn-save" onclick="submitNewPlaylist()">만들기</button>
+            </div>
+        </div>
+    </div>
+
+    <script>window.PAGE_CONFIG = {
+    videoId: "{{ video_id }}",
+    isDriveVideo: {{ 'true' if is_drive else 'false' }}
+};
+
+function shareCurrentVideo() {
+    const videoId = window.PAGE_CONFIG ? window.PAGE_CONFIG.videoId : "";
+    if (!videoId) return;
+    const shareUrl = `${window.location.origin}/share/video/${videoId}`;
+    const showShareToast = msg => {
+        const toast = document.createElement("div");
+        toast.innerText = msg;
+        toast.style.cssText = "position:fixed; bottom:40px; left:50%; transform:translateX(-50%); background:var(--accent); color:var(--accent-contrast); padding:12px 24px; border-radius:30px; font-weight:bold; font-size:14px; z-index:99999; box-shadow:0 4px 15px rgba(0,0,0,0.5);";
+        document.body.appendChild(toast);
+        setTimeout(() => toast.remove(), 2500);
+    };
+    const copyFallback = () => {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(shareUrl).then(() => showShareToast("공유 링크가 복사되었습니다.")).catch(() => prompt("아래 링크를 복사하세요:", shareUrl));
+        } else {
+            prompt("아래 링크를 복사하세요:", shareUrl);
+        }
+    };
+    if (navigator.share) {
+        navigator.share({ title: document.title, url: shareUrl }).catch(err => {
+            if (err && err.name === "AbortError") return;
+            copyFallback();
+        });
+    } else {
+        copyFallback();
+    }
+}
+
+function reactToVideo(reaction) {
+    const videoId = window.PAGE_CONFIG ? window.PAGE_CONFIG.videoId : "";
+    if (!videoId) return;
+    const likeBtn = document.getElementById("videoLikeBtn");
+    const dislikeBtn = document.getElementById("videoDislikeBtn");
+    if (!likeBtn || !dislikeBtn || likeBtn.disabled || dislikeBtn.disabled) return;
+    likeBtn.disabled = true;
+    dislikeBtn.disabled = true;
+    fetch("/api/community/like", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ target_type: "video", target_id: videoId, reaction: reaction })
+    }).then(r => r.json()).then(data => {
+        if (!data.success) {
+            if (typeof showToast === "function") showToast(data.message || "처리에 실패했습니다.", "error");
+            return;
+        }
+        const countEl = document.getElementById("videoLikeCount");
+        if (countEl) countEl.textContent = data.like_count;
+        const dislikeCountEl = document.getElementById("videoDislikeCount");
+        if (dislikeCountEl) dislikeCountEl.textContent = data.dislike_count || 0;
+        likeBtn.classList.toggle("active", data.my_reaction === "like");
+        dislikeBtn.classList.toggle("active", data.my_reaction === "dislike");
+    }).catch(() => {
+        if (typeof showToast === "function") showToast("오류가 발생했습니다.", "error");
+    }).finally(() => {
+        likeBtn.disabled = false;
+        dislikeBtn.disabled = false;
+    });
+}
+
+(function initVideoReaction() {
+    const videoId = window.PAGE_CONFIG ? window.PAGE_CONFIG.videoId : "";
+    if (!videoId) return;
+    fetch("/api/video/" + encodeURIComponent(videoId) + "/reaction").then(r => r.json()).then(data => {
+        if (!data.success) return;
+        const countEl = document.getElementById("videoLikeCount");
+        const dislikeCountEl = document.getElementById("videoDislikeCount");
+        const likeBtn = document.getElementById("videoLikeBtn");
+        const dislikeBtn = document.getElementById("videoDislikeBtn");
+        if (countEl) countEl.textContent = data.like_count || 0;
+        if (dislikeCountEl) dislikeCountEl.textContent = data.dislike_count || 0;
+        if (likeBtn) likeBtn.classList.toggle("active", data.my_reaction === "like");
+        if (dislikeBtn) dislikeBtn.classList.toggle("active", data.my_reaction === "dislike");
+    }).catch(() => {});
+})();</script>
+    <script data-cfasync="false" src="https://www.youtube.com/iframe_api" defer></script>
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11" defer></script>
+
+    <script src="{{ versioned_static('js/watch.js') }}" defer></script>
+    <script>if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+        navigator.serviceWorker.register("/sw.js", {
+            scope: "/"
+        }).catch(() => {});
+    });
+}</script>
+    <script>
+    document.addEventListener("DOMContentLoaded", function() {
+        var box = document.getElementById("miniPlayerBox");
+        var mainSection = document.getElementById("playerSection");
+        var wrapper = document.getElementById("videoWrapperMain");
+        if (!box || !mainSection || !wrapper || typeof IntersectionObserver === "undefined") return;
+
+        var closedByUser = false;
+        var isMini = false;
+
+        function miniPlayerIsPlaying() {
+            try {
+                return typeof player !== "undefined" && player && typeof player.getPlayerState === "function" && player.getPlayerState() === 1;
+            } catch (e) {
+                return false;
+            }
+        }
+
+        function enterMini() {
+            if (isMini || closedByUser || !miniPlayerIsPlaying()) return;
+            box.insertBefore(wrapper, box.firstChild);
+            box.classList.add("open");
+            isMini = true;
+        }
+
+        function exitMini() {
+            if (!isMini) return;
+            mainSection.insertBefore(wrapper, mainSection.firstChild);
+            box.classList.remove("open");
+            isMini = false;
+        }
+
+        var mpObserver = new IntersectionObserver(function(entries) {
+            var entry = entries[0];
+            if (!entry) return;
+            if (entry.isIntersecting) {
+                closedByUser = false;
+                exitMini();
+            } else {
+                enterMini();
+            }
+        }, { threshold: 0 });
+        mpObserver.observe(mainSection);
+
+        var restoreBtn = document.getElementById("miniPlayerRestoreBtn");
+        if (restoreBtn) restoreBtn.addEventListener("click", function() {
+            closedByUser = false;
+            exitMini();
+            mainSection.scrollIntoView({ behavior: "smooth", block: "start" });
+        });
+
+        var closeBtn = document.getElementById("miniPlayerCloseBtn");
+        if (closeBtn) closeBtn.addEventListener("click", function() {
+            closedByUser = true;
+            try {
+                if (typeof player !== "undefined" && player && typeof player.pauseVideo === "function") player.pauseVideo();
+            } catch (e) {}
+            exitMini();
+        });
+    });
+    </script>
+</body>

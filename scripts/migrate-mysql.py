@@ -25,8 +25,9 @@ def fingerprint(rows):
 
 
 def migrate():
-    if mysql_backend.configuration().get('LISTEN_ADDR') != '127.0.0.1:8081':
-        raise RuntimeError('Run the migration on the Windows VM.')
+    address=mysql_backend.configuration().get('LISTEN_ADDR')
+    if address != '127.0.0.1:8081' and not (address == '127.0.0.1:80' and (ROOT/'runtime/production-server').is_file()):
+        raise RuntimeError('Run the migration on the Windows VM or the explicitly marked production server.')
     if mysql_backend.MARKER.exists():
         raise RuntimeError('MySQL is already active; refusing to overwrite live data.')
     directory = ROOT / 'data' / 'backups'

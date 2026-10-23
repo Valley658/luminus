@@ -15,8 +15,9 @@ def powershell(command):
 
 
 def relocate():
-    if mysql_backend.configuration().get('LISTEN_ADDR') != '127.0.0.1:8081':
-        raise RuntimeError('VM only.')
+    address=mysql_backend.configuration().get('LISTEN_ADDR')
+    if address != '127.0.0.1:8081' and not (address == '127.0.0.1:80' and (mysql_backend.ROOT/'runtime/production-server').is_file()):
+        raise RuntimeError('VM or explicitly marked production server only.')
     config = Path('C:/ProgramData/MySQL/MySQL Server 8.0/my.ini')
     original = config.read_bytes()
     text = original.decode('utf-8-sig')
